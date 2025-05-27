@@ -1,0 +1,1 @@
+configure_file ("Regular.ttf" ${CMAKE_BINARY_DIR} COPYONLY)
