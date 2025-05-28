@@ -1,11 +1,15 @@
 // Player.cpp
 #include "Player.h"
+#include "Fish.h"
 #include <SFML/Window.hpp>
 #include <cmath>
 #include <algorithm>
 
 namespace FishGame
 {
+    // Static member initialization
+    const sf::Time Player::m_invulnerabilityDuration = sf::seconds(2.0f);
+
     Player::Player()
         : Entity()
         , m_shape(m_baseRadius)
@@ -13,6 +17,7 @@ namespace FishGame
         , m_currentStage(1)
         , m_useMouseControl(false)
         , m_targetPosition(0.0f, 0.0f)
+        , m_invulnerabilityTimer(sf::Time::Zero)
         , m_windowBounds(1920, 1080)
     {
         m_radius = m_baseRadius;
@@ -30,6 +35,9 @@ namespace FishGame
     {
         if (!m_isAlive)
             return;
+
+        // Update invulnerability
+        updateInvulnerability(deltaTime);
 
         // Handle input
         handleInput();
@@ -72,6 +80,20 @@ namespace FishGame
 
         // Update visual representation
         m_shape.setPosition(m_position);
+
+        // Update visual effects for invulnerability
+        if (m_invulnerabilityTimer > sf::Time::Zero)
+        {
+            // Flashing effect
+            float alpha = std::sin(m_invulnerabilityTimer.asSeconds() * 10.0f) * 0.5f + 0.5f;
+            sf::Color color = m_shape.getFillColor();
+            color.a = static_cast<sf::Uint8>(255 * alpha);
+            m_shape.setFillColor(color);
+        }
+        else
+        {
+            m_shape.setFillColor(sf::Color::Yellow);
+        }
     }
 
     void Player::handleInput()
@@ -135,9 +157,9 @@ namespace FishGame
             m_radius * 2.0f, m_radius * 2.0f);
     }
 
-    void Player::grow()
+    void Player::grow(int points)
     {
-        m_score += 10; // Basic scoring for Stage 1
+        m_score = std::min(m_score + points, m_maxScore);
         updateStage();
     }
 
@@ -148,6 +170,72 @@ namespace FishGame
         m_radius = m_baseRadius;
         m_shape.setRadius(m_radius);
         m_shape.setOrigin(m_radius, m_radius);
+    }
+
+    bool Player::canEat(const Entity& other) const
+    {
+        // Can't eat while invulnerable
+        if (m_invulnerabilityTimer > sf::Time::Zero)
+            return false;
+
+        // Check entity type
+        EntityType otherType = other.getType();
+        if (otherType != EntityType::SmallFish &&
+            otherType != EntityType::MediumFish &&
+            otherType != EntityType::LargeFish)
+        {
+            return false;
+        }
+
+        // Cast to Fish to get size
+        const Fish* fish = dynamic_cast<const Fish*>(&other);
+        if (!fish)
+            return false;
+
+        // Stage 1 Player (Small) - Can eat small fish
+        // Stage 2 Player (Medium) - Can eat small and medium fish  
+        // Stage 3 Player (Large) - Can eat all fish types
+
+        // Compare sizes based on current stage
+        FishSize playerSize = getCurrentFishSize();
+        FishSize fishSize = fish->getSize();
+
+        // Can eat same size or smaller fish
+        return static_cast<int>(playerSize) >= static_cast<int>(fishSize);
+    }
+
+    FishSize Player::getCurrentFishSize() const
+    {
+        switch (m_currentStage)
+        {
+        case 1:
+            return FishSize::Small;
+        case 2:
+            return FishSize::Medium;
+        case 3:
+            return FishSize::Large;
+        default:
+            return FishSize::Small;
+        }
+    }
+
+    void Player::die()
+    {
+        // Reset to starting score of current stage (not always stage 1)
+        int stageStartScore = getStageStartingScore(m_currentStage);
+        m_score = stageStartScore;
+        updateStage(); // This will set the correct stage based on score
+
+        // Reset position and start invulnerability
+        m_position = sf::Vector2f(m_windowBounds.x / 2.0f, m_windowBounds.y / 2.0f);
+        m_velocity = sf::Vector2f(0.0f, 0.0f);
+        m_invulnerabilityTimer = m_invulnerabilityDuration;
+    }
+
+    void Player::respawn()
+    {
+        m_isAlive = true;
+        die(); // Use die() to reset position and start invulnerability
     }
 
     void Player::setWindowBounds(const sf::Vector2u& windowSize)
@@ -192,5 +280,32 @@ namespace FishGame
             static_cast<float>(m_windowBounds.x) - m_radius);
         m_position.y = std::clamp(m_position.y, m_radius,
             static_cast<float>(m_windowBounds.y) - m_radius);
+    }
+
+    void Player::updateInvulnerability(sf::Time deltaTime)
+    {
+        if (m_invulnerabilityTimer > sf::Time::Zero)
+        {
+            m_invulnerabilityTimer -= deltaTime;
+            if (m_invulnerabilityTimer < sf::Time::Zero)
+            {
+                m_invulnerabilityTimer = sf::Time::Zero;
+            }
+        }
+    }
+
+    int Player::getStageStartingScore(int stage)
+    {
+        switch (stage)
+        {
+        case 1:
+            return m_stage1Threshold; // 0
+        case 2:
+            return m_stage2Threshold; // 33
+        case 3:
+            return m_stage3Threshold; // 66
+        default:
+            return m_stage1Threshold;
+        }
     }
 }

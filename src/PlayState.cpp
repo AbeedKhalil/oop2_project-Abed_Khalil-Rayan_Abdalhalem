@@ -2,31 +2,35 @@
 #include "PlayState.h"
 #include "Game.h"
 #include "CollisionDetector.h"
+#include "Fish.h"
 #include <algorithm>
 #include <sstream>
 #include <iomanip>
-#include <random>
+#include <numeric>
 
 namespace FishGame
 {
     // Static member initialization
-    const sf::Time PlayState::m_spawnInterval = sf::seconds(2.0f);
+    const sf::Time PlayState::m_levelTransitionDuration = sf::seconds(3.0f);
 
     PlayState::PlayState(Game& game)
         : State(game)
         , m_player(std::make_unique<Player>())
+        , m_fishSpawner(std::make_unique<FishSpawner>(getGame().getWindow().getSize()))
         , m_entities()
         , m_scoreText()
         , m_livesText()
         , m_levelText()
         , m_fpsText()
+        , m_messageText()
         , m_currentLevel(1)
         , m_playerLives(3)
-        , m_playerScore(0)
+        , m_totalScore(0)
+        , m_levelComplete(false)
+        , m_levelTransitionTimer(sf::Time::Zero)
         , m_fpsUpdateTime(sf::Time::Zero)
         , m_frameCount(0)
         , m_currentFPS(0.0f)
-        , m_spawnTimer(sf::Time::Zero)
     {
         auto& window = getGame().getWindow();
         auto& font = getGame().getFonts().get(Fonts::Main);
@@ -62,8 +66,16 @@ namespace FishGame
         m_fpsText.setFillColor(sf::Color::Green);
         m_fpsText.setPosition(window.getSize().x - 100.0f, hudMargin);
 
-        // Initialize entities for testing
-        initializeEntities();
+        // Message text (centered)
+        m_messageText.setFont(font);
+        m_messageText.setCharacterSize(48);
+        m_messageText.setFillColor(sf::Color::Yellow);
+        m_messageText.setOutlineColor(sf::Color::Black);
+        m_messageText.setOutlineThickness(2.0f);
+
+        // Set fish spawner level
+        m_fishSpawner->setLevel(m_currentLevel);
+
         updateHUD();
     }
 
@@ -111,25 +123,43 @@ namespace FishGame
             m_fpsText.setString(fpsStream.str());
         }
 
-        // Update spawn timer for test fish
-        m_spawnTimer += deltaTime;
-        if (m_spawnTimer >= m_spawnInterval)
+        // Handle level transition
+        if (m_levelComplete)
         {
-            spawnTestFish();
-            m_spawnTimer = sf::Time::Zero;
+            m_levelTransitionTimer += deltaTime;
+            if (m_levelTransitionTimer >= m_levelTransitionDuration)
+            {
+                advanceLevel();
+            }
+            return false; // Don't update game during transition
         }
+
+        // Update fish spawner
+        m_fishSpawner->update(deltaTime, m_currentLevel);
+
+        // Get newly spawned fish
+        auto& spawnedFish = m_fishSpawner->getSpawnedFish();
+        std::move(spawnedFish.begin(), spawnedFish.end(), std::back_inserter(m_entities));
+        m_fishSpawner->clearSpawnedFish();
 
         // Update player
         m_player->update(deltaTime);
 
-        // Update all entities
+        // Update all entities and their AI
         std::for_each(m_entities.begin(), m_entities.end(),
-            [deltaTime](const std::unique_ptr<Entity>& entity)
+            [this, deltaTime](const std::unique_ptr<Entity>& entity)
             {
                 entity->update(deltaTime);
+
+                // Update fish AI
+                Fish* fish = dynamic_cast<Fish*>(entity.get());
+                if (fish)
+                {
+                    fish->updateAI(m_entities, m_player.get(), deltaTime);
+                }
             });
 
-        // Remove dead entities using erase-remove idiom
+        // Remove dead entities using STL erase-remove idiom
         m_entities.erase(
             std::remove_if(m_entities.begin(), m_entities.end(),
                 [](const std::unique_ptr<Entity>& entity)
@@ -145,13 +175,22 @@ namespace FishGame
         // Update HUD
         updateHUD();
 
-        // Check for level progression
-        if (m_playerScore >= 100)
+        // Check for level completion
+        if (m_player->getScore() >= 100) // Score requirement is now 100 points
         {
-            m_currentLevel++;
-            m_playerScore = 0;
-            m_player->resetSize();
-            // TODO: Implement level transition in future stages
+            m_levelComplete = true;
+            m_levelTransitionTimer = sf::Time::Zero;
+
+            // Display level complete message
+            std::ostringstream messageStream;
+            messageStream << "Level " << m_currentLevel << " Complete!";
+            m_messageText.setString(messageStream.str());
+
+            // Center the message
+            sf::FloatRect bounds = m_messageText.getLocalBounds();
+            m_messageText.setOrigin(bounds.width / 2.0f, bounds.height / 2.0f);
+            m_messageText.setPosition(getGame().getWindow().getSize().x / 2.0f,
+                getGame().getWindow().getSize().y / 2.0f);
         }
 
         return false; // Don't update underlying states
@@ -176,27 +215,29 @@ namespace FishGame
         window.draw(m_livesText);
         window.draw(m_levelText);
         window.draw(m_fpsText);
-    }
 
-    void PlayState::initializeEntities()
-    {
-        // For Stage 1, we'll spawn a few test fish
-        // These will be replaced with proper spawning system in Stage 3
-        spawnTestFish();
+        // Draw message if level complete
+        if (m_levelComplete)
+        {
+            window.draw(m_messageText);
+        }
     }
 
     void PlayState::updateHUD()
     {
+        // Update score display
         std::ostringstream scoreStream;
-        scoreStream << "Score: " << m_playerScore;
+        scoreStream << "Score: " << m_player->getScore() << "/100 (Total: " << m_totalScore << ")";
         m_scoreText.setString(scoreStream.str());
 
+        // Update lives display
         std::ostringstream livesStream;
         livesStream << "Lives: " << m_playerLives;
         m_livesText.setString(livesStream.str());
 
+        // Update level display
         std::ostringstream levelStream;
-        levelStream << "Level: " << m_currentLevel;
+        levelStream << "Level: " << m_currentLevel << " | Stage: " << m_player->getCurrentStage();
         m_levelText.setString(levelStream.str());
     }
 
@@ -207,78 +248,103 @@ namespace FishGame
         {
             if (CollisionDetector::checkCircleCollision(*m_player, *entity))
             {
-                // For Stage 1, just destroy the entity and add score
-                entity->destroy();
-                m_player->grow();
-                m_playerScore += 10;
+                // Check if it's a fish
+                if (entity->getType() == EntityType::SmallFish ||
+                    entity->getType() == EntityType::MediumFish ||
+                    entity->getType() == EntityType::LargeFish)
+                {
+                    // Try to eat the fish
+                    if (m_player->canEat(*entity))
+                    {
+                        // Get points from fish
+                        const Fish* fish = dynamic_cast<const Fish*>(entity.get());
+                        if (fish)
+                        {
+                            m_player->grow(fish->getPointValue());
+                            entity->destroy();
+                        }
+                    }
+                    else if (!m_player->isInvulnerable())
+                    {
+                        // Player was eaten by larger fish
+                        handlePlayerDeath();
+                    }
+                }
+            }
+        }
+
+        // Check fish-to-fish collisions
+        for (size_t i = 0; i < m_entities.size(); ++i)
+        {
+            Fish* fish1 = dynamic_cast<Fish*>(m_entities[i].get());
+            if (!fish1 || !fish1->isAlive())
+                continue;
+
+            for (size_t j = i + 1; j < m_entities.size(); ++j)
+            {
+                Fish* fish2 = dynamic_cast<Fish*>(m_entities[j].get());
+                if (!fish2 || !fish2->isAlive())
+                    continue;
+
+                if (CollisionDetector::checkCircleCollision(*fish1, *fish2))
+                {
+                    // Larger fish eats smaller fish
+                    if (fish1->canEat(*fish2))
+                    {
+                        fish2->destroy();
+                    }
+                    else if (fish2->canEat(*fish1))
+                    {
+                        fish1->destroy();
+                    }
+                }
             }
         }
     }
 
-    void PlayState::spawnTestFish()
+    void PlayState::handlePlayerDeath()
     {
-        // Create a simple test entity for Stage 1
-        // This will be replaced with proper fish types in Stage 2
-        class TestFish : public Entity
+        m_playerLives--;
+
+        if (m_playerLives <= 0)
         {
-        public:
-            TestFish(float x, float y, float radius, const sf::Color& color)
-                : Entity()
-                , m_shape(radius)
-            {
-                m_position = sf::Vector2f(x, y);
-                m_radius = radius;
-                m_shape.setFillColor(color);
-                m_shape.setOrigin(radius, radius);
-                m_shape.setPosition(m_position);
+            gameOver();
+        }
+        else
+        {
+            m_player->die();
+        }
+    }
 
-                // Simple horizontal movement
-                m_velocity = sf::Vector2f(100.0f, 0.0f);
-            }
+    void PlayState::advanceLevel()
+    {
+        m_currentLevel++;
+        m_totalScore += m_player->getScore();
+        m_player->resetSize();
+        m_levelComplete = false;
 
-            void update(sf::Time deltaTime) override
-            {
-                updateMovement(deltaTime);
-                m_shape.setPosition(m_position);
+        // Clear all entities for new level
+        m_entities.clear();
 
-                // Destroy if off screen
-                if (m_position.x > 2000.0f || m_position.x < -100.0f)
-                {
-                    destroy();
-                }
-            }
+        // Update spawner for new level
+        m_fishSpawner->setLevel(m_currentLevel);
+    }
 
-            sf::FloatRect getBounds() const override
-            {
-                return sf::FloatRect(m_position.x - m_radius, m_position.y - m_radius,
-                    m_radius * 2.0f, m_radius * 2.0f);
-            }
+    void PlayState::gameOver()
+    {
+        // Restart the current level instead of going to menu
+        m_playerLives = 3; // Reset lives
+        m_player->resetSize(); // Reset to stage 1
+        m_entities.clear(); // Clear all fish
 
-            EntityType getType() const override
-            {
-                return EntityType::SmallFish;
-            }
+        // Display game over message temporarily
+        m_messageText.setString("Game Over! Restarting Level " + std::to_string(m_currentLevel));
+        sf::FloatRect bounds = m_messageText.getLocalBounds();
+        m_messageText.setOrigin(bounds.width / 2.0f, bounds.height / 2.0f);
+        m_messageText.setPosition(getGame().getWindow().getSize().x / 2.0f,
+            getGame().getWindow().getSize().y / 2.0f);
 
-        protected:
-            void draw(sf::RenderTarget& target, sf::RenderStates states) const override
-            {
-                target.draw(m_shape, states);
-            }
-
-        private:
-            sf::CircleShape m_shape;
-        };
-
-        // Random number generation using STL
-        static std::random_device rd;
-        static std::mt19937 gen(rd());
-        std::uniform_real_distribution<float> yDist(100.0f, 980.0f);
-        std::uniform_real_distribution<float> sizeDist(15.0f, 30.0f);
-
-        float radius = sizeDist(gen);
-        sf::Color color = (radius < 20.0f) ? sf::Color::Green : sf::Color::Blue;
-
-        auto fish = std::make_unique<TestFish>(-50.0f, yDist(gen), radius, color);
-        m_entities.push_back(std::move(fish));
+        // Note: In future stages, you might want to add a delay here
+        // to show the game over message before restarting
     }
 }
