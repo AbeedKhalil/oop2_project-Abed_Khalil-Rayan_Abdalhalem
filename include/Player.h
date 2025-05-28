@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Entity.h"
+#include "Fish.h"
 #include <SFML/Graphics.hpp>
 #include <memory>
 
@@ -22,11 +23,24 @@ namespace FishGame
         void handleInput();
         void followMouse(const sf::Vector2f& mousePosition);
 
-        void grow();
+        void grow(int points);
         void resetSize();
         int getCurrentStage() const { return m_currentStage; }
+        int getScore() const { return m_score; }
+
+        // Size comparison for eating mechanics
+        bool canEat(const Entity& other) const;
+        FishSize getCurrentFishSize() const;
+
+        // Life management
+        void die();
+        void respawn();
+        bool isInvulnerable() const { return m_invulnerabilityTimer > sf::Time::Zero; }
 
         void setWindowBounds(const sf::Vector2u& windowSize);
+
+        // Get the starting score for a given stage
+        static int getStageStartingScore(int stage);
 
     protected:
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
@@ -34,6 +48,7 @@ namespace FishGame
     private:
         void updateStage();
         void constrainToWindow();
+        void updateInvulnerability(sf::Time deltaTime);
 
     private:
         sf::CircleShape m_shape;
@@ -43,6 +58,10 @@ namespace FishGame
         // Control state
         bool m_useMouseControl;
         sf::Vector2f m_targetPosition;
+
+        // Invulnerability after respawn
+        sf::Time m_invulnerabilityTimer;
+        static const sf::Time m_invulnerabilityDuration;
 
         // Movement parameters
         static constexpr float m_baseSpeed = 400.0f;
