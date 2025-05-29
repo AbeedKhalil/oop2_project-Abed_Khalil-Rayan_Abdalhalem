@@ -4,6 +4,8 @@
 #include "State.h"
 #include "Player.h"
 #include "FishSpawner.h"
+#include "VisualEffects.h"
+#include "ProgressBar.h"
 #include <SFML/Graphics.hpp>
 #include <memory>
 #include <vector>
@@ -26,23 +28,36 @@ namespace FishGame
         void handlePlayerDeath();
         void advanceLevel();
         void gameOver();
+        void showRespawnMessage();
+        void createScorePopup(const sf::Vector2f& position, int points);
 
     private:
         std::unique_ptr<Player> m_player;
         std::unique_ptr<FishSpawner> m_fishSpawner;
         std::vector<std::unique_ptr<Entity>> m_entities;
 
+        // Visual effects
+        EffectManager m_effectManager;
+        std::unique_ptr<FlashingText> m_respawnMessage;
+        sf::Time m_respawnMessageTimer;
+
         // HUD elements
         sf::Text m_scoreText;
         sf::Text m_livesText;
         sf::Text m_levelText;
         sf::Text m_fpsText;
-        sf::Text m_messageText; // For level complete/game over messages
+        sf::Text m_messageText;
+        ProgressBar m_progressBar;
+
+        // Score flash effect
+        sf::Time m_scoreFlashTimer;
+        sf::Color m_originalScoreColor;
 
         // Game state
         int m_currentLevel;
         int m_playerLives;
         int m_totalScore;
+        int m_lastScore;
 
         // Level transition
         bool m_levelComplete;

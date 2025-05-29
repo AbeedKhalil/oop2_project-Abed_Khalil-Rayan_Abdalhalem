@@ -1,28 +1,28 @@
 // Player.cpp
 #include "Player.h"
 #include "Fish.h"
+#include "GameConstants.h"
 #include <SFML/Window.hpp>
 #include <cmath>
 #include <algorithm>
 
 namespace FishGame
 {
-    // Static member initialization
-    const sf::Time Player::m_invulnerabilityDuration = sf::seconds(2.0f);
+    using namespace Constants;
 
     Player::Player()
         : Entity()
-        , m_shape(m_baseRadius)
+        , m_shape(PLAYER_BASE_RADIUS)
         , m_score(0)
         , m_currentStage(1)
         , m_useMouseControl(false)
         , m_targetPosition(0.0f, 0.0f)
         , m_invulnerabilityTimer(sf::Time::Zero)
-        , m_windowBounds(1920, 1080)
+        , m_windowBounds(WINDOW_WIDTH, WINDOW_HEIGHT)
     {
-        m_radius = m_baseRadius;
-        m_shape.setFillColor(sf::Color::Yellow);
-        m_shape.setOutlineColor(sf::Color(255, 200, 0));
+        m_radius = PLAYER_BASE_RADIUS;
+        m_shape.setFillColor(PLAYER_COLOR);
+        m_shape.setOutlineColor(PLAYER_OUTLINE);
         m_shape.setOutlineThickness(2.0f);
         m_shape.setOrigin(m_radius, m_radius);
 
@@ -52,24 +52,24 @@ namespace FishGame
             if (distance > 5.0f)
             {
                 direction /= distance; // Normalize
-                sf::Vector2f targetVelocity = direction * m_baseSpeed;
+                sf::Vector2f targetVelocity = direction * PLAYER_BASE_SPEED;
 
                 // Smooth acceleration
-                m_velocity.x += (targetVelocity.x - m_velocity.x) * m_acceleration * deltaTime.asSeconds();
-                m_velocity.y += (targetVelocity.y - m_velocity.y) * m_acceleration * deltaTime.asSeconds();
+                m_velocity.x += (targetVelocity.x - m_velocity.x) * PLAYER_ACCELERATION * deltaTime.asSeconds();
+                m_velocity.y += (targetVelocity.y - m_velocity.y) * PLAYER_ACCELERATION * deltaTime.asSeconds();
             }
             else
             {
                 // Decelerate when near target
-                m_velocity *= (1.0f - m_deceleration * deltaTime.asSeconds());
+                m_velocity *= (1.0f - PLAYER_DECELERATION * deltaTime.asSeconds());
             }
         }
 
         // Limit maximum speed
         float currentSpeed = std::sqrt(m_velocity.x * m_velocity.x + m_velocity.y * m_velocity.y);
-        if (currentSpeed > m_maxSpeed)
+        if (currentSpeed > PLAYER_MAX_SPEED)
         {
-            m_velocity = (m_velocity / currentSpeed) * m_maxSpeed;
+            m_velocity = (m_velocity / currentSpeed) * PLAYER_MAX_SPEED;
         }
 
         // Update position
@@ -92,7 +92,7 @@ namespace FishGame
         }
         else
         {
-            m_shape.setFillColor(sf::Color::Yellow);
+            m_shape.setFillColor(PLAYER_COLOR);
         }
     }
 
@@ -136,7 +136,7 @@ namespace FishGame
             if (length > 0.0f)
             {
                 inputDirection /= length;
-                m_velocity = inputDirection * m_baseSpeed;
+                m_velocity = inputDirection * PLAYER_BASE_SPEED;
             }
         }
         else if (!m_useMouseControl)
@@ -159,7 +159,7 @@ namespace FishGame
 
     void Player::grow(int points)
     {
-        m_score = std::min(m_score + points, m_maxScore);
+        m_score = std::min(m_score + points, MAX_SCORE);
         updateStage();
     }
 
@@ -167,7 +167,7 @@ namespace FishGame
     {
         m_score = 0;
         m_currentStage = 1;
-        m_radius = m_baseRadius;
+        m_radius = PLAYER_BASE_RADIUS;
         m_shape.setRadius(m_radius);
         m_shape.setOrigin(m_radius, m_radius);
     }
@@ -229,7 +229,7 @@ namespace FishGame
         // Reset position and start invulnerability
         m_position = sf::Vector2f(m_windowBounds.x / 2.0f, m_windowBounds.y / 2.0f);
         m_velocity = sf::Vector2f(0.0f, 0.0f);
-        m_invulnerabilityTimer = m_invulnerabilityDuration;
+        m_invulnerabilityTimer = INVULNERABILITY_DURATION;
     }
 
     void Player::respawn()
@@ -252,11 +252,11 @@ namespace FishGame
     {
         int previousStage = m_currentStage;
 
-        if (m_score >= m_stage3Threshold)
+        if (m_score >= STAGE_3_THRESHOLD)
         {
             m_currentStage = 3;
         }
-        else if (m_score >= m_stage2Threshold)
+        else if (m_score >= STAGE_2_THRESHOLD)
         {
             m_currentStage = 2;
         }
@@ -268,7 +268,7 @@ namespace FishGame
         // Update size if stage changed
         if (m_currentStage != previousStage)
         {
-            m_radius = m_baseRadius * std::pow(m_growthFactor, m_currentStage - 1);
+            m_radius = PLAYER_BASE_RADIUS * std::pow(PLAYER_GROWTH_FACTOR, m_currentStage - 1);
             m_shape.setRadius(m_radius);
             m_shape.setOrigin(m_radius, m_radius);
         }
@@ -299,13 +299,13 @@ namespace FishGame
         switch (stage)
         {
         case 1:
-            return m_stage1Threshold; // 0
+            return STAGE_1_THRESHOLD;
         case 2:
-            return m_stage2Threshold; // 33
+            return STAGE_2_THRESHOLD;
         case 3:
-            return m_stage3Threshold; // 66
+            return STAGE_3_THRESHOLD;
         default:
-            return m_stage1Threshold;
+            return STAGE_1_THRESHOLD;
         }
     }
 }

@@ -1,18 +1,21 @@
 // SmallFish.cpp
 #include "SmallFish.h"
+#include "GameConstants.h"
 
 namespace FishGame
 {
-    SmallFish::SmallFish()
-        : Fish(FishSize::Small, m_smallFishSpeed, m_smallFishPoints)
+    using namespace Constants;
+
+    SmallFish::SmallFish(int currentLevel)
+        : Fish(FishSize::Small, m_smallFishSpeed, currentLevel)
     {
         updateVisual();
     }
 
     void SmallFish::updateVisual()
     {
-        m_baseColor = sf::Color::Green;
-        m_outlineColor = sf::Color(0, 100, 0); // Dark green
+        m_baseColor = SMALL_FISH_COLOR;
+        m_outlineColor = SMALL_FISH_OUTLINE;
         m_outlineThickness = 1.0f;
 
         Fish::updateVisual();

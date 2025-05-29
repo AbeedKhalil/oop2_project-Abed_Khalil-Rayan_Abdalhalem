@@ -1,10 +1,13 @@
 // FishSpawner.cpp
 #include "FishSpawner.h"
+#include "GameConstants.h"
 #include <algorithm>
 #include <numeric>
 
 namespace FishGame
 {
+    using namespace Constants;
+
     FishSpawner::FishSpawner(const sf::Vector2u& windowSize)
         : m_windowSize(windowSize)
         , m_spawnedFish()
@@ -47,13 +50,13 @@ namespace FishGame
     template<typename FishType>
     void FishSpawner::spawnFish(bool fromLeft)
     {
-        auto fish = FishFactory<FishType>::create();
+        auto fish = FishFactory<FishType>::create(m_currentLevel);
 
         // Set random Y position
         float yPos = m_yDistribution(m_randomEngine);
 
         // Set starting position based on direction
-        float xPos = fromLeft ? -50.0f : m_windowSize.x + 50.0f;
+        float xPos = fromLeft ? -SPAWN_MARGIN : m_windowSize.x + SPAWN_MARGIN;
         fish->setPosition(xPos, yPos);
 
         // Set direction

@@ -8,7 +8,7 @@ namespace FishGame
     class LargeFish : public Fish
     {
     public:
-        LargeFish();
+        explicit LargeFish(int currentLevel = 1);
         ~LargeFish() override = default;
 
         EntityType getType() const override { return EntityType::LargeFish; }
@@ -18,6 +18,5 @@ namespace FishGame
 
     private:
         static constexpr float m_largeFishSpeed = 90.0f;
-        static constexpr int m_largeFishPoints = 9;
     };
 }
