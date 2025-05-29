@@ -1,8 +1,9 @@
-// PlayState.cpp
+﻿// PlayState.cpp
 #include "PlayState.h"
 #include "Game.h"
 #include "CollisionDetector.h"
 #include "Fish.h"
+#include "GameConstants.h"
 #include <algorithm>
 #include <sstream>
 #include <iomanip>
@@ -10,22 +11,31 @@
 
 namespace FishGame
 {
+    using namespace Constants;
+
     // Static member initialization
-    const sf::Time PlayState::m_levelTransitionDuration = sf::seconds(3.0f);
+    const sf::Time PlayState::m_levelTransitionDuration = LEVEL_TRANSITION_DURATION;
 
     PlayState::PlayState(Game& game)
         : State(game)
         , m_player(std::make_unique<Player>())
         , m_fishSpawner(std::make_unique<FishSpawner>(getGame().getWindow().getSize()))
         , m_entities()
+        , m_effectManager()
+        , m_respawnMessage(nullptr)
+        , m_respawnMessageTimer(sf::Time::Zero)
         , m_scoreText()
         , m_livesText()
         , m_levelText()
         , m_fpsText()
         , m_messageText()
+        , m_progressBar()
+        , m_scoreFlashTimer(sf::Time::Zero)
+        , m_originalScoreColor(sf::Color::White)
         , m_currentLevel(1)
-        , m_playerLives(3)
+        , m_playerLives(INITIAL_LIVES)
         , m_totalScore(0)
+        , m_lastScore(0)
         , m_levelComplete(false)
         , m_levelTransitionTimer(sf::Time::Zero)
         , m_fpsUpdateTime(sf::Time::Zero)
@@ -38,37 +48,45 @@ namespace FishGame
         // Set player window bounds
         m_player->setWindowBounds(window.getSize());
 
-        // Initialize HUD elements
-        const float hudMargin = 20.0f;
-        const unsigned int hudFontSize = 24;
+        // Initialize HUD elements with proper vertical spacing
+        float currentY = HUD_MARGIN;
+        const float LINE_SPACING = 35.0f;
 
         // Score text
         m_scoreText.setFont(font);
-        m_scoreText.setCharacterSize(hudFontSize);
+        m_scoreText.setCharacterSize(HUD_FONT_SIZE);
         m_scoreText.setFillColor(sf::Color::White);
-        m_scoreText.setPosition(hudMargin, hudMargin);
+        m_scoreText.setPosition(HUD_MARGIN, currentY);
+        m_originalScoreColor = m_scoreText.getFillColor();
+        currentY += LINE_SPACING;
 
         // Lives text
         m_livesText.setFont(font);
-        m_livesText.setCharacterSize(hudFontSize);
+        m_livesText.setCharacterSize(HUD_FONT_SIZE);
         m_livesText.setFillColor(sf::Color::White);
-        m_livesText.setPosition(hudMargin, hudMargin + 30.0f);
+        m_livesText.setPosition(HUD_MARGIN, currentY);
+        currentY += LINE_SPACING;
 
         // Level text
         m_levelText.setFont(font);
-        m_levelText.setCharacterSize(hudFontSize);
+        m_levelText.setCharacterSize(HUD_FONT_SIZE);
         m_levelText.setFillColor(sf::Color::White);
-        m_levelText.setPosition(hudMargin, hudMargin + 60.0f);
+        m_levelText.setPosition(HUD_MARGIN, currentY);
+        currentY += LINE_SPACING;
 
-        // FPS text
+        // Progress bar - positioned after level text
+        m_progressBar.setFont(font);
+        m_progressBar.setPosition(HUD_MARGIN, currentY + 10.0f);
+
+        // FPS text (top right)
         m_fpsText.setFont(font);
-        m_fpsText.setCharacterSize(hudFontSize);
+        m_fpsText.setCharacterSize(HUD_FONT_SIZE);
         m_fpsText.setFillColor(sf::Color::Green);
-        m_fpsText.setPosition(window.getSize().x - 100.0f, hudMargin);
+        m_fpsText.setPosition(window.getSize().x - 100.0f, HUD_MARGIN);
 
         // Message text (centered)
         m_messageText.setFont(font);
-        m_messageText.setCharacterSize(48);
+        m_messageText.setCharacterSize(MESSAGE_FONT_SIZE);
         m_messageText.setFillColor(sf::Color::Yellow);
         m_messageText.setOutlineColor(sf::Color::Black);
         m_messageText.setOutlineThickness(2.0f);
@@ -123,6 +141,32 @@ namespace FishGame
             m_fpsText.setString(fpsStream.str());
         }
 
+        // Update visual effects
+        m_effectManager.update(deltaTime);
+
+        // Update respawn message
+        if (m_respawnMessage && m_respawnMessage->isActive())
+        {
+            m_respawnMessage->update(deltaTime);
+        }
+
+        // Update score flash
+        if (m_scoreFlashTimer > sf::Time::Zero)
+        {
+            m_scoreFlashTimer -= deltaTime;
+            float flashIntensity = m_scoreFlashTimer.asSeconds() / SCORE_FLASH_DURATION.asSeconds();
+            sf::Color flashColor = sf::Color(
+                255,
+                static_cast<sf::Uint8>(255 - (255 - m_originalScoreColor.g) * flashIntensity),
+                static_cast<sf::Uint8>(255 - (255 - m_originalScoreColor.b) * flashIntensity)
+            );
+            m_scoreText.setFillColor(flashColor);
+        }
+        else
+        {
+            m_scoreText.setFillColor(m_originalScoreColor);
+        }
+
         // Handle level transition
         if (m_levelComplete)
         {
@@ -172,11 +216,22 @@ namespace FishGame
         // Check collisions
         checkCollisions();
 
+        // Check for score changes
+        if (m_player->getScore() != m_lastScore)
+        {
+            int pointsGained = m_player->getScore() - m_lastScore;
+            if (pointsGained > 0)
+            {
+                m_scoreFlashTimer = SCORE_FLASH_DURATION;
+            }
+            m_lastScore = m_player->getScore();
+        }
+
         // Update HUD
         updateHUD();
 
         // Check for level completion
-        if (m_player->getScore() >= 100) // Score requirement is now 100 points
+        if (m_player->getScore() >= LEVEL_COMPLETE_SCORE)
         {
             m_levelComplete = true;
             m_levelTransitionTimer = sf::Time::Zero;
@@ -210,11 +265,21 @@ namespace FishGame
         // Draw player
         window.draw(*m_player);
 
+        // Draw visual effects
+        m_effectManager.draw(window);
+
         // Draw HUD
         window.draw(m_scoreText);
         window.draw(m_livesText);
         window.draw(m_levelText);
+        window.draw(m_progressBar);
         window.draw(m_fpsText);
+
+        // Draw respawn message if active
+        if (m_respawnMessage && m_respawnMessage->isActive())
+        {
+            m_respawnMessage->draw(window);
+        }
 
         // Draw message if level complete
         if (m_levelComplete)
@@ -227,7 +292,8 @@ namespace FishGame
     {
         // Update score display
         std::ostringstream scoreStream;
-        scoreStream << "Score: " << m_player->getScore() << "/100 (Total: " << m_totalScore << ")";
+        scoreStream << "Score: " << m_player->getScore() << "/" << LEVEL_COMPLETE_SCORE
+            << " (Total: " << (m_totalScore + m_player->getScore()) << ")";
         m_scoreText.setString(scoreStream.str());
 
         // Update lives display
@@ -237,8 +303,11 @@ namespace FishGame
 
         // Update level display
         std::ostringstream levelStream;
-        levelStream << "Level: " << m_currentLevel << " | Stage: " << m_player->getCurrentStage();
+        levelStream << "Level: " << m_currentLevel;
         m_levelText.setString(levelStream.str());
+
+        // Update progress bar
+        m_progressBar.setStageInfo(m_player->getCurrentStage(), m_player->getScore());
     }
 
     void PlayState::checkCollisions()
@@ -260,7 +329,12 @@ namespace FishGame
                         const Fish* fish = dynamic_cast<const Fish*>(entity.get());
                         if (fish)
                         {
-                            m_player->grow(fish->getPointValue());
+                            int points = fish->getPointValue();
+                            m_player->grow(points);
+
+                            // Create score popup
+                            createScorePopup(entity->getPosition(), points);
+
                             entity->destroy();
                         }
                     }
@@ -313,6 +387,7 @@ namespace FishGame
         else
         {
             m_player->die();
+            showRespawnMessage();
         }
     }
 
@@ -322,9 +397,11 @@ namespace FishGame
         m_totalScore += m_player->getScore();
         m_player->resetSize();
         m_levelComplete = false;
+        m_lastScore = 0;
 
         // Clear all entities for new level
         m_entities.clear();
+        m_effectManager.clear();
 
         // Update spawner for new level
         m_fishSpawner->setLevel(m_currentLevel);
@@ -332,19 +409,48 @@ namespace FishGame
 
     void PlayState::gameOver()
     {
-        // Restart the current level instead of going to menu
-        m_playerLives = 3; // Reset lives
-        m_player->resetSize(); // Reset to stage 1
-        m_entities.clear(); // Clear all fish
+        // Restart the current level
+        m_playerLives = INITIAL_LIVES;
+        m_player->resetSize();
+        m_entities.clear();
+        m_effectManager.clear();
+        m_lastScore = 0;
 
-        // Display game over message temporarily
-        m_messageText.setString("Game Over! Restarting Level " + std::to_string(m_currentLevel));
-        sf::FloatRect bounds = m_messageText.getLocalBounds();
-        m_messageText.setOrigin(bounds.width / 2.0f, bounds.height / 2.0f);
-        m_messageText.setPosition(getGame().getWindow().getSize().x / 2.0f,
+        // Display game over message
+        auto& font = getGame().getFonts().get(Fonts::Main);
+        sf::Text gameOverText("Game Over! Restarting Level " + std::to_string(m_currentLevel),
+            font, MESSAGE_FONT_SIZE);
+        gameOverText.setFillColor(sf::Color::Red);
+        gameOverText.setOutlineColor(sf::Color::Black);
+        gameOverText.setOutlineThickness(2.0f);
+
+        sf::FloatRect bounds = gameOverText.getLocalBounds();
+        gameOverText.setOrigin(bounds.width / 2.0f, bounds.height / 2.0f);
+        gameOverText.setPosition(getGame().getWindow().getSize().x / 2.0f,
             getGame().getWindow().getSize().y / 2.0f);
 
-        // Note: In future stages, you might want to add a delay here
-        // to show the game over message before restarting
+        m_respawnMessage = std::make_unique<FlashingText>(gameOverText, RESPAWN_MESSAGE_DURATION);
+    }
+
+    void PlayState::showRespawnMessage()
+    {
+        auto& font = getGame().getFonts().get(Fonts::Main);
+        sf::Text respawnText("Get Ready!", font, MESSAGE_FONT_SIZE);
+        respawnText.setFillColor(sf::Color::Yellow);
+        respawnText.setOutlineColor(sf::Color::Black);
+        respawnText.setOutlineThickness(2.0f);
+
+        sf::FloatRect bounds = respawnText.getLocalBounds();
+        respawnText.setOrigin(bounds.width / 2.0f, bounds.height / 2.0f);
+        respawnText.setPosition(getGame().getWindow().getSize().x / 2.0f,
+            getGame().getWindow().getSize().y / 2.0f);
+
+        m_respawnMessage = std::make_unique<FlashingText>(respawnText, RESPAWN_MESSAGE_DURATION);
+    }
+
+    void PlayState::createScorePopup(const sf::Vector2f& position, int points)
+    {
+        auto& font = getGame().getFonts().get(Fonts::Main);
+        m_effectManager.createEffect<ScorePopup>(position, points, font);
     }
 }

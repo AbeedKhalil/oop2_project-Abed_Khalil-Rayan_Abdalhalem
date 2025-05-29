@@ -10,6 +10,7 @@
 #include <random>
 #include <functional>
 #include <vector>
+#include <map>
 
 namespace FishGame
 {
@@ -18,9 +19,9 @@ namespace FishGame
     class FishFactory
     {
     public:
-        static std::unique_ptr<T> create()
+        static std::unique_ptr<T> create(int currentLevel)
         {
-            return std::make_unique<T>();
+            return std::make_unique<T>(currentLevel);
         }
     };
 
@@ -36,7 +37,7 @@ namespace FishGame
     class FishSpawner
     {
     public:
-        FishSpawner(const sf::Vector2u& windowSize);
+        explicit FishSpawner(const sf::Vector2u& windowSize);
         ~FishSpawner() = default;
 
         // Update spawning logic

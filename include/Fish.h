@@ -20,7 +20,7 @@ namespace FishGame
     class Fish : public Entity
     {
     public:
-        Fish(FishSize size, float speed, int pointValue);
+        Fish(FishSize size, float speed, int currentLevel);
         ~Fish() override = default;
 
         // Entity interface implementation
@@ -35,10 +35,13 @@ namespace FishGame
         void setDirection(float dirX, float dirY);
         void setWindowBounds(const sf::Vector2u& windowSize);
 
-        // AI behavior - now takes player separately
+        // AI behavior - now includes fleeing
         void updateAI(const std::vector<std::unique_ptr<Entity>>& entities,
             const Entity* player, sf::Time deltaTime);
         bool canEat(const Entity& other) const;
+
+        // Get point value based on fish size and level
+        static int getPointValue(FishSize size, int level);
 
     protected:
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
@@ -51,6 +54,7 @@ namespace FishGame
         FishSize m_size;
         float m_speed;
         int m_pointValue;
+        int m_currentLevel;
 
         // Window boundaries for wrapping/destruction
         sf::Vector2u m_windowBounds;

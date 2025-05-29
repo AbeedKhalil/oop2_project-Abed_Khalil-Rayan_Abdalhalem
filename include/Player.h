@@ -3,6 +3,7 @@
 
 #include "Entity.h"
 #include "Fish.h"
+#include "GameConstants.h"
 #include <SFML/Graphics.hpp>
 #include <memory>
 
@@ -39,7 +40,7 @@ namespace FishGame
 
         void setWindowBounds(const sf::Vector2u& windowSize);
 
-        // Get the starting score for a given stage
+        // Get the starting score for a given stage - MUST BE STATIC
         static int getStageStartingScore(int stage);
 
     protected:
@@ -61,25 +62,8 @@ namespace FishGame
 
         // Invulnerability after respawn
         sf::Time m_invulnerabilityTimer;
-        static const sf::Time m_invulnerabilityDuration;
-
-        // Movement parameters
-        static constexpr float m_baseSpeed = 400.0f;
-        static constexpr float m_acceleration = 10.0f;
-        static constexpr float m_deceleration = 8.0f;
-        static constexpr float m_maxSpeed = 600.0f;
-
-        // Size parameters
-        static constexpr float m_baseRadius = 20.0f;
-        static constexpr float m_growthFactor = 1.5f;
 
         // Window bounds
         sf::Vector2u m_windowBounds;
-
-        // Stage thresholds
-        static constexpr int m_stage1Threshold = 0;
-        static constexpr int m_stage2Threshold = 33;
-        static constexpr int m_stage3Threshold = 66;
-        static constexpr int m_maxScore = 100;
     };
 }

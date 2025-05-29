@@ -1,18 +1,22 @@
 // Fish.cpp
 #include "Fish.h"
 #include "CollisionDetector.h"
+#include "GameConstants.h"
+#include "Player.h"
 #include <cmath>
 #include <algorithm>
 
 namespace FishGame
 {
-    Fish::Fish(FishSize size, float speed, int pointValue)
+    using namespace Constants;
+
+    Fish::Fish(FishSize size, float speed, int currentLevel)
         : Entity()
         , m_shape()
         , m_size(size)
         , m_speed(speed)
-        , m_pointValue(pointValue)
-        , m_windowBounds(1920, 1080)
+        , m_currentLevel(currentLevel)
+        , m_windowBounds(WINDOW_WIDTH, WINDOW_HEIGHT)
         , m_baseColor(sf::Color::White)
         , m_outlineColor(sf::Color::Black)
         , m_outlineThickness(1.0f)
@@ -21,15 +25,18 @@ namespace FishGame
         switch (m_size)
         {
         case FishSize::Small:
-            m_radius = 15.0f;
+            m_radius = SMALL_FISH_RADIUS;
             break;
         case FishSize::Medium:
-            m_radius = 25.0f;
+            m_radius = MEDIUM_FISH_RADIUS;
             break;
         case FishSize::Large:
-            m_radius = 35.0f;
+            m_radius = LARGE_FISH_RADIUS;
             break;
         }
+
+        // Set point value based on size and level
+        m_pointValue = getPointValue(m_size, m_currentLevel);
 
         m_shape.setRadius(m_radius);
         m_shape.setOrigin(m_radius, m_radius);
@@ -93,27 +100,78 @@ namespace FishGame
     void Fish::updateAI(const std::vector<std::unique_ptr<Entity>>& entities,
         const Entity* player, sf::Time deltaTime)
     {
-        // Only medium and large fish have following behavior
+        // Only medium and large fish have AI behavior
         if (m_size == FishSize::Small)
             return;
 
-        // Find closest prey (fish or player) within close range
-        const Entity* closestPrey = nullptr;
-        float closestDistance = std::numeric_limits<float>::max();
-        const float detectionRange = 55.0f; // Small detection range - only follow when close
-
-        // Check if player is close and can be targeted
+        // Check if we should flee from the player
         if (player && player->isAlive())
         {
-            float distance = CollisionDetector::getDistance(m_position, player->getPosition());
-            if (distance < detectionRange && distance < closestDistance)
+            const Player* playerPtr = dynamic_cast<const Player*>(player);
+            if (playerPtr)
             {
-                closestDistance = distance;
-                closestPrey = player;
+                float distance = CollisionDetector::getDistance(m_position, player->getPosition());
+
+                // Check if player is larger and within flee range
+                FishSize playerSize = playerPtr->getCurrentFishSize();
+
+                // Fix: Medium fish flee from Medium/Large players, Large fish flee from Large players
+                bool shouldFlee = false;
+                if (m_size == FishSize::Medium)
+                {
+                    shouldFlee = (playerSize == FishSize::Medium || playerSize == FishSize::Large);
+                }
+                else if (m_size == FishSize::Large)
+                {
+                    shouldFlee = (playerSize == FishSize::Large);
+                }
+
+                if (shouldFlee && distance < AI_FLEE_RANGE)
+                {
+                    // Flee from player - move in opposite direction
+                    sf::Vector2f fleeDirection = m_position - player->getPosition();
+                    setDirection(fleeDirection.x, fleeDirection.y);
+                    return; // Don't hunt if we're fleeing
+                }
             }
         }
 
-        // Check other fish entities
+        // If not fleeing, hunt for smaller prey
+        const Entity* closestPrey = nullptr;
+        float closestDistance = std::numeric_limits<float>::max();
+
+        // Check if player is close and can be eaten
+        if (player && player->isAlive())
+        {
+            const Player* playerPtr = dynamic_cast<const Player*>(player);
+            if (playerPtr)
+            {
+                FishSize playerSize = playerPtr->getCurrentFishSize();
+
+                // Check if this fish can eat the player
+                bool canEatPlayer = false;
+                if (m_size == FishSize::Medium)
+                {
+                    canEatPlayer = (playerSize == FishSize::Small);
+                }
+                else if (m_size == FishSize::Large)
+                {
+                    canEatPlayer = (playerSize == FishSize::Small || playerSize == FishSize::Medium);
+                }
+
+                if (canEatPlayer)
+                {
+                    float distance = CollisionDetector::getDistance(m_position, player->getPosition());
+                    if (distance < AI_DETECTION_RANGE && distance < closestDistance)
+                    {
+                        closestDistance = distance;
+                        closestPrey = player;
+                    }
+                }
+            }
+        }
+
+        // Check other fish entities for prey
         for (const auto& entity : entities)
         {
             if (entity.get() == this || !entity->isAlive())
@@ -123,7 +181,7 @@ namespace FishGame
             if (canEat(*entity))
             {
                 float distance = CollisionDetector::getDistance(m_position, entity->getPosition());
-                if (distance < closestDistance && distance < detectionRange)
+                if (distance < closestDistance && distance < AI_DETECTION_RANGE)
                 {
                     closestDistance = distance;
                     closestPrey = entity.get();
@@ -157,5 +215,28 @@ namespace FishGame
 
         // Can eat smaller fish
         return static_cast<int>(m_size) > static_cast<int>(otherFish->getSize());
+    }
+
+    int Fish::getPointValue(FishSize size, int level)
+    {
+        if (level == 1)
+        {
+            switch (size)
+            {
+            case FishSize::Small: return 3;
+            case FishSize::Medium: return 6;
+            case FishSize::Large: return 9;
+            }
+        }
+        else // Level 2 and above
+        {
+            switch (size)
+            {
+            case FishSize::Small: return 2;
+            case FishSize::Medium: return 4;
+            case FishSize::Large: return 8;
+            }
+        }
+        return 1; // Default
     }
 }
