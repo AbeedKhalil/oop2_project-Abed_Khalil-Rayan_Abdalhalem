@@ -2,11 +2,7 @@
 
 #include "BonusItem.h"
 #include "PowerUp.h"
-#include <SFML/Graphics.hpp>
-#include <memory>
 #include <vector>
-#include <random>
-#include <functional>
 #include <algorithm>
 
 namespace FishGame

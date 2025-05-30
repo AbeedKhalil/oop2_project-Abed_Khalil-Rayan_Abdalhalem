@@ -1,14 +1,10 @@
 #pragma once
 
-#include "Entity.h"
 #include "Fish.h"
 #include "GrowthMeter.h"
 #include "FrenzySystem.h"
 #include "PowerUp.h"
 #include "ScoreSystem.h"
-#include <SFML/Graphics.hpp>
-#include <memory>
-#include <functional>
 
 namespace FishGame
 {

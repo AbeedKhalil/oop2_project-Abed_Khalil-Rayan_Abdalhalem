@@ -1,9 +1,6 @@
 #pragma once
 
 #include "BonusItem.h"
-#include <SFML/Graphics.hpp>
-#include <memory>
-#include <functional>
 
 namespace FishGame
 {
