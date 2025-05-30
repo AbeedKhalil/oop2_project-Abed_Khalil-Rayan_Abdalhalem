@@ -1,4 +1,3 @@
-// CollisionDetector.h
 #pragma once
 
 #include "Entity.h"

@@ -1,9 +1,8 @@
-// ProgressBar.cpp
 #include "ProgressBar.h"
 #include <sstream>
 #include <iomanip>
 
-namespace FishGame 
+namespace FishGame
 {
     using namespace Constants;
 
@@ -44,7 +43,7 @@ namespace FishGame
 
     void ProgressBar::setPosition(float x, float y)
     {
-        m_position = sf::Vector2f(x, y + 10.0f );
+        m_position = sf::Vector2f(x, y + 10.0f);
         m_background.setPosition(m_position);
         m_fillBar.setPosition(m_position);
         m_outline.setPosition(m_position);

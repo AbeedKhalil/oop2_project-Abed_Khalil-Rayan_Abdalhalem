@@ -1,4 +1,3 @@
-// BonusItem.cpp
 #include "BonusItem.h"
 #include <cmath>
 #include <algorithm>

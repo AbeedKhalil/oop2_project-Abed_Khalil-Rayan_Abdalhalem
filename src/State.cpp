@@ -1,4 +1,3 @@
-// State.cpp
 #include "State.h"
 #include "Game.h"
 

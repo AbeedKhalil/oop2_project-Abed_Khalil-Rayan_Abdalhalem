@@ -1,4 +1,3 @@
-// BonusItemManager.h
 #pragma once
 
 #include "BonusItem.h"

@@ -1,4 +1,3 @@
-// OysterManager.h
 #pragma once
 
 #include "BonusItem.h"

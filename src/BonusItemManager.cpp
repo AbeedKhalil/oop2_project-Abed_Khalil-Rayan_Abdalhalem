@@ -1,4 +1,3 @@
-// BonusItemManager.cpp
 #include "BonusItemManager.h"
 #include <algorithm>
 #include <numeric>

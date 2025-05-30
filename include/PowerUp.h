@@ -1,4 +1,3 @@
-// PowerUp.h
 #pragma once
 
 #include "BonusItem.h"

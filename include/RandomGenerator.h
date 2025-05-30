@@ -1,4 +1,3 @@
-// RandomGenerator.h
 #pragma once
 
 #include <random>
@@ -32,16 +31,16 @@ namespace FishGame
         // Reset range
         void setRange(T min, T max)
         {
-            m_distribution = std::conditional_t<
+            m_distribution = std::conditional_t
                 std::is_integral_v<T>,
                 std::uniform_int_distribution<T>,
                 std::uniform_real_distribution<T>
-            >(min, max);
+            > (min, max);
         }
 
     private:
         std::mt19937 m_engine;
-        std::conditional_t<
+        std::conditional_t
             std::is_integral_v<T>,
             std::uniform_int_distribution<T>,
             std::uniform_real_distribution<T>
