@@ -4,11 +4,18 @@
 #include "State.h"
 #include "Player.h"
 #include "FishSpawner.h"
-#include "VisualEffects.h"
-#include "ProgressBar.h"
+#include "GrowthMeter.h"
+#include "FrenzySystem.h"
+#include "PowerUp.h"
+#include "ScoreSystem.h"
+#include "BonusItem.h"
+#include "BonusItemManager.h"
+#include "OysterManager.h"
 #include <SFML/Graphics.hpp>
 #include <memory>
 #include <vector>
+#include <random>
+#include <functional>
 
 namespace FishGame
 {
@@ -23,23 +30,44 @@ namespace FishGame
         void render() override;
 
     private:
+        // Core update methods
         void updateHUD();
+        void updateGameplay(sf::Time deltaTime);
+        void updateBonusItems(sf::Time deltaTime);
+        void updatePowerUps(sf::Time deltaTime);
+
+        // Collision handling
         void checkCollisions();
+        void handleFishCollision(Entity& fish);
+        void handleBonusItemCollision(BonusItem& item);
+        void handlePowerUpCollision(PowerUp& powerUp);
+        void checkTailBiteOpportunities();
+
+        // Game flow
         void handlePlayerDeath();
         void advanceLevel();
         void gameOver();
-        void showRespawnMessage();
-        void createScorePopup(const sf::Vector2f& position, int points);
+        void completeLevel();
+        void showEndOfLevelStats();
+
+        // Helper methods
+        void updateLevelDifficulty();
+        void createParticleEffect(sf::Vector2f position, sf::Color color);
 
     private:
+        // Core game objects
         std::unique_ptr<Player> m_player;
         std::unique_ptr<FishSpawner> m_fishSpawner;
         std::vector<std::unique_ptr<Entity>> m_entities;
+        std::vector<std::unique_ptr<BonusItem>> m_bonusItems;
 
-        // Visual effects
-        EffectManager m_effectManager;
-        std::unique_ptr<FlashingText> m_respawnMessage;
-        sf::Time m_respawnMessageTimer;
+        // Game systems
+        std::unique_ptr<GrowthMeter> m_growthMeter;
+        std::unique_ptr<FrenzySystem> m_frenzySystem;
+        std::unique_ptr<PowerUpManager> m_powerUpManager;
+        std::unique_ptr<ScoreSystem> m_scoreSystem;
+        std::unique_ptr<BonusItemManager> m_bonusItemManager;
+        std::unique_ptr<FixedOysterManager> m_oysterManager;
 
         // HUD elements
         sf::Text m_scoreText;
@@ -47,26 +75,53 @@ namespace FishGame
         sf::Text m_levelText;
         sf::Text m_fpsText;
         sf::Text m_messageText;
-        ProgressBar m_progressBar;
-
-        // Score flash effect
-        sf::Time m_scoreFlashTimer;
-        sf::Color m_originalScoreColor;
+        sf::Text m_chainText;
+        sf::Text m_powerUpText;
 
         // Game state
         int m_currentLevel;
         int m_playerLives;
         int m_totalScore;
-        int m_lastScore;
+        sf::Time m_levelStartTime;
+        sf::Time m_levelTime;
 
         // Level transition
         bool m_levelComplete;
         sf::Time m_levelTransitionTimer;
         static const sf::Time m_levelTransitionDuration;
 
+        // End-of-level stats
+        struct LevelStats
+        {
+            sf::Time completionTime;
+            bool reachedMaxSize;
+            bool tookNoDamage;
+            int timeBonus;
+            int growthBonus;
+            int untouchableBonus;
+            int totalBonus;
+        };
+        LevelStats m_levelStats;
+
         // Performance tracking
         sf::Time m_fpsUpdateTime;
         int m_frameCount;
         float m_currentFPS;
+
+        // Visual effects
+        struct ParticleEffect
+        {
+            sf::CircleShape shape;
+            sf::Vector2f velocity;
+            sf::Time lifetime;
+            float alpha;
+        };
+        std::vector<ParticleEffect> m_particles;
+
+        // Random number generation - ENSURE THIS IS DECLARED
+        std::mt19937 m_randomEngine;
+
+        // Constants - Changed from constexpr to const
+        static const sf::Time m_targetLevelTime;
     };
 }

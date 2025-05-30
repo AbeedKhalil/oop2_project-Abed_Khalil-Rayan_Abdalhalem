@@ -3,6 +3,8 @@
 
 #include <SFML/Graphics.hpp>
 #include <memory>
+#include <set>
+#include <string>
 
 namespace FishGame
 {
@@ -53,6 +55,12 @@ namespace FishGame
         float getRadius() const { return m_radius; }
         void setRadius(float radius) { m_radius = radius; }
 
+        // Tag system for advanced behaviors
+        void addTag(const std::string& tag) { m_tags.insert(tag); }
+        void removeTag(const std::string& tag) { m_tags.erase(tag); }
+        bool hasTag(const std::string& tag) const { return m_tags.find(tag) != m_tags.end(); }
+        const std::set<std::string>& getTags() const { return m_tags; }
+
     protected:
         // Protected draw function for derived classes
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override = 0;
@@ -65,5 +73,8 @@ namespace FishGame
         sf::Vector2f m_velocity;
         float m_radius;
         bool m_isAlive;
+
+        // Tag system for flexible entity behaviors
+        std::set<std::string> m_tags;
     };
 }
