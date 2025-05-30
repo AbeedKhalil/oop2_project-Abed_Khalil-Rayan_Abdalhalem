@@ -1,13 +1,7 @@
 #pragma once
 
-#include "Fish.h"
 #include "GenericFish.h"
 #include "GenericSpawner.h"
-#include <SFML/Graphics.hpp>
-#include <memory>
-#include <random>
-#include <functional>
-#include <vector>
 #include <map>
 
 namespace FishGame

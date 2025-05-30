@@ -5,16 +5,8 @@
 #include "FishSpawner.h"
 #include "GrowthMeter.h"
 #include "FrenzySystem.h"
-#include "PowerUp.h"
-#include "ScoreSystem.h"
-#include "BonusItem.h"
 #include "BonusItemManager.h"
 #include "OysterManager.h"
-#include <SFML/Graphics.hpp>
-#include <memory>
-#include <vector>
-#include <random>
-#include <functional>
 
 namespace FishGame
 {

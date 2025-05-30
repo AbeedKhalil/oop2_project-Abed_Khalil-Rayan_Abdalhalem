@@ -1,10 +1,7 @@
 #pragma once
 
-#include <SFML/Graphics.hpp>
-#include <memory>
 #include <array>
 #include <stack>
-#include <functional>
 #include "ResourceHolder.h"
 #include "State.h"
 #include "Player.h"
