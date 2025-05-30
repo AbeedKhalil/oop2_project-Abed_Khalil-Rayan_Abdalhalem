@@ -1,8 +1,6 @@
-// FishSpawner.cpp
 #include "FishSpawner.h"
 #include "GameConstants.h"
 #include <algorithm>
-#include <numeric>
 
 namespace FishGame
 {
@@ -11,106 +9,106 @@ namespace FishGame
     FishSpawner::FishSpawner(const sf::Vector2u& windowSize)
         : m_windowSize(windowSize)
         , m_spawnedFish()
-        , m_randomEngine(std::random_device{}())
-        , m_yDistribution(100.0f, windowSize.y - 100.0f)
-        , m_spawnChance(0.0f, 1.0f)
-        , m_smallFishTimer(sf::Time::Zero)
-        , m_mediumFishTimer(sf::Time::Zero)
-        , m_largeFishTimer(sf::Time::Zero)
+        , m_smallSpawner()
+        , m_mediumSpawner()
+        , m_largeSpawner()
         , m_currentLevel(1)
+        , m_randomEngine(std::random_device{}())
     {
         // Initialize spawn configurations for each level
-        // Level 1: All fish types with lower spawn rates
         m_smallFishConfig[1] = { 1.5f, 100.0f, m_windowSize.y - 100.0f, true };
         m_mediumFishConfig[1] = { 0.8f, 150.0f, m_windowSize.y - 150.0f, false };
         m_largeFishConfig[1] = { 0.4f, 200.0f, m_windowSize.y - 200.0f, true };
 
-        // Level 2: Increased spawn rates
         m_smallFishConfig[2] = { 2.0f, 100.0f, m_windowSize.y - 100.0f, true };
         m_mediumFishConfig[2] = { 1.2f, 150.0f, m_windowSize.y - 150.0f, false };
         m_largeFishConfig[2] = { 0.6f, 200.0f, m_windowSize.y - 200.0f, true };
 
-        // Level 3+: Higher spawn rates
         m_smallFishConfig[3] = { 2.5f, 100.0f, m_windowSize.y - 100.0f, true };
         m_mediumFishConfig[3] = { 1.5f, 150.0f, m_windowSize.y - 150.0f, false };
         m_largeFishConfig[3] = { 0.8f, 200.0f, m_windowSize.y - 200.0f, true };
+
+        // Setup spawners
+        configureSpawnersForLevel(1);
     }
 
     void FishSpawner::update(sf::Time deltaTime, int currentLevel)
     {
-        m_currentLevel = currentLevel;
-        updateSpawnTimers(deltaTime);
+        if (currentLevel != m_currentLevel)
+        {
+            setLevel(currentLevel);
+        }
+        updateSpawners(deltaTime);
     }
 
     void FishSpawner::setLevel(int level)
     {
         m_currentLevel = std::max(1, level);
+        configureSpawnersForLevel(m_currentLevel);
     }
 
-    template<typename FishType>
-    void FishSpawner::spawnFish(bool fromLeft)
+    void FishSpawner::updateSpawners(sf::Time deltaTime)
     {
-        auto fish = FishFactory<FishType>::create(m_currentLevel);
+        // Update all spawners
+        m_smallSpawner.update(deltaTime);
+        m_mediumSpawner.update(deltaTime);
+        m_largeSpawner.update(deltaTime);
 
-        // Set random Y position
-        float yPos = m_yDistribution(m_randomEngine);
+        // Collect spawned fish
+        auto smallFish = m_smallSpawner.collectSpawned();
+        auto mediumFish = m_mediumSpawner.collectSpawned();
+        auto largeFish = m_largeSpawner.collectSpawned();
 
-        // Set starting position based on direction
-        float xPos = fromLeft ? -SPAWN_MARGIN : m_windowSize.x + SPAWN_MARGIN;
-        fish->setPosition(xPos, yPos);
-
-        // Set direction
-        float dirX = fromLeft ? 1.0f : -1.0f;
-        fish->setDirection(dirX, 0.0f);
-
-        // Set window bounds
-        fish->setWindowBounds(m_windowSize);
-
-        m_spawnedFish.push_back(std::move(fish));
+        // Move all to main container
+        std::move(smallFish.begin(), smallFish.end(), std::back_inserter(m_spawnedFish));
+        std::move(mediumFish.begin(), mediumFish.end(), std::back_inserter(m_spawnedFish));
+        std::move(largeFish.begin(), largeFish.end(), std::back_inserter(m_spawnedFish));
     }
 
-    void FishSpawner::updateSpawnTimers(sf::Time deltaTime)
+    void FishSpawner::configureSpawnersForLevel(int level)
     {
-        // Get current level configs (use level 3 config for levels > 3)
-        int configLevel = std::min(m_currentLevel, 3);
+        int configLevel = std::min(level, 3);
 
+        // Configure small fish spawner
         const auto& smallConfig = m_smallFishConfig[configLevel];
+        SpawnerConfig<SmallFish> smallSpawnerConfig;
+        smallSpawnerConfig.spawnRate = smallConfig.spawnRate;
+        smallSpawnerConfig.minBounds = sf::Vector2f(smallConfig.fromLeft ? -SPAWN_MARGIN : m_windowSize.x + SPAWN_MARGIN, smallConfig.minY);
+        smallSpawnerConfig.maxBounds = sf::Vector2f(smallConfig.fromLeft ? -SPAWN_MARGIN : m_windowSize.x + SPAWN_MARGIN, smallConfig.maxY);
+        smallSpawnerConfig.customizer = [this, &smallConfig](SmallFish& fish) {
+            fish.setDirection(smallConfig.fromLeft ? 1.0f : -1.0f, 0.0f);
+            fish.setWindowBounds(m_windowSize);
+            };
+
+        m_smallSpawner.setConfig(smallSpawnerConfig);
+        m_smallSpawner.setFactory([level]() { return std::make_unique<SmallFish>(level); });
+
+        // Configure medium fish spawner
         const auto& mediumConfig = m_mediumFishConfig[configLevel];
+        SpawnerConfig<MediumFish> mediumSpawnerConfig;
+        mediumSpawnerConfig.spawnRate = mediumConfig.spawnRate;
+        mediumSpawnerConfig.minBounds = sf::Vector2f(mediumConfig.fromLeft ? -SPAWN_MARGIN : m_windowSize.x + SPAWN_MARGIN, mediumConfig.minY);
+        mediumSpawnerConfig.maxBounds = sf::Vector2f(mediumConfig.fromLeft ? -SPAWN_MARGIN : m_windowSize.x + SPAWN_MARGIN, mediumConfig.maxY);
+        mediumSpawnerConfig.customizer = [this, &mediumConfig](MediumFish& fish) {
+            fish.setDirection(mediumConfig.fromLeft ? 1.0f : -1.0f, 0.0f);
+            fish.setWindowBounds(m_windowSize);
+            };
+
+        m_mediumSpawner.setConfig(mediumSpawnerConfig);
+        m_mediumSpawner.setFactory([level]() { return std::make_unique<MediumFish>(level); });
+
+        // Configure large fish spawner
         const auto& largeConfig = m_largeFishConfig[configLevel];
+        SpawnerConfig<LargeFish> largeSpawnerConfig;
+        largeSpawnerConfig.spawnRate = largeConfig.spawnRate;
+        largeSpawnerConfig.minBounds = sf::Vector2f(largeConfig.fromLeft ? -SPAWN_MARGIN : m_windowSize.x + SPAWN_MARGIN, largeConfig.minY);
+        largeSpawnerConfig.maxBounds = sf::Vector2f(largeConfig.fromLeft ? -SPAWN_MARGIN : m_windowSize.x + SPAWN_MARGIN, largeConfig.maxY);
+        largeSpawnerConfig.customizer = [this, &largeConfig](LargeFish& fish) {
+            fish.setDirection(largeConfig.fromLeft ? 1.0f : -1.0f, 0.0f);
+            fish.setWindowBounds(m_windowSize);
+            };
 
-        // Update spawn timers and spawn fish accordingly
-        if (shouldSpawn(m_smallFishTimer, smallConfig.spawnRate, deltaTime))
-        {
-            spawnFish<SmallFish>(smallConfig.fromLeft);
-            m_smallFishTimer = sf::Time::Zero;
-        }
-
-        if (shouldSpawn(m_mediumFishTimer, mediumConfig.spawnRate, deltaTime))
-        {
-            spawnFish<MediumFish>(mediumConfig.fromLeft);
-            m_mediumFishTimer = sf::Time::Zero;
-        }
-
-        if (shouldSpawn(m_largeFishTimer, largeConfig.spawnRate, deltaTime))
-        {
-            spawnFish<LargeFish>(largeConfig.fromLeft);
-            m_largeFishTimer = sf::Time::Zero;
-        }
+        m_largeSpawner.setConfig(largeSpawnerConfig);
+        m_largeSpawner.setFactory([level]() { return std::make_unique<LargeFish>(level); });
     }
-
-    bool FishSpawner::shouldSpawn(sf::Time& timer, float spawnRate, sf::Time deltaTime)
-    {
-        if (spawnRate <= 0.0f)
-            return false;
-
-        timer += deltaTime;
-        sf::Time spawnInterval = sf::seconds(1.0f / spawnRate);
-
-        return timer >= spawnInterval;
-    }
-
-    // Explicit template instantiations
-    template void FishSpawner::spawnFish<SmallFish>(bool);
-    template void FishSpawner::spawnFish<MediumFish>(bool);
-    template void FishSpawner::spawnFish<LargeFish>(bool);
 }

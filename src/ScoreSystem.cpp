@@ -1,4 +1,3 @@
-// ScoreSystem.cpp
 #include "ScoreSystem.h"
 #include <algorithm>
 #include <sstream>

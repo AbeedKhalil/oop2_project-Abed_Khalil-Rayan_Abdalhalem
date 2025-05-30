@@ -1,4 +1,3 @@
-// Entity.cpp
 #include "Entity.h"
 
 namespace FishGame

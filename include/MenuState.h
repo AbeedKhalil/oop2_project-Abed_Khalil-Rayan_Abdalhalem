@@ -1,4 +1,3 @@
-// MenuState.h
 #pragma once
 
 #include "State.h"

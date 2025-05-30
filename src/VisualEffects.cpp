@@ -1,4 +1,3 @@
-// VisualEffects.cpp
 #include "VisualEffects.h"
 #include "GameConstants.h"
 #include <cmath>

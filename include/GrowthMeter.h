@@ -1,4 +1,3 @@
-// GrowthMeter.h
 #pragma once
 
 #include <SFML/Graphics.hpp>
@@ -67,7 +66,6 @@ namespace FishGame
         static constexpr float m_height = 30.0f;
         static constexpr float m_borderThickness = 2.0f;
 
-        // Stage progression
         // Stage progression - 4 stages total
         static constexpr float m_stage1Progress = 100.0f;  // Points to reach stage 2
         static constexpr float m_stage2Progress = 150.0f;  // Points to reach stage 3

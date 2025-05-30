@@ -1,4 +1,3 @@
-// GrowthMeter.cpp
 #include "GrowthMeter.h"
 #include <algorithm>
 #include <sstream>

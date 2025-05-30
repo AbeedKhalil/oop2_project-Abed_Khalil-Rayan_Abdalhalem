@@ -1,4 +1,3 @@
-// BonusItem.h
 #pragma once
 
 #include "Entity.h"

@@ -1,4 +1,3 @@
-// FrenzySystem.cpp
 #include "FrenzySystem.h"
 #include <algorithm>
 #include <sstream>

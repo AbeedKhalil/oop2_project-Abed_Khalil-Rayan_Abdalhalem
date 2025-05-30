@@ -1,4 +1,3 @@
-// State.h
 #pragma once
 
 #include <SFML/Graphics.hpp>

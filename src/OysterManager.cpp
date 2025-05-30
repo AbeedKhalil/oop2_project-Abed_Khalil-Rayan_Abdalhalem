@@ -1,4 +1,3 @@
-// OysterManager.cpp
 #include "OysterManager.h"
 #include <algorithm>
 

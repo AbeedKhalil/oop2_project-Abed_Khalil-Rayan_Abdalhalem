@@ -1,4 +1,3 @@
-// Game.cpp
 #include "Game.h"
 #include "MenuState.h"
 #include "PlayState.h"

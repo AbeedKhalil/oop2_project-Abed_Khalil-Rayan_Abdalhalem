@@ -1,4 +1,3 @@
-// PowerUp.cpp
 #include "PowerUp.h"
 #include <algorithm>
 #include <cmath>

@@ -1,4 +1,3 @@
-// Player.h
 #pragma once
 
 #include "Entity.h"

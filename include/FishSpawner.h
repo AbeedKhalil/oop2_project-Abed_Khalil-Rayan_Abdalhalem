@@ -1,10 +1,8 @@
-// FishSpawner.h
 #pragma once
 
 #include "Fish.h"
-#include "SmallFish.h"
-#include "MediumFish.h"
-#include "LargeFish.h"
+#include "GenericFish.h"
+#include "GenericSpawner.h"
 #include <SFML/Graphics.hpp>
 #include <memory>
 #include <random>
@@ -14,17 +12,6 @@
 
 namespace FishGame
 {
-    // Template class for spawning different fish types
-    template<typename T>
-    class FishFactory
-    {
-    public:
-        static std::unique_ptr<T> create(int currentLevel)
-        {
-            return std::make_unique<T>(currentLevel);
-        }
-    };
-
     // Fish spawning configuration
     struct SpawnConfig
     {
@@ -51,33 +38,24 @@ namespace FishGame
         void setLevel(int level);
 
     private:
-        // Template method for spawning specific fish type
-        template<typename FishType>
-        void spawnFish(bool fromLeft);
-
-        // Spawn timing control
-        void updateSpawnTimers(sf::Time deltaTime);
-        bool shouldSpawn(sf::Time& timer, float spawnRate, sf::Time deltaTime);
+        void updateSpawners(sf::Time deltaTime);
+        void configureSpawnersForLevel(int level);
 
     private:
         sf::Vector2u m_windowSize;
         std::vector<std::unique_ptr<Entity>> m_spawnedFish;
 
-        // Random number generation
-        std::mt19937 m_randomEngine;
-        std::uniform_real_distribution<float> m_yDistribution;
-        std::uniform_real_distribution<float> m_spawnChance;
+        // Generic spawners for each fish type
+        GenericSpawner<SmallFish> m_smallSpawner;
+        GenericSpawner<MediumFish> m_mediumSpawner;
+        GenericSpawner<LargeFish> m_largeSpawner;
 
-        // Spawn timers
-        sf::Time m_smallFishTimer;
-        sf::Time m_mediumFishTimer;
-        sf::Time m_largeFishTimer;
-
-        // Level-based spawn rates (fish per second)
+        // Level-based spawn configurations
         std::map<int, SpawnConfig> m_smallFishConfig;
         std::map<int, SpawnConfig> m_mediumFishConfig;
         std::map<int, SpawnConfig> m_largeFishConfig;
 
         int m_currentLevel;
+        std::mt19937 m_randomEngine;
     };
 }

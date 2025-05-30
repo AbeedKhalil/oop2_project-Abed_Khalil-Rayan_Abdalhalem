@@ -1,4 +1,3 @@
-// MenuState.cpp
 #include "MenuState.h"
 #include "Game.h"
 #include <cmath>

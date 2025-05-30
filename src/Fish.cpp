@@ -1,4 +1,3 @@
-// Fish.cpp
 #include "Fish.h"
 #include "CollisionDetector.h"
 #include "GameConstants.h"
