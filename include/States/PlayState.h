@@ -62,6 +62,7 @@ namespace FishGame
         // Helper methods
         void updateLevelDifficulty();
         void createParticleEffect(sf::Vector2f position, sf::Color color);
+        void createScoreReductionEffect(sf::Vector2f position, int points);
 
     private:
         // Core game objects

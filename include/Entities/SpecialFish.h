@@ -5,6 +5,8 @@
 #include "GenericFish.h"
 #include <cmath>
 #include <algorithm>
+#include <vector>
+#include <memory>
 
 namespace FishGame
 {
@@ -66,7 +68,7 @@ namespace FishGame
         static constexpr float m_dashDuration = 1.0f;
     };
 
-    // Pufferfish - Inflates when threatened
+    // Pufferfish - Inflates periodically
     class Pufferfish : public AdvancedFish
     {
     public:
@@ -78,29 +80,42 @@ namespace FishGame
         void update(sf::Time deltaTime) override;
         bool canEat(const Entity& other) const;
 
-        // Inflation mechanics
-        void startInflation();
-        bool isInflated() const { return m_inflationLevel > 0.5f; }
+        // Inflation state
+        bool isInflated() const { return m_isPuffed; }
+
+        // Push mechanics
+        void pushEntity(Entity& entity);
+        bool canPushEntity(const Entity& entity) const;
 
     protected:
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
         void updateVisual() override;
 
     private:
-        void updateInflation(sf::Time deltaTime);
-        void checkThreats(const std::vector<std::unique_ptr<Entity>>& entities);
+        void updateCycleState(sf::Time deltaTime);
+        void transitionToInflated();
+        void transitionToNormal();
 
     private:
+        // State management
+        bool m_isPuffed;
+        sf::Time m_stateTimer;
         float m_inflationLevel;  // 0.0 = normal, 1.0 = fully inflated
         float m_normalRadius;
-        sf::Time m_inflationTimer;
-        sf::Time m_threatCheckTimer;
+
+        // Visual elements
         std::vector<sf::CircleShape> m_spikes;
 
+        // Push mechanics
+        static constexpr float m_pushDistance = 10.0f;
+        static constexpr float m_pushForce = 500.0f;
+
+        // Timing constants
+        static constexpr float m_normalStateDuration = 5.0f;  // 5 seconds normal
+        static constexpr float m_puffedStateDuration = 3.0f;  // 3 seconds puffed
         static constexpr float m_inflationSpeed = 3.0f;
-        static constexpr float m_deflationSpeed = 1.0f;
+        static constexpr float m_deflationSpeed = 3.0f;
         static constexpr float m_inflatedRadiusMultiplier = 2.0f;
-        static constexpr float m_threatRange = 100.0f;
         static constexpr int m_spikeCount = 8;
     };
 
@@ -116,12 +131,19 @@ namespace FishGame
 
         void update(sf::Time deltaTime) override;
 
+        // Enhanced AI for evasive behavior
+        void updateAI(const std::vector<std::unique_ptr<Entity>>& entities,
+            const Entity* player, sf::Time deltaTime) override;
+
     protected:
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
         void updateVisual() override;
 
     private:
         void updateErraticMovement(sf::Time deltaTime);
+        void updateEvasiveMovement(const std::vector<std::unique_ptr<Entity>>& entities,
+            const Entity* player, sf::Time deltaTime);
+        sf::Vector2f calculateEscapeVector(const std::vector<const Entity*>& threats);
 
     private:
         int m_bonusPoints;
@@ -129,7 +151,17 @@ namespace FishGame
         std::vector<sf::CircleShape> m_fins;
         sf::Time m_directionChangeTimer;
 
-        static constexpr float m_directionChangeInterval = 0.5f;
+        // Enhanced AI properties
+        const Entity* m_currentThreat;
+        bool m_isEvading;
+        sf::Time m_evasionTimer;
+
+        // Movement parameters
+        static constexpr float m_baseSpeed = 280.0f;  // Increased from 200.0f
+        static constexpr float m_evadeSpeed = 400.0f; // Fast escape speed
+        static constexpr float m_directionChangeInterval = 0.3f; // Faster reactions
+        static constexpr float m_threatDetectionRange = 150.0f;
+        static constexpr float m_panicRange = 80.0f;
         static constexpr int m_baseBonus = 50;
     };
 

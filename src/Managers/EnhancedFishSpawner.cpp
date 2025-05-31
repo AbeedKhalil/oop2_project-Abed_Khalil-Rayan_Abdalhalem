@@ -1,5 +1,6 @@
 #include "EnhancedFishSpawner.h"
 #include "FishFactory.h"
+#include "SpecialFish.h"
 #include <algorithm>
 
 namespace FishGame
@@ -12,7 +13,7 @@ namespace FishGame
         , m_specialConfig()
         , m_schoolingSystem(nullptr)
         , m_schoolChanceDist(0.0f, 1.0f)
-        , m_schoolSizeDist(2, 4)  // Reduced from (3, 6) to (2, 4)
+        , m_schoolSizeDist(2, 3)  // Reduced from (2, 4) to (2, 3) - smaller schools
     {
         // Initialize special spawn timers
         m_specialSpawnTimers["barracuda"] = sf::Time::Zero;
@@ -143,6 +144,7 @@ namespace FishGame
             // Create school member using factory
             auto member = SchoolingFishFactory<FishType>::createFromFish(*fish, m_currentLevel);
             member->setDirection(fromLeft ? 1.0f : -1.0f, 0.0f);
+            member->setWindowBounds(m_windowSize);
 
             // Try to add to schooling system
             if (!m_schoolingSystem->tryAddToSchool(std::move(member)))
