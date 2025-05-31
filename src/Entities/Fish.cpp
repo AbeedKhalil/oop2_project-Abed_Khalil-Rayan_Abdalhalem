@@ -84,119 +84,7 @@ namespace FishGame
         m_windowBounds = windowSize;
     }
 
-    void Fish::draw(sf::RenderTarget& target, sf::RenderStates states) const
-    {
-        target.draw(m_shape, states);
-    }
-
-    void Fish::updateVisual()
-    {
-        m_shape.setFillColor(m_baseColor);
-        m_shape.setOutlineColor(m_outlineColor);
-        m_shape.setOutlineThickness(m_outlineThickness);
-    }
-
-    void Fish::updateAI(const std::vector<std::unique_ptr<Entity>>& entities,
-        const Entity* player, sf::Time deltaTime)
-    {
-        // Only medium and large fish have AI behavior
-        if (m_size == FishSize::Small)
-            return;
-
-        // Check if we should flee from the player
-        if (player && player->isAlive())
-        {
-            const Player* playerPtr = dynamic_cast<const Player*>(player);
-            if (playerPtr)
-            {
-                float distance = CollisionDetector::getDistance(m_position, player->getPosition());
-
-                // Check if player is larger and within flee range
-                FishSize playerSize = playerPtr->getCurrentFishSize();
-
-                // Fix: Medium fish flee from Medium/Large players, Large fish flee from Large players
-                bool shouldFlee = false;
-                if (m_size == FishSize::Medium)
-                {
-                    shouldFlee = (playerSize == FishSize::Medium || playerSize == FishSize::Large);
-                }
-                else if (m_size == FishSize::Large)
-                {
-                    shouldFlee = (playerSize == FishSize::Large);
-                }
-
-                if (shouldFlee && distance < AI_FLEE_RANGE)
-                {
-                    // Flee from player - move in opposite direction
-                    sf::Vector2f fleeDirection = m_position - player->getPosition();
-                    setDirection(fleeDirection.x, fleeDirection.y);
-                    return; // Don't hunt if we're fleeing
-                }
-            }
-        }
-
-        // If not fleeing, hunt for smaller prey
-        const Entity* closestPrey = nullptr;
-        float closestDistance = std::numeric_limits<float>::max();
-
-        // Check if player is close and can be eaten
-        if (player && player->isAlive())
-        {
-            const Player* playerPtr = dynamic_cast<const Player*>(player);
-            if (playerPtr)
-            {
-                FishSize playerSize = playerPtr->getCurrentFishSize();
-
-                // Check if this fish can eat the player
-                bool canEatPlayer = false;
-                if (m_size == FishSize::Medium)
-                {
-                    canEatPlayer = (playerSize == FishSize::Small);
-                }
-                else if (m_size == FishSize::Large)
-                {
-                    canEatPlayer = (playerSize == FishSize::Small || playerSize == FishSize::Medium);
-                }
-
-                if (canEatPlayer)
-                {
-                    float distance = CollisionDetector::getDistance(m_position, player->getPosition());
-                    if (distance < AI_DETECTION_RANGE && distance < closestDistance)
-                    {
-                        closestDistance = distance;
-                        closestPrey = player;
-                    }
-                }
-            }
-        }
-
-        // Check other fish entities for prey
-        for (const auto& entity : entities)
-        {
-            if (entity.get() == this || !entity->isAlive())
-                continue;
-
-            // Check if it's a smaller fish we can eat
-            if (canEat(*entity))
-            {
-                float distance = CollisionDetector::getDistance(m_position, entity->getPosition());
-                if (distance < closestDistance && distance < AI_DETECTION_RANGE)
-                {
-                    closestDistance = distance;
-                    closestPrey = entity.get();
-                }
-            }
-        }
-
-        // Follow the closest prey if found
-        if (closestPrey)
-        {
-            sf::Vector2f direction = closestPrey->getPosition() - m_position;
-            setDirection(direction.x, direction.y);
-        }
-        // Otherwise continue in current direction (set by spawner)
-    }
-
+    // Virtual method implementations with default behavior
     bool Fish::canEat(const Entity& other) const
     {
         // Check if it's another fish
@@ -214,6 +102,89 @@ namespace FishGame
 
         // Can eat smaller fish
         return static_cast<int>(m_size) > static_cast<int>(otherFish->getSize());
+    }
+
+    void Fish::updateAI(const std::vector<std::unique_ptr<Entity>>& entities,
+        const Entity* player, sf::Time deltaTime)
+    {
+        // Default AI behavior - can be overridden by derived classes
+        // Only medium and large fish have AI behavior by default
+        if (m_size == FishSize::Small)
+            return;
+
+        // Check if we should flee from the player
+        if (player && player->isAlive())
+        {
+            const Player* playerPtr = dynamic_cast<const Player*>(player);
+            if (playerPtr)
+            {
+                float distance = CollisionDetector::getDistance(m_position, player->getPosition());
+
+                // Check if player is larger and within flee range
+                FishSize playerSize = playerPtr->getCurrentFishSize();
+
+                bool shouldFlee = false;
+                if (m_size == FishSize::Medium)
+                {
+                    shouldFlee = (playerSize == FishSize::Medium || playerSize == FishSize::Large);
+                }
+                else if (m_size == FishSize::Large)
+                {
+                    shouldFlee = (playerSize == FishSize::Large);
+                }
+
+                if (shouldFlee && distance < AI_FLEE_RANGE)
+                {
+                    // Flee from player
+                    sf::Vector2f fleeDirection = m_position - player->getPosition();
+                    setDirection(fleeDirection.x, fleeDirection.y);
+                    return;
+                }
+            }
+        }
+
+        // Hunt for smaller prey
+        const Entity* closestPrey = nullptr;
+        float closestDistance = std::numeric_limits<float>::max();
+
+        // Use STL algorithms to find closest prey
+        std::for_each(entities.begin(), entities.end(),
+            [this, &closestPrey, &closestDistance](const std::unique_ptr<Entity>& entity)
+            {
+                if (entity.get() != this && entity->isAlive() && canEat(*entity))
+                {
+                    float distance = CollisionDetector::getDistance(m_position, entity->getPosition());
+                    if (distance < closestDistance && distance < AI_DETECTION_RANGE)
+                    {
+                        closestDistance = distance;
+                        closestPrey = entity.get();
+                    }
+                }
+            });
+
+        // Follow the closest prey if found
+        if (closestPrey)
+        {
+            sf::Vector2f direction = closestPrey->getPosition() - m_position;
+            setDirection(direction.x, direction.y);
+        }
+    }
+
+    void Fish::draw(sf::RenderTarget& target, sf::RenderStates states) const
+    {
+        target.draw(m_shape, states);
+    }
+
+    void Fish::updateVisual()
+    {
+        m_shape.setFillColor(m_baseColor);
+        m_shape.setOutlineColor(m_outlineColor);
+        m_shape.setOutlineThickness(m_outlineThickness);
+    }
+
+    void Fish::updateMovement(sf::Time deltaTime)
+    {
+        m_position += m_velocity * deltaTime.asSeconds();
     }
 
     int Fish::getPointValue(FishSize size, int level)

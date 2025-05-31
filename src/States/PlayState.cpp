@@ -16,7 +16,8 @@ namespace FishGame
     PlayState::PlayState(Game& game)
         : State(game)
         , m_player(std::make_unique<Player>())
-        , m_fishSpawner(std::make_unique<FishSpawner>(getGame().getWindow().getSize()))
+        , m_fishSpawner(std::make_unique<EnhancedFishSpawner>(getGame().getWindow().getSize()))
+        , m_schoolingSystem(std::make_unique<SchoolingSystem>())
         , m_entities()
         , m_bonusItems()
         , m_growthMeter(std::make_unique<GrowthMeter>(getGame().getFonts().get(Fonts::Main)))
@@ -52,6 +53,17 @@ namespace FishGame
         m_player->setWindowBounds(window.getSize());
         m_player->initializeSystems(m_growthMeter.get(), m_frenzySystem.get(),
             m_powerUpManager.get(), m_scoreSystem.get());
+
+        // Set up enhanced fish spawner with schooling system
+        m_fishSpawner->setSchoolingSystem(m_schoolingSystem.get());
+
+        // Configure special fish spawn rates based on level
+        SpecialFishConfig specialConfig;
+        specialConfig.barracudaSpawnRate = 0.05f;    // Start with low rates
+        specialConfig.pufferfishSpawnRate = 0.08f;
+        specialConfig.angelfishSpawnRate = 0.1f;
+        specialConfig.schoolSpawnChance = 0.25f;
+        m_fishSpawner->setSpecialFishConfig(specialConfig);
 
         // Position game systems UI
         m_growthMeter->setPosition(20.0f, window.getSize().y - 60.0f);
@@ -239,6 +251,9 @@ namespace FishGame
         m_scoreSystem->update(deltaTime);
         m_growthMeter->update(deltaTime);
 
+        // Update schooling system
+        updateSchoolingBehavior(deltaTime);
+
         // Update fish spawner
         m_fishSpawner->update(deltaTime, m_currentLevel);
 
@@ -270,6 +285,9 @@ namespace FishGame
                     fish->updateAI(m_entities, m_player.get(), deltaTime);
                 }
             });
+
+        // Handle special fish behaviors
+        handleSpecialFishBehaviors(deltaTime);
 
         // Update particles
         std::for_each(m_particles.begin(), m_particles.end(),
@@ -341,6 +359,84 @@ namespace FishGame
     {
         // Power-ups are now handled by BonusItemManager
         // This method can be used for additional power-up related updates if needed
+    }
+
+    void PlayState::updateSchoolingBehavior(sf::Time deltaTime)
+    {
+        // Update schooling system
+        m_schoolingSystem->update(deltaTime);
+
+        // Periodically extract fish from schools for rendering
+        static sf::Time extractTimer = sf::Time::Zero;
+        extractTimer += deltaTime;
+
+        if (extractTimer >= sf::seconds(0.1f))  // Extract every 100ms
+        {
+            extractTimer = sf::Time::Zero;
+
+            // Get fish from schools
+            auto schoolFish = m_schoolingSystem->extractAllFish();
+
+            // Add them back to entities
+            std::move(schoolFish.begin(), schoolFish.end(),
+                std::back_inserter(m_entities));
+
+            // Try to re-add fish to schools
+            std::vector<std::unique_ptr<Entity>> remainingEntities;
+
+            for (auto& entity : m_entities)
+            {
+                bool addedToSchool = false;
+
+                // Try to add small fish to schools  
+                if (auto* smallFish = dynamic_cast<SmallFish*>(entity.get()))
+                {
+                    if (smallFish->isAlive())
+                    {
+                        // Create school member using only level parameter
+                        auto schoolMember = std::make_unique<SmallFish>(m_currentLevel);
+                        schoolMember->setPosition(smallFish->getPosition());
+                        schoolMember->setVelocity(smallFish->getVelocity());
+                        schoolMember->setWindowBounds(getGame().getWindow().getSize());
+
+                        addedToSchool = m_schoolingSystem->tryAddToSchool(std::move(schoolMember));
+                    }
+                }
+                else if (auto* mediumFish = dynamic_cast<MediumFish*>(entity.get()))
+                {
+                    if (mediumFish->isAlive())
+                    {
+                        // Create school member using only level parameter
+                        auto schoolMember = std::make_unique<MediumFish>(m_currentLevel);
+                        schoolMember->setPosition(mediumFish->getPosition());
+                        schoolMember->setVelocity(mediumFish->getVelocity());
+                        schoolMember->setWindowBounds(getGame().getWindow().getSize());
+
+                        addedToSchool = m_schoolingSystem->tryAddToSchool(std::move(schoolMember));
+                    }
+                }
+
+                if (!addedToSchool)
+                {
+                    remainingEntities.push_back(std::move(entity));
+                }
+            }
+
+            m_entities = std::move(remainingEntities);
+        }
+    }
+
+    void PlayState::handleSpecialFishBehaviors(sf::Time deltaTime)
+    {
+        // Handle Pufferfish threat detection
+        std::for_each(m_entities.begin(), m_entities.end(),
+            [this](const std::unique_ptr<Entity>& entity)
+            {
+                if (auto* pufferfish = dynamic_cast<Pufferfish*>(entity.get()))
+                {
+                    checkPufferfishThreat(pufferfish);
+                }
+            });
     }
 
     void PlayState::checkCollisions()
@@ -429,7 +525,67 @@ namespace FishGame
 
     void PlayState::handleFishCollision(Entity& fish)
     {
-        // First check if player can eat the fish
+        // Check for special fish behaviors
+        if (auto* pufferfish = dynamic_cast<Pufferfish*>(&fish))
+        {
+            if (pufferfish->isInflated())
+            {
+                // Inflated pufferfish damages player
+                if (!m_player->isInvulnerable() && !m_player->hasRecentlyTakenDamage())
+                {
+                    m_player->takeDamage();
+                    createParticleEffect(m_player->getPosition(), sf::Color::Yellow);
+
+                    if (!m_player->isInvulnerable())
+                    {
+                        handlePlayerDeath();
+                    }
+                }
+                return;
+            }
+        }
+        else if (auto* angelfish = dynamic_cast<Angelfish*>(&fish))
+        {
+            // Angelfish gives bonus points
+            if (m_player->canEat(fish))
+            {
+                if (m_player->attemptEat(fish))
+                {
+                    // Extra effects for angelfish
+                    createParticleEffect(fish.getPosition(), sf::Color::Cyan);
+                    createParticleEffect(fish.getPosition(), sf::Color::Magenta);
+                    createParticleEffect(fish.getPosition(), sf::Color::Yellow);
+
+                    fish.destroy();
+
+                    // Bonus sound effect would go here
+                }
+            }
+            return;
+        }
+        else if (auto* barracuda = dynamic_cast<Barracuda*>(&fish))
+        {
+            // Barracuda is more aggressive
+            if (!m_player->canEat(fish) && barracuda->canEat(*m_player))
+            {
+                // Barracuda does double damage
+                if (!m_player->isInvulnerable() && !m_player->hasRecentlyTakenDamage())
+                {
+                    m_player->takeDamage();
+                    // Extra damage effect
+                    createParticleEffect(m_player->getPosition(), sf::Color::Red);
+                    createParticleEffect(m_player->getPosition(), sf::Color(100, 0, 0));
+
+                    if (!m_player->isInvulnerable())
+                    {
+                        handlePlayerDeath();
+                    }
+                }
+                return;
+            }
+        }
+
+        // Handle normal fish collision
         if (m_player->canEat(fish))
         {
             if (m_player->attemptEat(fish))
@@ -528,6 +684,47 @@ namespace FishGame
                 {
                     createParticleEffect(m_player->getPosition(), sf::Color::Magenta);
                 }
+            });
+    }
+
+    void PlayState::checkPufferfishThreat(Pufferfish* pufferfish)
+    {
+        if (!pufferfish || !pufferfish->isAlive())
+            return;
+
+        // Check distance to player
+        float playerDistance = CollisionDetector::getDistance(
+            pufferfish->getPosition(), m_player->getPosition());
+
+        // Check if player is a threat
+        if (playerDistance < 100.0f && m_player->canEat(*pufferfish))
+        {
+            pufferfish->startInflation();
+            return;
+        }
+
+        // Check other predators
+        std::any_of(m_entities.begin(), m_entities.end(),
+            [pufferfish](const std::unique_ptr<Entity>& entity)
+            {
+                if (entity.get() == pufferfish)
+                    return false;
+
+                if (auto* fish = dynamic_cast<Fish*>(entity.get()))
+                {
+                    if (fish->canEat(*pufferfish))
+                    {
+                        float distance = CollisionDetector::getDistance(
+                            pufferfish->getPosition(), fish->getPosition());
+
+                        if (distance < 100.0f)
+                        {
+                            pufferfish->startInflation();
+                            return true;
+                        }
+                    }
+                }
+                return false;
             });
     }
 
@@ -651,6 +848,15 @@ namespace FishGame
     {
         // Update bonus item manager for new level
         m_bonusItemManager->setLevel(m_currentLevel);
+
+        // Update special fish spawn rates
+        SpecialFishConfig specialConfig;
+        specialConfig.barracudaSpawnRate = 0.05f + (m_currentLevel - 1) * 0.02f;
+        specialConfig.pufferfishSpawnRate = 0.08f + (m_currentLevel - 1) * 0.03f;
+        specialConfig.angelfishSpawnRate = 0.1f + (m_currentLevel - 1) * 0.04f;
+        specialConfig.schoolSpawnChance = std::min(0.5f, 0.25f + (m_currentLevel - 1) * 0.05f);
+
+        m_fishSpawner->setSpecialFishConfig(specialConfig);
     }
 
     void PlayState::createParticleEffect(sf::Vector2f position, sf::Color color)

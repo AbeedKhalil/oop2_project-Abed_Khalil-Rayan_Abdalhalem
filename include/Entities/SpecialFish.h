@@ -1,0 +1,245 @@
+#pragma once
+
+#include "Fish.h"
+#include "CollisionDetector.h"
+#include "GenericFish.h"
+#include <cmath>
+#include <algorithm>
+
+namespace FishGame
+{
+    // Movement pattern strategies
+    enum class MovementPattern
+    {
+        Linear,
+        Sinusoidal,
+        Circular,
+        ZigZag,
+        Aggressive
+    };
+
+    // Enhanced base fish with advanced movement
+    class AdvancedFish : public Fish
+    {
+    public:
+        AdvancedFish(FishSize size, float speed, int currentLevel, MovementPattern pattern);
+        virtual ~AdvancedFish() = default;
+
+        void update(sf::Time deltaTime) override;
+        void setMovementPattern(MovementPattern pattern) { m_movementPattern = pattern; }
+
+    protected:
+        virtual void updateMovementPattern(sf::Time deltaTime);
+
+    protected:
+        MovementPattern m_movementPattern;
+        float m_patternTimer;
+        float m_baseY;  // For sinusoidal movement
+        float m_amplitude;
+        float m_frequency;
+    };
+
+    // Barracuda - Fast predator with hunting AI
+    class Barracuda : public AdvancedFish
+    {
+    public:
+        explicit Barracuda(int currentLevel = 1);
+        ~Barracuda() override = default;
+
+        EntityType getType() const override { return EntityType::LargeFish; }
+
+        // Enhanced AI for aggressive hunting
+        void updateAI(const std::vector<std::unique_ptr<Entity>>& entities,
+            const Entity* player, sf::Time deltaTime);
+
+    private:
+        void updateHuntingBehavior(const Entity* target, sf::Time deltaTime);
+
+    private:
+        const Entity* m_currentTarget;
+        sf::Time m_huntTimer;
+        float m_dashSpeed;
+        bool m_isDashing;
+
+        static constexpr float m_huntRange = 250.0f;
+        static constexpr float m_dashMultiplier = 2.5f;
+        static constexpr float m_dashDuration = 1.0f;
+    };
+
+    // Pufferfish - Inflates when threatened
+    class Pufferfish : public AdvancedFish
+    {
+    public:
+        explicit Pufferfish(int currentLevel = 1);
+        ~Pufferfish() override = default;
+
+        EntityType getType() const override { return EntityType::MediumFish; }
+
+        void update(sf::Time deltaTime) override;
+        bool canEat(const Entity& other) const;
+
+        // Inflation mechanics
+        void startInflation();
+        bool isInflated() const { return m_inflationLevel > 0.5f; }
+
+    protected:
+        void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+        void updateVisual() override;
+
+    private:
+        void updateInflation(sf::Time deltaTime);
+        void checkThreats(const std::vector<std::unique_ptr<Entity>>& entities);
+
+    private:
+        float m_inflationLevel;  // 0.0 = normal, 1.0 = fully inflated
+        float m_normalRadius;
+        sf::Time m_inflationTimer;
+        sf::Time m_threatCheckTimer;
+        std::vector<sf::CircleShape> m_spikes;
+
+        static constexpr float m_inflationSpeed = 3.0f;
+        static constexpr float m_deflationSpeed = 1.0f;
+        static constexpr float m_inflatedRadiusMultiplier = 2.0f;
+        static constexpr float m_threatRange = 100.0f;
+        static constexpr int m_spikeCount = 8;
+    };
+
+    // Angelfish - Gives bonus points and has erratic movement
+    class Angelfish : public AdvancedFish
+    {
+    public:
+        explicit Angelfish(int currentLevel = 1);
+        ~Angelfish() override = default;
+
+        EntityType getType() const override { return EntityType::SmallFish; }
+        int getPointValue() const { return m_bonusPoints; }
+
+        void update(sf::Time deltaTime) override;
+
+    protected:
+        void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+        void updateVisual() override;
+
+    private:
+        void updateErraticMovement(sf::Time deltaTime);
+
+    private:
+        int m_bonusPoints;
+        float m_colorShift;
+        std::vector<sf::CircleShape> m_fins;
+        sf::Time m_directionChangeTimer;
+
+        static constexpr float m_directionChangeInterval = 0.5f;
+        static constexpr int m_baseBonus = 50;
+    };
+
+    // Template for creating schools of fish
+    template<typename FishType>
+    class SchoolMember : public FishType
+    {
+        static_assert(std::is_base_of_v<Fish, FishType>,
+            "SchoolMember can only be used with Fish types");
+
+    public:
+        // Single constructor that works for all fish types
+        explicit SchoolMember(int currentLevel = 1)
+            : FishType(currentLevel)
+            , m_schoolId(-1)
+            , m_neighborDistance(80.0f)
+            , m_separationDistance(30.0f)
+        {
+        }
+
+        void setSchoolId(int id) { m_schoolId = id; }
+        int getSchoolId() const { return m_schoolId; }
+
+        // Flocking behavior update
+        void updateSchooling(const std::vector<SchoolMember*>& schoolmates, sf::Time deltaTime)
+        {
+            if (schoolmates.empty()) return;
+
+            sf::Vector2f separation(0, 0);
+            sf::Vector2f alignment(0, 0);
+            sf::Vector2f cohesion(0, 0);
+
+            int separationCount = 0;
+            int neighborCount = 0;
+
+            // Apply flocking rules
+            std::for_each(schoolmates.begin(), schoolmates.end(),
+                [this, &separation, &alignment, &cohesion,
+                &separationCount, &neighborCount](const SchoolMember* mate)
+                {
+                    if (mate == this || !mate->isAlive()) return;
+
+                    float distance = CollisionDetector::getDistance(
+                        this->m_position, mate->getPosition());
+
+                    // Separation
+                    if (distance < m_separationDistance && distance > 0)
+                    {
+                        sf::Vector2f diff = this->m_position - mate->getPosition();
+                        diff /= distance;  // Normalize
+                        separation += diff;
+                        separationCount++;
+                    }
+
+                    // Alignment and Cohesion
+                    if (distance < m_neighborDistance)
+                    {
+                        alignment += mate->getVelocity();
+                        cohesion += mate->getPosition();
+                        neighborCount++;
+                    }
+                });
+
+            // Apply forces
+            sf::Vector2f steer(0, 0);
+
+            if (separationCount > 0)
+            {
+                separation /= static_cast<float>(separationCount);
+                steer += separation * 1.5f;  // Weight separation higher
+            }
+
+            if (neighborCount > 0)
+            {
+                // Alignment
+                alignment /= static_cast<float>(neighborCount);
+                alignment = normalizeVector(alignment) * this->m_speed;
+                steer += (alignment - this->m_velocity) * 0.5f;
+
+                // Cohesion
+                cohesion /= static_cast<float>(neighborCount);
+                sf::Vector2f seekPos = cohesion - this->m_position;
+                seekPos = normalizeVector(seekPos) * this->m_speed;
+                steer += (seekPos - this->m_velocity) * 0.3f;
+            }
+
+            // Apply steering force
+            this->m_velocity += steer * deltaTime.asSeconds();
+
+            // Limit speed
+            float currentSpeed = std::sqrt(this->m_velocity.x * this->m_velocity.x +
+                this->m_velocity.y * this->m_velocity.y);
+            if (currentSpeed > this->m_speed)
+            {
+                this->m_velocity = (this->m_velocity / currentSpeed) * this->m_speed;
+            }
+        }
+
+    private:
+        sf::Vector2f normalizeVector(const sf::Vector2f& vec)
+        {
+            float length = std::sqrt(vec.x * vec.x + vec.y * vec.y);
+            if (length > 0)
+                return vec / length;
+            return vec;
+        }
+
+    private:
+        int m_schoolId;
+        float m_neighborDistance;
+        float m_separationDistance;
+    };
+}
