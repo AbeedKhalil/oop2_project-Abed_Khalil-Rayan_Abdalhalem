@@ -12,6 +12,8 @@ namespace FishGame
         GrowthMeter(const sf::Font& font);
         ~GrowthMeter() = default;
 
+        std::function<void()> getOnStageComplete() const { return m_onStageComplete; }
+
         // Delete copy operations
         GrowthMeter(const GrowthMeter&) = delete;
         GrowthMeter& operator=(const GrowthMeter&) = delete;
@@ -66,11 +68,11 @@ namespace FishGame
         static constexpr float m_height = 30.0f;
         static constexpr float m_borderThickness = 2.0f;
 
-        // Stage progression - 4 stages total
+    private:
+        // Stage progression - 3 stages total
         static constexpr float m_stage1Progress = 100.0f;  // Points to reach stage 2
-        static constexpr float m_stage2Progress = 150.0f;  // Points to reach stage 3
-        static constexpr float m_stage3Progress = 200.0f;  // Points to reach stage 4
-        static constexpr float m_stage4Progress = 250.0f;  // Maximum (for display only)
+        static constexpr float m_stage2Progress = 200.0f;  // Points to reach stage 3
+        static constexpr float m_stage3Progress = 400.0f;  // Maximum (for display only)
 
         // Callback
         std::function<void()> m_onStageComplete;

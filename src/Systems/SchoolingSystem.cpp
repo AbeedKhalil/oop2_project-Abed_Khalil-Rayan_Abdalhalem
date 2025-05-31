@@ -9,7 +9,7 @@ namespace FishGame
         , m_nextSchoolId(1)
     {
         // Create initial schools for different fish types
-        createDefaultSchools<SmallFish>(3);
+        createDefaultSchools<SmallFish>(2);
         createDefaultSchools<MediumFish>(2);
     }
 

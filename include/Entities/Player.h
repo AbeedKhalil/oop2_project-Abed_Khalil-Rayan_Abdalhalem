@@ -1,5 +1,6 @@
 #pragma once
 
+#include "GameConstants.h"
 #include "Fish.h"
 #include "GrowthMeter.h"
 #include "FrenzySystem.h"
@@ -56,7 +57,7 @@ namespace FishGame
         void applyInvincibility(sf::Time duration);
 
         // Size information
-        bool isAtMaxSize() const { return m_currentStage >= 4; }  // Changed from 3 to 4
+        bool isAtMaxSize() const { return m_currentStage >= Constants::MAX_STAGES; }
         void setWindowBounds(const sf::Vector2u& windowSize);
 
         // Statistics tracking

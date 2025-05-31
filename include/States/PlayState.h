@@ -51,6 +51,14 @@ namespace FishGame
         void completeLevel();
         void showEndOfLevelStats();
 
+        // Win condition methods
+        void checkWinCondition();
+        void triggerWinSequence();
+        void makeAllEnemiesFlee();
+        bool areAllEnemiesGone() const;
+        void showWinMessage();
+        void showBonusPointsMessage();
+
         // Helper methods
         void updateLevelDifficulty();
         void createParticleEffect(sf::Vector2f position, sf::Color color);
@@ -91,6 +99,11 @@ namespace FishGame
         bool m_levelComplete;
         sf::Time m_levelTransitionTimer;
         static const sf::Time m_levelTransitionDuration;
+
+        // Win condition tracking
+        bool m_gameWon;
+        bool m_enemiesFleeing;
+        sf::Time m_winTimer;
 
         // End-of-level stats
         struct LevelStats

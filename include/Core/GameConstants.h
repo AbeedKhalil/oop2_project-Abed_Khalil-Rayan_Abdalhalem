@@ -24,8 +24,9 @@ namespace FishGame
         constexpr int STAGE_1_THRESHOLD = 0;
         constexpr int STAGE_2_THRESHOLD = 33;
         constexpr int STAGE_3_THRESHOLD = 66;
-        constexpr int MAX_SCORE = 150;  // Updated from 100
-        constexpr int LEVEL_COMPLETE_SCORE = 150;  // Updated from 100
+        constexpr int MAX_STAGES = 3;
+        constexpr int WIN_SCORE = 400;  // Changed to 400 points
+        constexpr int LEVEL_COMPLETE_SCORE = 400;
 
         // Fish Settings
         constexpr float SMALL_FISH_RADIUS = 15.0f;
@@ -36,11 +37,9 @@ namespace FishGame
         constexpr float MEDIUM_FISH_SPEED = 120.0f;
         constexpr float LARGE_FISH_SPEED = 90.0f;
 
-        // Point values now depend on level - moved to method
-
         // AI Settings
         constexpr float AI_DETECTION_RANGE = 80.0f;
-        constexpr float AI_FLEE_RANGE = 65.0f;  // New flee range
+        constexpr float AI_FLEE_RANGE = 65.0f;
         constexpr float SPAWN_MARGIN = 50.0f;
 
         // Visual Settings

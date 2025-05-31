@@ -12,7 +12,7 @@ namespace FishGame
         , m_specialConfig()
         , m_schoolingSystem(nullptr)
         , m_schoolChanceDist(0.0f, 1.0f)
-        , m_schoolSizeDist(3, 6)
+        , m_schoolSizeDist(2, 4)  // Reduced from (3, 6) to (2, 4)
     {
         // Initialize special spawn timers
         m_specialSpawnTimers["barracuda"] = sf::Time::Zero;
@@ -44,20 +44,13 @@ namespace FishGame
             spawnSpecialFish<Angelfish>(m_specialConfig.angelfishSpawnRate, deltaTime);
         }
 
-        // Check for school spawning
+        // Check for school spawning - ONLY FOR SMALL FISH
         if (m_schoolingSystem && m_schoolChanceDist(m_randomEngine) < m_specialConfig.schoolSpawnChance)
         {
             size_t schoolSize = m_schoolSizeDist(m_randomEngine);
 
-            // Randomly choose fish type for school
-            if (m_randomEngine() % 2 == 0)
-            {
-                spawnSchool<SmallFish>(schoolSize);
-            }
-            else
-            {
-                spawnSchool<MediumFish>(schoolSize - 1);  // Smaller schools for medium fish
-            }
+            // Only spawn schools of small fish
+            spawnSchool<SmallFish>(schoolSize);
         }
     }
 
