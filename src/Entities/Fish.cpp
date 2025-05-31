@@ -19,6 +19,9 @@ namespace FishGame
         , m_baseColor(sf::Color::White)
         , m_outlineColor(sf::Color::Black)
         , m_outlineThickness(1.0f)
+        , m_isFleeing(false)  // New
+        , m_fleeSpeed(speed* m_fleeSpeedMultiplier)  // New
+        , m_fleeDirection(0.0f, 0.0f)  // New
     {
         // Set radius based on size
         switch (m_size)
@@ -42,10 +45,49 @@ namespace FishGame
         updateVisual();
     }
 
+    void Fish::startFleeing()
+    {
+        if (m_isFleeing)
+            return;
+
+        m_isFleeing = true;
+
+        // Determine flee direction based on position
+        float centerX = m_windowBounds.x / 2.0f;
+
+        // Flee to nearest edge
+        if (m_position.x < centerX)
+        {
+            m_fleeDirection = sf::Vector2f(-1.0f, 0.0f);  // Flee left
+        }
+        else
+        {
+            m_fleeDirection = sf::Vector2f(1.0f, 0.0f);   // Flee right
+        }
+
+        // Set velocity for fleeing
+        m_velocity = m_fleeDirection * m_fleeSpeed;
+    }
+
+    void Fish::updateFleeingBehavior(sf::Time deltaTime)
+    {
+        if (!m_isFleeing)
+            return;
+
+        // Just maintain fleeing velocity
+        // The fish will be destroyed when it goes off screen
+    }
+
     void Fish::update(sf::Time deltaTime)
     {
         if (!m_isAlive)
             return;
+
+        // Update fleeing behavior if active
+        if (m_isFleeing)
+        {
+            updateFleeingBehavior(deltaTime);
+        }
 
         // Update position
         updateMovement(deltaTime);
@@ -107,8 +149,13 @@ namespace FishGame
     void Fish::updateAI(const std::vector<std::unique_ptr<Entity>>& entities,
         const Entity* player, sf::Time deltaTime)
     {
+        // Skip AI if fleeing
+        if (m_isFleeing)
+            return;
+
         // Default AI behavior - can be overridden by derived classes
         // Only medium and large fish have AI behavior by default
+
         if (m_size == FishSize::Small)
             return;
 

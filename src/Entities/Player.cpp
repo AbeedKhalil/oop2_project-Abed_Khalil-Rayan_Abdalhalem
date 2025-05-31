@@ -220,7 +220,7 @@ namespace FishGame
 
     void Player::advanceStage()
     {
-        if (m_currentStage < 4)  // Changed from 3 to 4
+        if (m_currentStage < Constants::MAX_STAGES)  // Changed from 4 to MAX_STAGES
         {
             m_currentStage++;
             updateStage();
@@ -279,44 +279,37 @@ namespace FishGame
 
     bool Player::attemptEat(Entity& other)
     {
-        if (canEat(other))
+        // This method should ONLY be called when we already know the player CAN eat the entity
+        if (!canEat(other))
+            return false;  // Safety check
+
+        const Fish* fish = dynamic_cast<const Fish*>(&other);
+        if (fish)
         {
-            const Fish* fish = dynamic_cast<const Fish*>(&other);
-            if (fish)
+            // Player successfully eats the fish
+            grow(fish->getPointValue());
+            m_totalFishEaten++;
+
+            // Register hit for chain bonus
+            if (m_scoreSystem)
             {
-                grow(fish->getPointValue());
-                m_totalFishEaten++;
+                m_scoreSystem->registerHit();
 
-                // Register hit for chain bonus
-                if (m_scoreSystem)
-                {
-                    m_scoreSystem->registerHit();
+                // Add score with all multipliers
+                int frenzyMultiplier = m_frenzySystem ? m_frenzySystem->getMultiplier() : 1;
+                float powerUpMultiplier = m_powerUpManager ? m_powerUpManager->getScoreMultiplier() : 1.0f;
 
-                    // Add score with all multipliers
-                    int frenzyMultiplier = m_frenzySystem ? m_frenzySystem->getMultiplier() : 1;
-                    float powerUpMultiplier = m_powerUpManager ? m_powerUpManager->getScoreMultiplier() : 1.0f;
-
-                    m_scoreSystem->addScore(ScoreEventType::FishEaten, fish->getPointValue(),
-                        other.getPosition(), frenzyMultiplier, powerUpMultiplier);
-                }
-
-                // Register fish eaten for frenzy
-                if (m_frenzySystem)
-                {
-                    m_frenzySystem->registerFishEaten();
-                }
-
-                return true;
+                m_scoreSystem->addScore(ScoreEventType::FishEaten, fish->getPointValue(),
+                    other.getPosition(), frenzyMultiplier, powerUpMultiplier);
             }
-        }
-        else
-        {
-            // Check if it's a predator that can damage us
-            const Fish* fish = dynamic_cast<const Fish*>(&other);
-            if (fish && fish->canEat(*this))
+
+            // Register fish eaten for frenzy
+            if (m_frenzySystem)
             {
-                handlePredatorBehavior(other);
+                m_frenzySystem->registerFishEaten();
             }
+
+            return true;
         }
 
         return false;
@@ -381,7 +374,6 @@ namespace FishGame
         case 2:
             return FishSize::Medium;
         case 3:
-        case 4:  // Stage 3 and 4 are both "Large" size
             return FishSize::Large;
         default:
             return FishSize::Small;
@@ -407,19 +399,50 @@ namespace FishGame
 
     void Player::die()
     {
+        // Reset position to center of screen
+        m_position = sf::Vector2f(m_windowBounds.x / 2.0f, m_windowBounds.y / 2.0f);
+        m_velocity = sf::Vector2f(0.0f, 0.0f);
+        m_targetPosition = m_position;
+
+        // Start invulnerability period
+        m_invulnerabilityTimer = m_invulnerabilityDuration;
+
         // Lose some growth progress but stay in current stage
-        m_growthProgress = std::max(0.0f, m_growthProgress - 20.0f);
+        float progressLoss = 20.0f;
+        m_growthProgress = std::max(0.0f, m_growthProgress - progressLoss);
 
         if (m_growthMeter)
         {
+            // Save current stage before resetting
+            int savedStage = m_currentStage;
+            float savedProgress = m_growthProgress;
+
+            // Reset meter
             m_growthMeter->reset();
-            m_growthMeter->addProgress(m_growthProgress);
+
+            // Restore stage without triggering callbacks
+            m_growthMeter->setStage(savedStage);
+
+            // Add back the remaining progress
+            if (savedProgress > 0)
+            {
+                // Temporarily disable callback to prevent stage advancement
+                auto callback = m_growthMeter->getOnStageComplete();
+                m_growthMeter->setOnStageComplete(nullptr);
+
+                m_growthMeter->addProgress(savedProgress);
+
+                // Restore callback
+                m_growthMeter->setOnStageComplete(callback);
+            }
         }
 
-        // Reset position and start invulnerability
-        m_position = sf::Vector2f(m_windowBounds.x / 2.0f, m_windowBounds.y / 2.0f);
-        m_velocity = sf::Vector2f(0.0f, 0.0f);
-        m_invulnerabilityTimer = m_invulnerabilityDuration;
+        // Player stays alive (respawning).
+        m_isAlive = true;
+
+        // Reset any visual effects
+        m_eatAnimationScale = 1.0f;
+        m_damageFlashIntensity = 0.0f;
     }
 
     void Player::respawn()
@@ -499,15 +522,14 @@ namespace FishGame
         m_shape.setRadius(m_radius);
         m_shape.setOrigin(m_radius, m_radius);
 
-        // Update color based on stage
+        // Update color based on stage (removed stage 4 color)
         sf::Color stageColors[] = {
             sf::Color::Yellow,          // Stage 1
             sf::Color(255, 150, 0),     // Stage 2 - Orange
-            sf::Color(255, 50, 50),     // Stage 3 - Red
-            sf::Color(148, 0, 211)      // Stage 4 - Purple (Maximum size)
+            sf::Color(255, 50, 50)      // Stage 3 - Red (final stage)
         };
 
-        if (m_currentStage >= 1 && m_currentStage <= 4)
+        if (m_currentStage >= 1 && m_currentStage <= Constants::MAX_STAGES)
         {
             m_shape.setFillColor(stageColors[m_currentStage - 1]);
         }

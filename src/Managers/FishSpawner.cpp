@@ -16,17 +16,22 @@ namespace FishGame
         , m_randomEngine(std::random_device{}())
     {
         // Initialize spawn configurations for each level
-        m_smallFishConfig[1] = { 1.5f, 100.0f, m_windowSize.y - 100.0f, true };
-        m_mediumFishConfig[1] = { 0.8f, 150.0f, m_windowSize.y - 150.0f, false };
-        m_largeFishConfig[1] = { 0.4f, 200.0f, m_windowSize.y - 200.0f, true };
+        // Reduced small fish, maintained medium and large fish rates
 
-        m_smallFishConfig[2] = { 2.0f, 100.0f, m_windowSize.y - 100.0f, true };
-        m_mediumFishConfig[2] = { 1.2f, 150.0f, m_windowSize.y - 150.0f, false };
-        m_largeFishConfig[2] = { 0.6f, 200.0f, m_windowSize.y - 200.0f, true };
+        // Level 1: Easier difficulty
+        m_smallFishConfig[1] = { 0.0001f, 100.0f, m_windowSize.y - 100.0f, true };
+        m_mediumFishConfig[1] = { 1.2f, 150.0f, m_windowSize.y - 150.0f, false }; // Keep as is
+        m_largeFishConfig[1] = { 0.8f, 200.0f, m_windowSize.y - 200.0f, true };   // Keep as is
 
-        m_smallFishConfig[3] = { 2.5f, 100.0f, m_windowSize.y - 100.0f, true };
-        m_mediumFishConfig[3] = { 1.5f, 150.0f, m_windowSize.y - 150.0f, false };
-        m_largeFishConfig[3] = { 0.8f, 200.0f, m_windowSize.y - 200.0f, true };
+        // Level 2: Medium difficulty
+        m_smallFishConfig[2] = { 0.5f, 100.0f, m_windowSize.y - 100.0f, true };
+        m_mediumFishConfig[2] = { 0.7f, 150.0f, m_windowSize.y - 150.0f, false }; // Keep as is
+        m_largeFishConfig[2] = { 0.5f, 200.0f, m_windowSize.y - 200.0f, true };   // Keep as is
+
+        // Level 3: Hard difficulty
+        m_smallFishConfig[3] = { 1.5f, 100.0f, m_windowSize.y - 100.0f, true }; 
+        m_mediumFishConfig[3] = { 0.7f, 150.0f, m_windowSize.y - 150.0f, false }; // Keep as is
+        m_largeFishConfig[3] = { 0.7f, 200.0f, m_windowSize.y - 200.0f, true };   // Keep as is
 
         // Setup spawners
         configureSpawnersForLevel(1);

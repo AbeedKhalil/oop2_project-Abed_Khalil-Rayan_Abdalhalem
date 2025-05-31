@@ -1,4 +1,5 @@
 #include "GrowthMeter.h"
+#include "GameConstants.h"
 #include <algorithm>
 #include <sstream>
 #include <iomanip>
@@ -75,7 +76,7 @@ namespace FishGame
         }
 
         // Check for stage advancement
-        if (m_currentProgress >= m_maxProgress && m_currentStage < 4)
+        if (m_currentProgress >= m_maxProgress && m_currentStage < Constants::MAX_STAGES)
         {
             if (m_onStageComplete)
             {
@@ -83,19 +84,19 @@ namespace FishGame
             }
 
             // Advance to next stage
-            if (m_currentStage < 3)
+            if (m_currentStage < Constants::MAX_STAGES - 1)  // Only advance if not at final stage
             {
                 m_currentStage++;
                 setStage(m_currentStage);
                 m_currentProgress = 0.0f;
                 m_targetProgress = 0.0f;
             }
-            else if (m_currentStage == 3)
+            else if (m_currentStage == Constants::MAX_STAGES - 1)
             {
-                // Special handling for stage 3 to 4 transition
-                m_currentStage = 4;
-                setStage(4);
-                // Keep progress at max for stage 4
+                // Special handling for stage 2 to 3 transition
+                m_currentStage = Constants::MAX_STAGES;
+                setStage(Constants::MAX_STAGES);
+                // Keep progress at max for stage 3
             }
         }
 
@@ -136,7 +137,7 @@ namespace FishGame
 
     void GrowthMeter::setStage(int stage)
     {
-        m_currentStage = std::clamp(stage, 1, 4);  // Now supports 4 stages
+        m_currentStage = std::clamp(stage, 1, Constants::MAX_STAGES);  // Now supports 3 stages
 
         // Update max progress based on stage
         switch (m_currentStage)
@@ -150,9 +151,6 @@ namespace FishGame
         case 3:
             m_maxProgress = m_stage3Progress;
             break;
-        case 4:
-            m_maxProgress = m_stage4Progress;
-            break;
         }
 
         // Update stage text
@@ -160,12 +158,11 @@ namespace FishGame
         stageStream << "Stage " << m_currentStage;
         m_stageText.setString(stageStream.str());
 
-        // Update fill bar color based on stage
+        // Update fill bar color based on stage (removed stage 4)
         sf::Color stageColors[] = {
             sf::Color(0, 255, 100),    // Green for stage 1
             sf::Color(0, 150, 255),    // Blue for stage 2
-            sf::Color(255, 100, 0),    // Orange for stage 3
-            sf::Color(255, 0, 255)     // Magenta for stage 4
+            sf::Color(255, 100, 0)     // Orange for stage 3 (final)
         };
         m_fillBar.setFillColor(stageColors[m_currentStage - 1]);
 

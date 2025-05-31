@@ -21,6 +21,11 @@ namespace FishGame
         Fish(FishSize size, float speed, int currentLevel);
         virtual ~Fish() = default;
 
+        // New fleeing behavior methods
+        void startFleeing();
+        bool isFleeing() const { return m_isFleeing; }
+        void updateFleeingBehavior(sf::Time deltaTime);
+
         // Entity interface implementation
         void update(sf::Time deltaTime) override;
         sf::FloatRect getBounds() const override;
@@ -55,6 +60,13 @@ namespace FishGame
         int m_pointValue;
         int m_currentLevel;
         sf::Vector2u m_windowBounds;
+
+        // Fleeing behavior
+        bool m_isFleeing;
+        float m_fleeSpeed;
+        sf::Vector2f m_fleeDirection;
+
+        static constexpr float m_fleeSpeedMultiplier = 3.0f;
 
         // Visual properties
         sf::Color m_baseColor;
