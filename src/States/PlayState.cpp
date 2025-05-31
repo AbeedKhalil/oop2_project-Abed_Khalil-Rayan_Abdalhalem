@@ -479,10 +479,14 @@ namespace FishGame
                 }
                 else if (oyster->canBeEaten())
                 {
-                    // Oyster is open - player eats it for growth points
+                    // Oyster is open - player eats it for points
                     oyster->onCollect();
 
-                    // Add growth points directly
+                    // Add points based on oyster type
+                    int points = oyster->hasBlackPearl() ? Constants::BLACK_OYSTER_POINTS : Constants::WHITE_OYSTER_POINTS;
+                    m_player->addPoints(points);
+
+                    // Add growth for visual effect
                     m_player->grow(oyster->getGrowthPoints());
 
                     // Add score with multipliers
@@ -617,7 +621,7 @@ namespace FishGame
         }
         else if (fishCanEatPlayer)
         {
-            // Enemy fish eats player - FIXED: player now properly dies
+            // Enemy fish eats player - player dies
             if (!m_player->hasRecentlyTakenDamage())
             {
                 m_player->takeDamage();
@@ -736,11 +740,12 @@ namespace FishGame
 
     void PlayState::handlePlayerDeath()
     {
-        // Only handle death if player isn't already dead or invulnerable
-        if (!m_player->isAlive() || m_player->isInvulnerable())
+        // Only handle death if player isn't invulnerable
+        if (m_player->isInvulnerable())
             return;
 
         m_playerLives--;
+        m_player->die();
 
         if (m_playerLives <= 0)
         {
@@ -748,17 +753,16 @@ namespace FishGame
         }
         else
         {
-            // Player loses a life and respawns
-            m_player->die();
+            // Respawn the player after death
+            m_player->respawn();
             createParticleEffect(m_player->getPosition(), sf::Color::Red);
         }
     }
 
     void PlayState::checkWinCondition()
     {
-        // Check if player is exactly at stage 3 AND has 400+ points
-        if (m_player->getCurrentStage() == Constants::MAX_STAGES &&
-            m_scoreSystem->getCurrentScore() >= Constants::WIN_SCORE)
+        // Win when player reaches 400 points
+        if (m_player->getPoints() >= Constants::POINTS_TO_WIN)
         {
             triggerWinSequence();
         }
@@ -804,8 +808,9 @@ namespace FishGame
     void PlayState::showWinMessage()
     {
         std::ostringstream messageStream;
-        messageStream << "STAGE 3 COMPLETE!\n\n"
-            << "Score: " << m_scoreSystem->getCurrentScore() << " points!\n"
+        messageStream << "LEVEL COMPLETE!\n\n"
+            << "Points: " << m_player->getPoints() << "\n"
+            << "Score: " << m_scoreSystem->getCurrentScore() << "\n"
             << "Eat the fleeing fish for bonus points!";
 
         m_messageText.setString(messageStream.str());
@@ -820,7 +825,8 @@ namespace FishGame
     {
         std::ostringstream messageStream;
         messageStream << "LEVEL " << m_currentLevel << " COMPLETE!\n\n"
-            << "Final Score: " << m_scoreSystem->getCurrentScore() << " points!\n"
+            << "Final Points: " << m_player->getPoints() << "\n"
+            << "Final Score: " << m_scoreSystem->getCurrentScore() << "\n"
             << "Total Fish Eaten: " << m_player->getTotalFishEaten() << "\n\n"
             << "Press ENTER for Level " << (m_currentLevel + 1);
 
@@ -857,10 +863,11 @@ namespace FishGame
     void PlayState::showEndOfLevelStats()
     {
         std::ostringstream messageStream;
-        messageStream << "Stage 3 Reached! Level " << m_currentLevel << " Complete!\n\n"
+        messageStream << "Level " << m_currentLevel << " Complete!\n\n"
             << "Time: " << std::fixed << std::setprecision(1)
             << m_levelTime.asSeconds() << "s\n"
             << "Fish Eaten: " << m_player->getTotalFishEaten() << "\n"
+            << "Points: " << m_player->getPoints() << "\n"
             << "Time Bonus: " << m_levelStats.timeBonus << "\n"
             << "Untouchable Bonus: " << m_levelStats.untouchableBonus << "\n"
             << "Total Bonus: " << m_levelStats.totalBonus;
@@ -880,7 +887,7 @@ namespace FishGame
         m_scoreSystem->addToTotalScore(m_scoreSystem->getCurrentScore());
 
         // Reset for new level
-        m_player->resetSize();
+        m_player->fullReset();
         m_levelComplete = false;
         m_gameWon = false;
         m_enemiesFleeing = false;
@@ -916,7 +923,7 @@ namespace FishGame
     {
         // Reset current level
         m_playerLives = 3;
-        m_player->resetSize();
+        m_player->fullReset();
         m_entities.clear();
         m_bonusItems.clear();
         m_particles.clear();
@@ -985,14 +992,10 @@ namespace FishGame
 
     void PlayState::updateHUD()
     {
-        // Update score display - show win requirement
+        // Update score display - show both Score and Points
         std::ostringstream scoreStream;
         scoreStream << "Score: " << m_scoreSystem->getCurrentScore();
-        if (m_player->getCurrentStage() == Constants::MAX_STAGES && !m_gameWon)
-        {
-            scoreStream << " / " << Constants::WIN_SCORE;
-        }
-        scoreStream << " | Total: " << m_totalScore;
+        scoreStream << " | Points: " << m_player->getPoints() << "/" << Constants::POINTS_TO_WIN;
         m_scoreText.setString(scoreStream.str());
 
         // Update lives display

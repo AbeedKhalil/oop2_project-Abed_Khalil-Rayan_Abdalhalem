@@ -19,14 +19,22 @@ namespace FishGame
         constexpr float PLAYER_BASE_RADIUS = 20.0f;
         constexpr float PLAYER_GROWTH_FACTOR = 1.5f;
 
-        // Game Rules
+        // Points System Values
+        constexpr int SMALL_FISH_POINTS = 2;
+        constexpr int MEDIUM_FISH_POINTS = 5;
+        constexpr int LARGE_FISH_POINTS = 10;
+        constexpr int WHITE_OYSTER_POINTS = 7;
+        constexpr int BLACK_OYSTER_POINTS = 15;
+        constexpr int BARRACUDA_POINTS = 13;
+        constexpr int ANGELFISH_POINTS = 100;
+        constexpr int PUFFERFISH_POINTS = 7;
+
+        // Game Rules - Points Thresholds
         constexpr int INITIAL_LIVES = 3;
-        constexpr int STAGE_1_THRESHOLD = 0;
-        constexpr int STAGE_2_THRESHOLD = 33;
-        constexpr int STAGE_3_THRESHOLD = 66;
+        constexpr int POINTS_FOR_STAGE_2 = 100;
+        constexpr int POINTS_FOR_STAGE_3 = 200;
+        constexpr int POINTS_TO_WIN = 400;
         constexpr int MAX_STAGES = 3;
-        constexpr int WIN_SCORE = 400;  // Changed to 400 points
-        constexpr int LEVEL_COMPLETE_SCORE = 400;
 
         // Fish Settings
         constexpr float SMALL_FISH_RADIUS = 15.0f;
