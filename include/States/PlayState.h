@@ -2,11 +2,18 @@
 
 #include "State.h"
 #include "Player.h"
-#include "FishSpawner.h"
+#include "EnhancedFishSpawner.h"
+#include "SchoolingSystem.h"
+#include "SpecialFish.h"
 #include "GrowthMeter.h"
 #include "FrenzySystem.h"
 #include "BonusItemManager.h"
 #include "OysterManager.h"
+#include "ScoreSystem.h"
+#include "PowerUp.h"
+#include <memory>
+#include <vector>
+#include <random>
 
 namespace FishGame
 {
@@ -26,6 +33,8 @@ namespace FishGame
         void updateGameplay(sf::Time deltaTime);
         void updateBonusItems(sf::Time deltaTime);
         void updatePowerUps(sf::Time deltaTime);
+        void updateSchoolingBehavior(sf::Time deltaTime);
+        void handleSpecialFishBehaviors(sf::Time deltaTime);
 
         // Collision handling
         void checkCollisions();
@@ -33,6 +42,7 @@ namespace FishGame
         void handleBonusItemCollision(BonusItem& item);
         void handlePowerUpCollision(PowerUp& powerUp);
         void checkTailBiteOpportunities();
+        void checkPufferfishThreat(Pufferfish* pufferfish);
 
         // Game flow
         void handlePlayerDeath();
@@ -48,7 +58,8 @@ namespace FishGame
     private:
         // Core game objects
         std::unique_ptr<Player> m_player;
-        std::unique_ptr<FishSpawner> m_fishSpawner;
+        std::unique_ptr<EnhancedFishSpawner> m_fishSpawner;
+        std::unique_ptr<SchoolingSystem> m_schoolingSystem;
         std::vector<std::unique_ptr<Entity>> m_entities;
         std::vector<std::unique_ptr<BonusItem>> m_bonusItems;
 
@@ -109,10 +120,10 @@ namespace FishGame
         };
         std::vector<ParticleEffect> m_particles;
 
-        // Random number generation - ENSURE THIS IS DECLARED
+        // Random number generation
         std::mt19937 m_randomEngine;
 
-        // Constants - Changed from constexpr to const
+        // Constants
         static const sf::Time m_targetLevelTime;
     };
 }

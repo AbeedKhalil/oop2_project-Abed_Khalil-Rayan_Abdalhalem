@@ -3,6 +3,8 @@
 #include "GenericFish.h"
 #include "GenericSpawner.h"
 #include <map>
+#include <memory>
+#include <random>
 
 namespace FishGame
 {
@@ -19,32 +21,33 @@ namespace FishGame
     {
     public:
         explicit FishSpawner(const sf::Vector2u& windowSize);
-        ~FishSpawner() = default;
+        virtual ~FishSpawner() = default;
 
-        // Update spawning logic
-        void update(sf::Time deltaTime, int currentLevel);
+        // Virtual update for derived classes
+        virtual void update(sf::Time deltaTime, int currentLevel);
 
-        // Get spawned fish
+        // Accessors
         std::vector<std::unique_ptr<Entity>>& getSpawnedFish() { return m_spawnedFish; }
         void clearSpawnedFish() { m_spawnedFish.clear(); }
 
-        // Level-based configuration
+        // Level configuration
         void setLevel(int level);
 
-    private:
+    protected:  // Changed to protected for inheritance
+        // Methods accessible to derived classes
         void updateSpawners(sf::Time deltaTime);
         void configureSpawnersForLevel(int level);
 
-    private:
+        // Data members accessible to derived classes
         sf::Vector2u m_windowSize;
         std::vector<std::unique_ptr<Entity>> m_spawnedFish;
 
-        // Generic spawners for each fish type
+        // Spawners
         GenericSpawner<SmallFish> m_smallSpawner;
         GenericSpawner<MediumFish> m_mediumSpawner;
         GenericSpawner<LargeFish> m_largeSpawner;
 
-        // Level-based spawn configurations
+        // Configuration maps
         std::map<int, SpawnConfig> m_smallFishConfig;
         std::map<int, SpawnConfig> m_mediumFishConfig;
         std::map<int, SpawnConfig> m_largeFishConfig;
