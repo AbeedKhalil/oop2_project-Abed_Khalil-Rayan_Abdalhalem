@@ -67,7 +67,7 @@ namespace FishGame
         specialConfig.barracudaSpawnRate = 0.05f;
         specialConfig.pufferfishSpawnRate = 0.08f;
         specialConfig.angelfishSpawnRate = 0.1f;
-        specialConfig.schoolSpawnChance = 0.1f;
+        specialConfig.schoolSpawnChance = 0.05f;  // Reduced from 0.1f to 0.05f - less frequent schools
         m_fishSpawner->setSpecialFishConfig(specialConfig);
 
         // Position game systems UI
@@ -442,13 +442,18 @@ namespace FishGame
 
     void PlayState::handleSpecialFishBehaviors(sf::Time deltaTime)
     {
-        // Handle Pufferfish threat detection
+        // Handle Pufferfish threat detection and Angelfish AI
         std::for_each(m_entities.begin(), m_entities.end(),
-            [this](const std::unique_ptr<Entity>& entity)
+            [this, deltaTime](const std::unique_ptr<Entity>& entity)  // Fixed: Added deltaTime to capture list
             {
                 if (auto* pufferfish = dynamic_cast<Pufferfish*>(entity.get()))
                 {
                     checkPufferfishThreat(pufferfish);
+                }
+                // Update Angelfish AI
+                else if (auto* angelfish = dynamic_cast<Angelfish*>(entity.get()))
+                {
+                    angelfish->updateAI(m_entities, m_player.get(), deltaTime);
                 }
             });
     }
@@ -539,6 +544,25 @@ namespace FishGame
                 }
             }
         }
+
+        // NEW: Check enemy fish collisions with fixed oysters
+        std::for_each(m_entities.begin(), m_entities.end(),
+            [this](std::unique_ptr<Entity>& entity) {
+                if (Fish* fish = dynamic_cast<Fish*>(entity.get()))
+                {
+                    m_oysterManager->checkCollisions(*fish,
+                        [this, &fish](PermanentOyster* oyster) {
+                            if (oyster->canDamagePlayer()) // Closed oyster
+                            {
+                                // Enemy fish dies when trying to eat closed oyster
+                                fish->destroy();
+                                createParticleEffect(fish->getPosition(), sf::Color::Red);
+                                createParticleEffect(oyster->getPosition(), sf::Color(100, 100, 100)); // Gray for oyster
+                            }
+                            // Enemy fish do NOT collect points from open oysters
+                        });
+                }
+            });
     }
 
     void PlayState::handleFishCollision(Entity& fish)
@@ -562,12 +586,20 @@ namespace FishGame
         {
             if (pufferfish->isInflated())
             {
-                // Inflated pufferfish damages player
+                // Player tries to eat inflated pufferfish
                 if (!m_player->hasRecentlyTakenDamage())
                 {
-                    m_player->takeDamage();
+                    // Push player away
+                    pufferfish->pushEntity(*m_player);
+
+                    // Reduce score by 20 (but not below 0)
+                    int currentScore = m_scoreSystem->getCurrentScore();
+                    int newScore = std::max(0, currentScore - 20);
+                    m_scoreSystem->setCurrentScore(newScore);
+
+                    // Create visual feedback for score reduction
+                    createScoreReductionEffect(m_player->getPosition(), -20);
                     createParticleEffect(m_player->getPosition(), sf::Color::Yellow);
-                    handlePlayerDeath();
                 }
                 return;
             }
@@ -705,37 +737,32 @@ namespace FishGame
         if (!pufferfish || !pufferfish->isAlive())
             return;
 
-        float playerDistance = CollisionDetector::getDistance(
-            pufferfish->getPosition(), m_player->getPosition());
-
-        if (playerDistance < 100.0f && m_player->canEat(*pufferfish))
+        // Check for inflated pufferfish pushing entities
+        if (pufferfish->isInflated())
         {
-            pufferfish->startInflation();
-            return;
-        }
-
-        std::any_of(m_entities.begin(), m_entities.end(),
-            [pufferfish](const std::unique_ptr<Entity>& entity)
+            // Check player
+            if (pufferfish->canPushEntity(*m_player))
             {
-                if (entity.get() == pufferfish)
-                    return false;
+                // This is handled in handleFishCollision
+            }
 
-                if (auto* fish = dynamic_cast<Fish*>(entity.get()))
+            // Check other fish
+            std::for_each(m_entities.begin(), m_entities.end(),
+                [pufferfish, this](std::unique_ptr<Entity>& entity)
                 {
-                    if (fish->canEat(*pufferfish))
+                    if (entity.get() != pufferfish && entity->isAlive())
                     {
-                        float distance = CollisionDetector::getDistance(
-                            pufferfish->getPosition(), fish->getPosition());
-
-                        if (distance < 100.0f)
+                        if (pufferfish->canPushEntity(*entity))
                         {
-                            pufferfish->startInflation();
-                            return true;
+                            // Push the entity away
+                            pufferfish->pushEntity(*entity);
+
+                            // Create visual effect
+                            createParticleEffect(entity->getPosition(), sf::Color::Yellow);
                         }
                     }
-                }
-                return false;
-            });
+                });
+        }
     }
 
     void PlayState::handlePlayerDeath()
@@ -953,12 +980,17 @@ namespace FishGame
         m_bonusItemManager->setLevel(m_currentLevel);
 
         SpecialFishConfig specialConfig;
-        float levelMultiplier = 1.0f + (m_currentLevel - 1) * 0.3f;
 
-        specialConfig.barracudaSpawnRate = (0.05f + (m_currentLevel - 1) * 0.02f) * levelMultiplier;
-        specialConfig.pufferfishSpawnRate = (0.08f + (m_currentLevel - 1) * 0.03f) * levelMultiplier;
-        specialConfig.angelfishSpawnRate = (0.1f + (m_currentLevel - 1) * 0.04f) * levelMultiplier;
-        specialConfig.schoolSpawnChance = std::min(0.5f, (0.15f + (m_currentLevel - 1) * 0.05f) * levelMultiplier);
+        // Base rates with controlled increments
+        specialConfig.barracudaSpawnRate = 0.05f + (m_currentLevel - 1) * 0.01f;    // 0.05, 0.06, 0.07
+        specialConfig.pufferfishSpawnRate = 0.15f + (m_currentLevel - 1) * 0.02f;   // Increased: 0.15, 0.17, 0.19
+        specialConfig.angelfishSpawnRate = 0.02f + (m_currentLevel - 1) * 0.01f;    // Rare: 0.02, 0.03, 0.04
+
+        // Keep school spawn chance low and controlled
+        specialConfig.schoolSpawnChance = 0.05f + (m_currentLevel - 1) * 0.02f;     // 0.05, 0.07, 0.09
+
+        // Cap the maximum school spawn chance
+        specialConfig.schoolSpawnChance = std::min(0.10f, specialConfig.schoolSpawnChance);
 
         m_fishSpawner->setSpecialFishConfig(specialConfig);
         m_fishSpawner->setLevel(m_currentLevel);
@@ -988,6 +1020,37 @@ namespace FishGame
 
                 return particle;
             });
+    }
+
+    void PlayState::createScoreReductionEffect(sf::Vector2f position, int points)
+    {
+        // Create a temporary floating text effect for score reduction
+        struct ScoreReduction
+        {
+            sf::Text text;
+            sf::Vector2f position;
+            float lifetime;
+        };
+
+        static std::vector<ScoreReduction> scoreReductions;
+
+        ScoreReduction reduction;
+        reduction.text.setFont(getGame().getFonts().get(Fonts::Main));
+        reduction.text.setString(std::to_string(points));
+        reduction.text.setCharacterSize(36);
+        reduction.text.setFillColor(sf::Color::Red);
+        reduction.text.setOutlineColor(sf::Color::Black);
+        reduction.text.setOutlineThickness(2.0f);
+        reduction.position = position;
+        reduction.lifetime = 1.5f;
+
+        // Center the text
+        sf::FloatRect bounds = reduction.text.getLocalBounds();
+        reduction.text.setOrigin(bounds.width / 2.0f, bounds.height / 2.0f);
+        reduction.text.setPosition(position);
+
+        // Create upward floating particles
+        createParticleEffect(position, sf::Color::Red);
     }
 
     void PlayState::updateHUD()

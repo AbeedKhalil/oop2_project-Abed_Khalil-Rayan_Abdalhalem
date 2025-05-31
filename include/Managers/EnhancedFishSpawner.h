@@ -3,7 +3,6 @@
 #include "FishSpawner.h"
 #include "SpecialFish.h"
 #include "SchoolingSystem.h"
-// Note: FishFactory.h not included here to avoid circular dependencies
 #include <type_traits>
 #include <unordered_map>
 #include <string>

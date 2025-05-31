@@ -2,6 +2,7 @@
 #include "CollisionDetector.h"
 #include "GameConstants.h"
 #include "Player.h"
+#include "SpecialFish.h"
 #include <cmath>
 #include <algorithm>
 
@@ -208,6 +209,27 @@ namespace FishGame
             }
         }
 
+        // NEW: Check for puffed pufferfish to avoid
+        std::for_each(entities.begin(), entities.end(),
+            [this](const std::unique_ptr<Entity>& entity)
+            {
+                if (auto* pufferfish = dynamic_cast<const Pufferfish*>(entity.get()))
+                {
+                    if (pufferfish->isInflated() && pufferfish->isAlive())
+                    {
+                        float distance = CollisionDetector::getDistance(m_position, pufferfish->getPosition());
+
+                        // Avoid puffed pufferfish
+                        if (distance < AI_FLEE_RANGE * 1.5f)
+                        {
+                            sf::Vector2f avoidDirection = m_position - pufferfish->getPosition();
+                            setDirection(avoidDirection.x, avoidDirection.y);
+                            return;
+                        }
+                    }
+                }
+            });
+
         // Hunt for smaller prey
         const Entity* closestPrey = nullptr;
         float closestDistance = std::numeric_limits<float>::max();
@@ -218,6 +240,13 @@ namespace FishGame
             {
                 if (entity.get() != this && entity->isAlive() && canEat(*entity))
                 {
+                    // Skip puffed pufferfish
+                    if (auto* pufferfish = dynamic_cast<const Pufferfish*>(entity.get()))
+                    {
+                        if (pufferfish->isInflated())
+                            return;
+                    }
+
                     float distance = CollisionDetector::getDistance(m_position, entity->getPosition());
                     if (distance < closestDistance && distance < AI_DETECTION_RANGE)
                     {

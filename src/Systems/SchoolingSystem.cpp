@@ -9,8 +9,8 @@ namespace FishGame
         , m_nextSchoolId(1)
     {
         // Create initial schools for different fish types
-        createDefaultSchools<SmallFish>(2);
-        createDefaultSchools<MediumFish>(2);
+        createDefaultSchools<SmallFish>(1);    // Reduced from 2 to 1
+        createDefaultSchools<MediumFish>(1);   // Reduced from 2 to 1
     }
 
     void SchoolingSystem::update(sf::Time deltaTime)

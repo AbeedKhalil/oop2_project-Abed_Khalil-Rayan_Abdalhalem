@@ -16,22 +16,22 @@ namespace FishGame
         , m_randomEngine(std::random_device{}())
     {
         // Initialize spawn configurations for each level
-        // Reduced small fish, maintained medium and large fish rates
+        // Significantly reduced small fish spawn rates
 
         // Level 1: Easier difficulty
-        m_smallFishConfig[1] = { 0.0001f, 100.0f, m_windowSize.y - 100.0f, true };
-        m_mediumFishConfig[1] = { 1.2f, 150.0f, m_windowSize.y - 150.0f, false }; // Keep as is
-        m_largeFishConfig[1] = { 0.8f, 200.0f, m_windowSize.y - 200.0f, true };   // Keep as is
+        m_smallFishConfig[1] = { 0.15f, 100.0f, m_windowSize.y - 100.0f, true };   // Reduced from 0.0001f to 0.15f (1 every ~6.7 seconds)
+        m_mediumFishConfig[1] = { 0.5f, 150.0f, m_windowSize.y - 150.0f, false };  // Reduced from 1.2f
+        m_largeFishConfig[1] = { 0.3f, 200.0f, m_windowSize.y - 200.0f, true };    // Reduced from 0.8f
 
         // Level 2: Medium difficulty
-        m_smallFishConfig[2] = { 0.5f, 100.0f, m_windowSize.y - 100.0f, true };
-        m_mediumFishConfig[2] = { 0.7f, 150.0f, m_windowSize.y - 150.0f, false }; // Keep as is
-        m_largeFishConfig[2] = { 0.5f, 200.0f, m_windowSize.y - 200.0f, true };   // Keep as is
+        m_smallFishConfig[2] = { 0.2f, 100.0f, m_windowSize.y - 100.0f, true };    // Reduced from 0.5f (1 every 5 seconds)
+        m_mediumFishConfig[2] = { 0.4f, 150.0f, m_windowSize.y - 150.0f, false };  // Reduced from 0.7f
+        m_largeFishConfig[2] = { 0.3f, 200.0f, m_windowSize.y - 200.0f, true };    // Reduced from 0.5f
 
         // Level 3: Hard difficulty
-        m_smallFishConfig[3] = { 1.5f, 100.0f, m_windowSize.y - 100.0f, true }; 
-        m_mediumFishConfig[3] = { 0.7f, 150.0f, m_windowSize.y - 150.0f, false }; // Keep as is
-        m_largeFishConfig[3] = { 0.7f, 200.0f, m_windowSize.y - 200.0f, true };   // Keep as is
+        m_smallFishConfig[3] = { 0.3f, 100.0f, m_windowSize.y - 100.0f, true };    // Significantly reduced from 1.5f (1 every ~3.3 seconds)
+        m_mediumFishConfig[3] = { 0.5f, 150.0f, m_windowSize.y - 150.0f, false };  // Reduced from 0.7f
+        m_largeFishConfig[3] = { 0.4f, 200.0f, m_windowSize.y - 200.0f, true };    // Reduced from 0.7f
 
         // Setup spawners
         configureSpawnersForLevel(1);
