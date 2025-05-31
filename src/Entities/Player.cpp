@@ -2,6 +2,8 @@
 #include "Fish.h"
 #include "BonusItem.h"
 #include "PowerUp.h"
+#include "SpecialFish.h"
+#include "GenericFish.h"
 #include <SFML/Window.hpp>
 #include <cmath>
 #include <algorithm>
@@ -18,6 +20,7 @@ namespace FishGame
         , m_score(0)
         , m_currentStage(1)
         , m_growthProgress(0.0f)
+        , m_points(0)
         , m_useMouseControl(false)
         , m_targetPosition(0.0f, 0.0f)
         , m_growthMeter(nullptr)
@@ -59,7 +62,7 @@ namespace FishGame
         if (m_growthMeter)
         {
             m_growthMeter->setStage(m_currentStage);
-            m_growthMeter->setOnStageComplete([this]() { advanceStage(); });
+            m_growthMeter->setOnStageComplete([this]() { checkStageAdvancement(); });
         }
     }
 
@@ -121,6 +124,9 @@ namespace FishGame
 
         // Keep player within window bounds
         constrainToWindow();
+
+        // Check for stage advancement
+        checkStageAdvancement();
 
         // Update visual effects
         updateVisualEffects(deltaTime);
@@ -192,47 +198,57 @@ namespace FishGame
             m_radius * 2.0f, m_radius * 2.0f);
     }
 
-    void Player::grow(int points)
+    void Player::grow(int scoreValue)
     {
-        // Convert score points to growth points
+        // Growth points for visual growth
         float growthPoints = 0.0f;
 
-        // Determine growth points based on fish size/points
-        if (points <= 3)  // Small fish
+        if (scoreValue <= 3)
             growthPoints = m_tinyFishGrowth;
-        else if (points <= 6)  // Medium fish
+        else if (scoreValue <= 6)
             growthPoints = m_smallFishGrowth;
-        else if (points <= 9)  // Large fish
+        else if (scoreValue <= 9)
             growthPoints = m_mediumFishGrowth;
-        else  // Bonus items (oysters give 15 or 30 growth points)
-            growthPoints = static_cast<float>(points);
+        else
+            growthPoints = static_cast<float>(scoreValue);
 
         m_growthProgress += growthPoints;
 
         if (m_growthMeter)
         {
-            m_growthMeter->addProgress(growthPoints);
+            m_growthMeter->setPoints(m_points);
         }
 
-        // Trigger eat effect
         triggerEatEffect();
+    }
+
+    void Player::addPoints(int points)
+    {
+        m_points += points;
+
+        if (m_growthMeter)
+        {
+            m_growthMeter->setPoints(m_points);
+        }
+    }
+
+    void Player::checkStageAdvancement()
+    {
+        if (m_currentStage == 1 && m_points >= Constants::POINTS_FOR_STAGE_2)
+        {
+            m_currentStage = 2;
+            updateStage();
+        }
+        else if (m_currentStage == 2 && m_points >= Constants::POINTS_FOR_STAGE_3)
+        {
+            m_currentStage = 3;
+            updateStage();
+        }
     }
 
     void Player::advanceStage()
     {
-        if (m_currentStage < Constants::MAX_STAGES)  // Changed from 4 to MAX_STAGES
-        {
-            m_currentStage++;
-            updateStage();
-
-            // Visual effect for stage advancement
-            m_activeEffects.push_back({
-                1.5f,  // scale
-                0.0f,  // rotation
-                sf::Color::Cyan,
-                sf::seconds(0.5f)
-                });
-        }
+        checkStageAdvancement();
     }
 
     void Player::resetSize()
@@ -251,13 +267,19 @@ namespace FishGame
         }
     }
 
+    void Player::fullReset()
+    {
+        resetSize();
+        m_points = 0;
+        m_totalFishEaten = 0;
+        m_damageTaken = 0;
+    }
+
     bool Player::canEat(const Entity& other) const
     {
-        // Can't eat while invulnerable
         if (m_invulnerabilityTimer > sf::Time::Zero && m_invincibilityTimer <= sf::Time::Zero)
             return false;
 
-        // Check entity type
         EntityType otherType = other.getType();
         if (otherType == EntityType::SmallFish ||
             otherType == EntityType::MediumFish ||
@@ -270,7 +292,6 @@ namespace FishGame
             FishSize playerSize = getCurrentFishSize();
             FishSize fishSize = fish->getSize();
 
-            // Can eat same size or smaller fish
             return static_cast<int>(playerSize) >= static_cast<int>(fishSize);
         }
 
@@ -279,23 +300,52 @@ namespace FishGame
 
     bool Player::attemptEat(Entity& other)
     {
-        // This method should ONLY be called when we already know the player CAN eat the entity
         if (!canEat(other))
-            return false;  // Safety check
+            return false;
 
         const Fish* fish = dynamic_cast<const Fish*>(&other);
         if (fish)
         {
-            // Player successfully eats the fish
-            grow(fish->getPointValue());
+            int pointsToAdd = 0;
+
+            // Determine points based on fish type
+            if (dynamic_cast<const SmallFish*>(fish))
+            {
+                pointsToAdd = Constants::SMALL_FISH_POINTS;
+            }
+            else if (dynamic_cast<const MediumFish*>(fish))
+            {
+                pointsToAdd = Constants::MEDIUM_FISH_POINTS;
+            }
+            else if (dynamic_cast<const LargeFish*>(fish))
+            {
+                pointsToAdd = Constants::LARGE_FISH_POINTS;
+            }
+            else if (dynamic_cast<const Barracuda*>(fish))
+            {
+                pointsToAdd = Constants::BARRACUDA_POINTS;
+            }
+            else if (dynamic_cast<const Pufferfish*>(fish))
+            {
+                pointsToAdd = Constants::PUFFERFISH_POINTS;
+            }
+            else if (dynamic_cast<const Angelfish*>(fish))
+            {
+                pointsToAdd = Constants::ANGELFISH_POINTS;
+            }
+
+            // Add points
+            addPoints(pointsToAdd);
             m_totalFishEaten++;
+
+            // Visual growth
+            grow(fish->getPointValue());
 
             // Register hit for chain bonus
             if (m_scoreSystem)
             {
                 m_scoreSystem->registerHit();
 
-                // Add score with all multipliers
                 int frenzyMultiplier = m_frenzySystem ? m_frenzySystem->getMultiplier() : 1;
                 float powerUpMultiplier = m_powerUpManager ? m_powerUpManager->getScoreMultiplier() : 1.0f;
 
@@ -303,7 +353,6 @@ namespace FishGame
                     other.getPosition(), frenzyMultiplier, powerUpMultiplier);
             }
 
-            // Register fish eaten for frenzy
             if (m_frenzySystem)
             {
                 m_frenzySystem->registerFishEaten();
@@ -317,12 +366,10 @@ namespace FishGame
 
     bool Player::canTailBite(const Entity& other) const
     {
-        // Can only tail-bite much larger fish
         const Fish* fish = dynamic_cast<const Fish*>(&other);
         if (!fish)
             return false;
 
-        // Must be at least 2 sizes larger
         int sizeDifference = static_cast<int>(fish->getSize()) - static_cast<int>(getCurrentFishSize());
         return sizeDifference >= 2;
     }
@@ -331,11 +378,9 @@ namespace FishGame
     {
         if (canTailBite(other) && !hasRecentlyTakenDamage())
         {
-            // Check if we're near the tail (back portion of the fish)
             sf::Vector2f fishPos = other.getPosition();
             sf::Vector2f fishVelocity = other.getVelocity();
 
-            // Calculate tail position (opposite of movement direction)
             sf::Vector2f tailOffset = -fishVelocity;
             float length = std::sqrt(tailOffset.x * tailOffset.x + tailOffset.y * tailOffset.y);
             if (length > 0)
@@ -348,7 +393,6 @@ namespace FishGame
 
                 if (distance < m_radius + 10.0f)
                 {
-                    // Successful tail bite
                     if (m_scoreSystem)
                     {
                         int frenzyMultiplier = m_frenzySystem ? m_frenzySystem->getMultiplier() : 1;
@@ -388,7 +432,6 @@ namespace FishGame
         m_damageTaken++;
         m_damageCooldown = m_damageCooldownDuration;
 
-        // Register miss for chain bonus
         if (m_scoreSystem)
         {
             m_scoreSystem->registerMiss();
@@ -399,48 +442,19 @@ namespace FishGame
 
     void Player::die()
     {
-        // Reset position to center of screen
         m_position = sf::Vector2f(m_windowBounds.x / 2.0f, m_windowBounds.y / 2.0f);
         m_velocity = sf::Vector2f(0.0f, 0.0f);
         m_targetPosition = m_position;
 
-        // Start invulnerability period
         m_invulnerabilityTimer = m_invulnerabilityDuration;
 
-        // Lose some growth progress but stay in current stage
-        float progressLoss = 20.0f;
-        m_growthProgress = std::max(0.0f, m_growthProgress - progressLoss);
+        m_growthProgress = std::max(0.0f, m_growthProgress - 20.0f);
 
         if (m_growthMeter)
         {
-            // Save current stage before resetting
-            int savedStage = m_currentStage;
-            float savedProgress = m_growthProgress;
-
-            // Reset meter
-            m_growthMeter->reset();
-
-            // Restore stage without triggering callbacks
-            m_growthMeter->setStage(savedStage);
-
-            // Add back the remaining progress
-            if (savedProgress > 0)
-            {
-                // Temporarily disable callback to prevent stage advancement
-                auto callback = m_growthMeter->getOnStageComplete();
-                m_growthMeter->setOnStageComplete(nullptr);
-
-                m_growthMeter->addProgress(savedProgress);
-
-                // Restore callback
-                m_growthMeter->setOnStageComplete(callback);
-            }
+            m_growthMeter->setPoints(m_points);
         }
 
-        // Player stays alive (respawning).
-        m_isAlive = true;
-
-        // Reset any visual effects
         m_eatAnimationScale = 1.0f;
         m_damageFlashIntensity = 0.0f;
     }
@@ -448,7 +462,10 @@ namespace FishGame
     void Player::respawn()
     {
         m_isAlive = true;
-        die(); // Use die() to reset position and start invulnerability
+        m_position = sf::Vector2f(m_windowBounds.x / 2.0f, m_windowBounds.y / 2.0f);
+        m_velocity = sf::Vector2f(0.0f, 0.0f);
+        m_targetPosition = m_position;
+        m_invulnerabilityTimer = m_invulnerabilityDuration;
     }
 
     void Player::applySpeedBoost(float multiplier, sf::Time duration)
@@ -466,10 +483,9 @@ namespace FishGame
     {
         m_eatAnimationScale = 1.3f;
 
-        // Add visual effect
         m_activeEffects.push_back({
-            1.2f,  // scale
-            0.0f,  // rotation
+            1.2f,
+            0.0f,
             sf::Color::Green,
             sf::seconds(0.2f)
             });
@@ -480,10 +496,9 @@ namespace FishGame
         m_damageFlashIntensity = 1.0f;
         m_damageFlashColor = sf::Color::Red;
 
-        // Add visual effect
         m_activeEffects.push_back({
-            0.8f,  // scale
-            15.0f, // rotation
+            0.8f,
+            15.0f,
             sf::Color::Red,
             sf::seconds(0.3f)
             });
@@ -496,12 +511,10 @@ namespace FishGame
 
     void Player::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        // Apply visual effects
         for (const auto& effect : m_activeEffects)
         {
             if (effect.duration > sf::Time::Zero)
             {
-                // Create a transform for this effect
                 sf::Transform effectTransform;
                 effectTransform.translate(m_position);
                 effectTransform.scale(effect.scale, effect.scale);
@@ -517,16 +530,14 @@ namespace FishGame
 
     void Player::updateStage()
     {
-        // Update radius based on stage
         m_radius = m_baseRadius * std::pow(m_growthFactor, m_currentStage - 1);
         m_shape.setRadius(m_radius);
         m_shape.setOrigin(m_radius, m_radius);
 
-        // Update color based on stage (removed stage 4 color)
         sf::Color stageColors[] = {
-            sf::Color::Yellow,          // Stage 1
-            sf::Color(255, 150, 0),     // Stage 2 - Orange
-            sf::Color(255, 50, 50)      // Stage 3 - Red (final stage)
+            sf::Color::Yellow,
+            sf::Color(255, 150, 0),
+            sf::Color(255, 50, 50)
         };
 
         if (m_currentStage >= 1 && m_currentStage <= Constants::MAX_STAGES)
@@ -538,6 +549,13 @@ namespace FishGame
         {
             m_growthMeter->setStage(m_currentStage);
         }
+
+        m_activeEffects.push_back({
+            1.5f,
+            0.0f,
+            sf::Color::Cyan,
+            sf::seconds(0.5f)
+            });
     }
 
     void Player::constrainToWindow()
@@ -562,52 +580,44 @@ namespace FishGame
 
     void Player::updateVisualEffects(sf::Time deltaTime)
     {
-        // Update eat animation
         if (m_eatAnimationScale > 1.0f)
         {
             m_eatAnimationScale -= m_eatAnimationSpeed * deltaTime.asSeconds();
             m_eatAnimationScale = std::max(1.0f, m_eatAnimationScale);
         }
 
-        // Update damage flash
         if (m_damageFlashIntensity > 0.0f)
         {
             m_damageFlashIntensity -= 3.0f * deltaTime.asSeconds();
             m_damageFlashIntensity = std::max(0.0f, m_damageFlashIntensity);
         }
 
-        // Update active effects
         std::for_each(m_activeEffects.begin(), m_activeEffects.end(),
             [deltaTime](VisualEffect& effect) {
                 effect.duration -= deltaTime;
             });
 
-        // Remove expired effects
         m_activeEffects.erase(
             std::remove_if(m_activeEffects.begin(), m_activeEffects.end(),
                 [](const VisualEffect& effect) { return effect.duration <= sf::Time::Zero; }),
             m_activeEffects.end()
         );
 
-        // Apply visual states
         sf::Color currentColor = m_shape.getFillColor();
 
         if (m_invulnerabilityTimer > sf::Time::Zero)
         {
-            // Flashing effect
             float alpha = std::sin(m_invulnerabilityTimer.asSeconds() * 10.0f) * 0.5f + 0.5f;
             currentColor.a = static_cast<sf::Uint8>(255 * alpha);
         }
         else if (m_invincibilityTimer > sf::Time::Zero)
         {
-            // Golden glow for invincibility
-            currentColor = sf::Color(255, 215, 0); // Gold
+            currentColor = sf::Color(255, 215, 0);
             float glow = std::sin(m_invincibilityTimer.asSeconds() * 5.0f) * 0.3f + 0.7f;
             currentColor.r = static_cast<sf::Uint8>(currentColor.r * glow);
         }
         else if (m_damageFlashIntensity > 0.0f)
         {
-            // Mix damage flash color
             currentColor.r = static_cast<sf::Uint8>(currentColor.r + (m_damageFlashColor.r - currentColor.r) * m_damageFlashIntensity);
             currentColor.g = static_cast<sf::Uint8>(currentColor.g + (m_damageFlashColor.g - currentColor.g) * m_damageFlashIntensity);
             currentColor.b = static_cast<sf::Uint8>(currentColor.b + (m_damageFlashColor.b - currentColor.b) * m_damageFlashIntensity);
@@ -622,21 +632,18 @@ namespace FishGame
 
     void Player::handlePredatorBehavior(const Entity& predator)
     {
-        // Only handle if not invulnerable
         if (m_invulnerabilityTimer > sf::Time::Zero || m_invincibilityTimer > sf::Time::Zero)
             return;
 
-        // Bump effect - push player away from predator
         sf::Vector2f pushDirection = m_position - predator.getPosition();
         float distance = std::sqrt(pushDirection.x * pushDirection.x + pushDirection.y * pushDirection.y);
 
         if (distance > 0)
         {
             pushDirection /= distance;
-            m_velocity = pushDirection * 300.0f; // Push force
+            m_velocity = pushDirection * 300.0f;
         }
 
-        // Take damage
         takeDamage();
     }
 }

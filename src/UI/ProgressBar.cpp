@@ -86,8 +86,8 @@ namespace FishGame
         m_stageText.setString(stageStream.str());
 
         // Calculate progress within current stage
-        int stageStart = (currentStage == 1) ? 0 : (currentStage == 2) ? 33 : 66;
-        int stageEnd = (currentStage == 1) ? 33 : (currentStage == 2) ? 66 : 150;
+        int stageStart = (currentStage == 1) ? 0 : (currentStage == 2) ? 100 : 200;
+        int stageEnd = (currentStage == 1) ? 100 : (currentStage == 2) ? 200 : 400;
 
         float progress = static_cast<float>(currentScore - stageStart);
         float maxProgress = static_cast<float>(stageEnd - stageStart);

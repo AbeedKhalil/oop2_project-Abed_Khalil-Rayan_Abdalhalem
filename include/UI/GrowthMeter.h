@@ -9,7 +9,7 @@ namespace FishGame
     class GrowthMeter : public sf::Drawable
     {
     public:
-        GrowthMeter(const sf::Font& font);
+        explicit GrowthMeter(const sf::Font& font);
         ~GrowthMeter() = default;
 
         std::function<void()> getOnStageComplete() const { return m_onStageComplete; }
@@ -23,7 +23,7 @@ namespace FishGame
         GrowthMeter& operator=(GrowthMeter&&) = default;
 
         // Core functionality
-        void addProgress(float points);
+        void setPoints(int points);
         void update(sf::Time deltaTime);
         void reset();
         void setPosition(float x, float y);
@@ -58,6 +58,9 @@ namespace FishGame
         int m_currentStage;
         sf::Vector2f m_position;
 
+        // Points tracking
+        int m_points;
+
         // Animation
         float m_targetProgress;
         static constexpr float m_fillSpeed = 200.0f;
@@ -67,12 +70,6 @@ namespace FishGame
         static constexpr float m_width = 300.0f;
         static constexpr float m_height = 30.0f;
         static constexpr float m_borderThickness = 2.0f;
-
-    private:
-        // Stage progression - 3 stages total
-        static constexpr float m_stage1Progress = 100.0f;  // Points to reach stage 2
-        static constexpr float m_stage2Progress = 200.0f;  // Points to reach stage 3
-        static constexpr float m_stage3Progress = 400.0f;  // Maximum (for display only)
 
         // Callback
         std::function<void()> m_onStageComplete;

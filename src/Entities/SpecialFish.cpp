@@ -125,11 +125,11 @@ namespace FishGame
         const Entity* closestPrey = nullptr;
         float closestDistance = m_huntRange;
 
-        // Check player first
+        // Check player first - Barracuda can hunt player if player is smaller
         if (player && player->isAlive())
         {
             const Player* playerPtr = dynamic_cast<const Player*>(player);
-            if (playerPtr && playerPtr->getCurrentFishSize() <= FishSize::Medium)
+            if (playerPtr && canEat(*player))
             {
                 float distance = CollisionDetector::getDistance(m_position, player->getPosition());
                 if (distance < closestDistance)

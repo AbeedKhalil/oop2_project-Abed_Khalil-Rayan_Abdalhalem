@@ -29,12 +29,17 @@ namespace FishGame
         void followMouse(const sf::Vector2f& mousePosition);
 
         // Growth and size
-        void grow(int points);
+        void grow(int scoreValue);
+        void addPoints(int points);
         void advanceStage();
         void resetSize();
+        void fullReset();
         int getCurrentStage() const { return m_currentStage; }
         int getScore() const { return m_score; }
         float getGrowthProgress() const { return m_growthProgress; }
+
+        // Points tracking
+        int getPoints() const { return m_points; }
 
         // Eating mechanics
         bool canEat(const Entity& other) const;
@@ -78,12 +83,19 @@ namespace FishGame
         void updateInvulnerability(sf::Time deltaTime);
         void updateVisualEffects(sf::Time deltaTime);
         void handlePredatorBehavior(const Entity& predator);
+        void checkStageAdvancement();
+
+        template<typename T>
+        int getPointValue() const;
 
     private:
         sf::CircleShape m_shape;
         int m_score;
         int m_currentStage;
         float m_growthProgress;
+
+        // Points system
+        int m_points;
 
         // Control state
         bool m_useMouseControl;
@@ -116,10 +128,10 @@ namespace FishGame
         static constexpr float m_baseRadius = 20.0f;
         static constexpr float m_growthFactor = 1.5f;
 
-        // Growth points per size - Reduced for harder difficulty
-        static constexpr float m_tinyFishGrowth = 3.0f;    // Reduced from 5.0f
-        static constexpr float m_smallFishGrowth = 6.0f;   // Reduced from 10.0f
-        static constexpr float m_mediumFishGrowth = 12.0f; // Reduced from 20.0f
+        // Growth values for visual growth
+        static constexpr float m_tinyFishGrowth = 3.0f;
+        static constexpr float m_smallFishGrowth = 6.0f;
+        static constexpr float m_mediumFishGrowth = 12.0f;
 
         // Window bounds
         sf::Vector2u m_windowBounds;

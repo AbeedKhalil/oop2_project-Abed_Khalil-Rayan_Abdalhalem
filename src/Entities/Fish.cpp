@@ -19,9 +19,9 @@ namespace FishGame
         , m_baseColor(sf::Color::White)
         , m_outlineColor(sf::Color::Black)
         , m_outlineThickness(1.0f)
-        , m_isFleeing(false)  // New
-        , m_fleeSpeed(speed* m_fleeSpeedMultiplier)  // New
-        , m_fleeDirection(0.0f, 0.0f)  // New
+        , m_isFleeing(false)
+        , m_fleeSpeed(speed* m_fleeSpeedMultiplier)
+        , m_fleeDirection(0.0f, 0.0f)
     {
         // Set radius based on size
         switch (m_size)
@@ -126,9 +126,20 @@ namespace FishGame
         m_windowBounds = windowSize;
     }
 
-    // Virtual method implementations with default behavior
     bool Fish::canEat(const Entity& other) const
     {
+        // Check if it's a player
+        if (other.getType() == EntityType::Player)
+        {
+            const Player* player = dynamic_cast<const Player*>(&other);
+            if (!player)
+                return false;
+
+            // Fish can eat player if fish is larger than player's current size
+            FishSize playerSize = player->getCurrentFishSize();
+            return static_cast<int>(m_size) > static_cast<int>(playerSize);
+        }
+
         // Check if it's another fish
         if (other.getType() != EntityType::SmallFish &&
             other.getType() != EntityType::MediumFish &&
@@ -153,9 +164,7 @@ namespace FishGame
         if (m_isFleeing)
             return;
 
-        // Default AI behavior - can be overridden by derived classes
-        // Only medium and large fish have AI behavior by default
-
+        // Default AI behavior - only medium and large fish have AI behavior by default
         if (m_size == FishSize::Small)
             return;
 
@@ -185,6 +194,15 @@ namespace FishGame
                     // Flee from player
                     sf::Vector2f fleeDirection = m_position - player->getPosition();
                     setDirection(fleeDirection.x, fleeDirection.y);
+                    return;
+                }
+
+                // Check if we can hunt the player
+                if (canEat(*player) && distance < AI_DETECTION_RANGE)
+                {
+                    // Hunt the player
+                    sf::Vector2f huntDirection = player->getPosition() - m_position;
+                    setDirection(huntDirection.x, huntDirection.y);
                     return;
                 }
             }
