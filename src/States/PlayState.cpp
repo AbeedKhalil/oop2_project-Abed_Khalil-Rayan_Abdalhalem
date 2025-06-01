@@ -2,18 +2,14 @@
 #include "Game.h"
 #include "CollisionDetector.h"
 #include "Fish.h"
-#include "GameConstants.h"
 #include <algorithm>
 #include <sstream>
 #include <iomanip>
 #include <numeric>
+#include <execution>
 
 namespace FishGame
 {
-    // Static member initialization
-    const sf::Time PlayState::m_levelTransitionDuration = sf::seconds(5.0f);
-    const sf::Time PlayState::m_targetLevelTime = sf::seconds(120.0f);
-
     PlayState::PlayState(Game& game)
         : State(game)
         , m_player(std::make_unique<Player>())
@@ -21,300 +17,321 @@ namespace FishGame
         , m_schoolingSystem(std::make_unique<SchoolingSystem>())
         , m_entities()
         , m_bonusItems()
-        , m_growthMeter(std::make_unique<GrowthMeter>(getGame().getFonts().get(Fonts::Main)))
-        , m_frenzySystem(std::make_unique<FrenzySystem>(getGame().getFonts().get(Fonts::Main)))
-        , m_powerUpManager(std::make_unique<PowerUpManager>())
-        , m_scoreSystem(std::make_unique<ScoreSystem>(getGame().getFonts().get(Fonts::Main)))
-        , m_bonusItemManager(std::make_unique<BonusItemManager>(getGame().getWindow().getSize(), getGame().getFonts().get(Fonts::Main)))
-        , m_oysterManager(std::make_unique<FixedOysterManager>(getGame().getWindow().getSize()))
-        , m_scoreText()
-        , m_livesText()
-        , m_levelText()
-        , m_fpsText()
-        , m_messageText()
-        , m_chainText()
-        , m_powerUpText()
-        , m_currentLevel(1)
-        , m_playerLives(3)
-        , m_totalScore(0)
-        , m_levelStartTime(sf::Time::Zero)
-        , m_levelTime(sf::Time::Zero)
-        , m_levelComplete(false)
-        , m_levelTransitionTimer(sf::Time::Zero)
-        , m_gameWon(false)
-        , m_enemiesFleeing(false)
-        , m_winTimer(sf::Time::Zero)
+        , m_systems()
+        , m_growthMeter(nullptr)
+        , m_frenzySystem(nullptr)
+        , m_powerUpManager(nullptr)
+        , m_scoreSystem(nullptr)
+        , m_bonusItemManager(nullptr)
+        , m_oysterManager(nullptr)
+        , m_gameState()
         , m_levelStats()
-        , m_fpsUpdateTime(sf::Time::Zero)
-        , m_frameCount(0)
-        , m_currentFPS(0.0f)
+        , m_hud()
+        , m_metrics()
         , m_particles()
         , m_randomEngine(std::random_device{}())
+        , m_angleDist(0.0f, 360.0f)
+        , m_speedDist(Constants::MIN_PARTICLE_SPEED, Constants::MAX_PARTICLE_SPEED)
+    {
+        initializeSystems();
+
+        // Reserve capacity for containers
+        m_entities.reserve(Constants::MAX_ENTITIES);
+        m_bonusItems.reserve(Constants::MAX_BONUS_ITEMS);
+        m_particles.reserve(Constants::MAX_PARTICLES);
+    }
+
+    void PlayState::initializeSystems()
     {
         auto& window = getGame().getWindow();
         auto& font = getGame().getFonts().get(Fonts::Main);
 
+        // Create game systems using factory pattern
+        auto createSystem = [this, &font]<typename T>(const std::string & name) -> T* {
+            auto system = std::make_unique<T>(font);
+            T* ptr = system.get();
+            m_systems[name] = std::unique_ptr<void, std::function<void(void*)>>(
+                system.release(),
+                [](void* p) { delete static_cast<T*>(p); }
+            );
+            return ptr;
+        };
+
+        // Initialize systems
+        m_growthMeter = createSystem.template operator() < GrowthMeter > ("growth");
+        m_frenzySystem = createSystem.template operator() < FrenzySystem > ("frenzy");
+        m_scoreSystem = createSystem.template operator() < ScoreSystem > ("score");
+
+        // Special initialization for other systems
+        auto powerUpManager = std::make_unique<PowerUpManager>();
+        m_powerUpManager = powerUpManager.get();
+        m_systems["powerup"] = std::unique_ptr<void, std::function<void(void*)>>(
+            powerUpManager.release(),
+            [](void* p) { delete static_cast<PowerUpManager*>(p); }
+        );
+
+        auto bonusManager = std::make_unique<BonusItemManager>(window.getSize(), font);
+        m_bonusItemManager = bonusManager.get();
+        m_systems["bonus"] = std::unique_ptr<void, std::function<void(void*)>>(
+            bonusManager.release(),
+            [](void* p) { delete static_cast<BonusItemManager*>(p); }
+        );
+
+        auto oysterManager = std::make_unique<FixedOysterManager>(window.getSize());
+        m_oysterManager = oysterManager.get();
+        m_systems["oyster"] = std::unique_ptr<void, std::function<void(void*)>>(
+            oysterManager.release(),
+            [](void* p) { delete static_cast<FixedOysterManager*>(p); }
+        );
+
         // Initialize player with systems
         m_player->setWindowBounds(window.getSize());
-        m_player->initializeSystems(m_growthMeter.get(), m_frenzySystem.get(),
-            m_powerUpManager.get(), m_scoreSystem.get());
+        m_player->initializeSystems(m_growthMeter, m_frenzySystem, m_powerUpManager, m_scoreSystem);
 
-        // Set up enhanced fish spawner with schooling system
+        // Configure spawners
         m_fishSpawner->setSchoolingSystem(m_schoolingSystem.get());
 
-        // Configure special fish spawn rates based on level
-        SpecialFishConfig specialConfig;
-        specialConfig.barracudaSpawnRate = 0.05f;
-        specialConfig.pufferfishSpawnRate = 0.08f;
-        specialConfig.angelfishSpawnRate = 0.1f;
-        specialConfig.schoolSpawnChance = 0.05f;  // Reduced from 0.1f to 0.05f - less frequent schools
+        SpecialFishConfig specialConfig{
+            Constants::BARRACUDA_SPAWN_RATE,
+            Constants::PUFFERFISH_SPAWN_RATE,
+            Constants::ANGELFISH_SPAWN_RATE,
+            Constants::SCHOOL_SPAWN_CHANCE
+        };
         m_fishSpawner->setSpecialFishConfig(specialConfig);
 
-        // Position game systems UI
-        m_growthMeter->setPosition(20.0f, window.getSize().y - 60.0f);
-        m_frenzySystem->setPosition(window.getSize().x / 2.0f, 100.0f);
+        // Position UI elements
+        m_growthMeter->setPosition(Constants::GROWTH_METER_X, window.getSize().y - Constants::GROWTH_METER_Y_OFFSET);
+        m_frenzySystem->setPosition(window.getSize().x / 2.0f, Constants::FRENZY_Y_POSITION);
 
-        // Initialize HUD elements
-        const float hudMargin = 20.0f;
-        const unsigned int hudFontSize = 24;
+        // Initialize HUD
+        auto initText = [&font](sf::Text& text, unsigned int size, const sf::Vector2f& position) {
+            text.setFont(font);
+            text.setCharacterSize(size);
+            text.setFillColor(Constants::HUD_TEXT_COLOR);
+            text.setPosition(position);
+            };
 
-        // Score text
-        m_scoreText.setFont(font);
-        m_scoreText.setCharacterSize(hudFontSize);
-        m_scoreText.setFillColor(sf::Color::White);
-        m_scoreText.setPosition(hudMargin, hudMargin);
+        initText(m_hud.scoreText, Constants::HUD_FONT_SIZE,
+            sf::Vector2f(Constants::HUD_MARGIN, Constants::HUD_MARGIN));
+        initText(m_hud.livesText, Constants::HUD_FONT_SIZE,
+            sf::Vector2f(Constants::HUD_MARGIN, Constants::HUD_MARGIN + Constants::HUD_LINE_SPACING));
+        initText(m_hud.levelText, Constants::HUD_FONT_SIZE,
+            sf::Vector2f(Constants::HUD_MARGIN, Constants::HUD_MARGIN + Constants::HUD_LINE_SPACING * 2));
+        initText(m_hud.chainText, Constants::HUD_SMALL_FONT_SIZE,
+            sf::Vector2f(Constants::HUD_MARGIN, Constants::HUD_MARGIN + Constants::HUD_LINE_SPACING * 3));
+        initText(m_hud.powerUpText, Constants::HUD_SMALL_FONT_SIZE,
+            sf::Vector2f(window.getSize().x - Constants::POWERUP_TEXT_X_OFFSET, Constants::HUD_MARGIN + Constants::HUD_LINE_SPACING));
+        initText(m_hud.fpsText, Constants::HUD_FONT_SIZE,
+            sf::Vector2f(window.getSize().x - Constants::FPS_TEXT_X_OFFSET, Constants::HUD_MARGIN));
 
-        // Lives text
-        m_livesText.setFont(font);
-        m_livesText.setCharacterSize(hudFontSize);
-        m_livesText.setFillColor(sf::Color::White);
-        m_livesText.setPosition(hudMargin, hudMargin + 30.0f);
+        // Message text setup
+        m_hud.messageText.setFont(font);
+        m_hud.messageText.setCharacterSize(Constants::MESSAGE_FONT_SIZE);
+        m_hud.messageText.setFillColor(Constants::MESSAGE_COLOR);
+        m_hud.messageText.setOutlineColor(Constants::MESSAGE_OUTLINE_COLOR);
+        m_hud.messageText.setOutlineThickness(Constants::MESSAGE_OUTLINE_THICKNESS);
 
-        // Level text
-        m_levelText.setFont(font);
-        m_levelText.setCharacterSize(hudFontSize);
-        m_levelText.setFillColor(sf::Color::White);
-        m_levelText.setPosition(hudMargin, hudMargin + 60.0f);
-
-        // Chain text
-        m_chainText.setFont(font);
-        m_chainText.setCharacterSize(20);
-        m_chainText.setFillColor(sf::Color::Cyan);
-        m_chainText.setPosition(hudMargin, hudMargin + 90.0f);
-
-        // Power-up text
-        m_powerUpText.setFont(font);
-        m_powerUpText.setCharacterSize(20);
-        m_powerUpText.setFillColor(sf::Color::Yellow);
-        m_powerUpText.setPosition(window.getSize().x - 300.0f, hudMargin + 30.0f);
-
-        // FPS text
-        m_fpsText.setFont(font);
-        m_fpsText.setCharacterSize(hudFontSize);
-        m_fpsText.setFillColor(sf::Color::Green);
-        m_fpsText.setPosition(window.getSize().x - 100.0f, hudMargin);
-
-        // Message text (centered)
-        m_messageText.setFont(font);
-        m_messageText.setCharacterSize(48);
-        m_messageText.setFillColor(sf::Color::Yellow);
-        m_messageText.setOutlineColor(sf::Color::Black);
-        m_messageText.setOutlineThickness(2.0f);
-
-        // Set fish spawner level
-        m_fishSpawner->setLevel(m_currentLevel);
-
-        // Disable oyster spawning in BonusItemManager since we have fixed oysters
-        m_bonusItemManager->setOysterEnabled(false);
-
-        // Reserve space for entities
-        m_entities.reserve(50);
-        m_bonusItems.reserve(10);
-        m_particles.reserve(100);
+        // Configure initial state
+        m_fishSpawner->setLevel(m_gameState.currentLevel);
+        m_bonusItemManager->setOysterEnabled(false); // Using fixed oysters
 
         updateHUD();
     }
 
     void PlayState::handleEvent(const sf::Event& event)
     {
-        if (event.type == sf::Event::KeyPressed)
+        switch (event.type)
         {
+        case sf::Event::KeyPressed:
             switch (event.key.code)
             {
             case sf::Keyboard::Escape:
-                requestStackPop();
-                requestStackPush(StateID::Menu);
+                deferAction([this]() {
+                    requestStackPop();
+                    requestStackPush(StateID::Menu);
+                    });
                 break;
 
             case sf::Keyboard::Enter:
-                // Handle level advancement after bonus round
-                if (m_levelComplete && !m_enemiesFleeing)
+                if (m_gameState.levelComplete && !m_gameState.enemiesFleeing)
                 {
                     advanceLevel();
                 }
                 break;
 
             case sf::Keyboard::P:
-                // TODO: Implement pause state
+                deferAction([this]() {
+                    requestStackPush(StateID::Pause);
+                    });
                 break;
 
             default:
                 break;
             }
-        }
-        else if (event.type == sf::Event::MouseMoved)
-        {
-            // Update mouse position for player
-            sf::Vector2f mousePos(static_cast<float>(event.mouseMove.x),
-                static_cast<float>(event.mouseMove.y));
-            m_player->followMouse(mousePos);
+            break;
+
+        case sf::Event::MouseMoved:
+            m_player->followMouse(sf::Vector2f(
+                static_cast<float>(event.mouseMove.x),
+                static_cast<float>(event.mouseMove.y)
+            ));
+            break;
+
+        default:
+            break;
         }
     }
 
     bool PlayState::update(sf::Time deltaTime)
     {
-        // Update FPS counter
-        m_frameCount++;
-        m_fpsUpdateTime += deltaTime;
-        if (m_fpsUpdateTime >= sf::seconds(1.0f))
-        {
-            m_currentFPS = static_cast<float>(m_frameCount) / m_fpsUpdateTime.asSeconds();
-            m_frameCount = 0;
-            m_fpsUpdateTime = sf::Time::Zero;
-
-            std::ostringstream fpsStream;
-            fpsStream << std::fixed << std::setprecision(1) << "FPS: " << m_currentFPS;
-            m_fpsText.setString(fpsStream.str());
-        }
+        // Update performance metrics
+        updatePerformanceMetrics(deltaTime);
 
         // Don't update gameplay if waiting for level transition
-        if (m_levelComplete && !m_enemiesFleeing)
+        if (m_gameState.levelComplete && !m_gameState.enemiesFleeing)
         {
             return false;
         }
 
-        // Update game systems
+        // Main gameplay update
         updateGameplay(deltaTime);
+
+        // Process deferred actions
+        processDeferredActions();
 
         return false;
     }
 
-    void PlayState::render()
-    {
-        auto& window = getGame().getWindow();
-
-        // Draw all entities
-        std::for_each(m_entities.begin(), m_entities.end(),
-            [&window](const std::unique_ptr<Entity>& entity) {
-                window.draw(*entity);
-            });
-
-        // Draw fixed oysters
-        m_oysterManager->draw(window);
-
-        // Draw bonus items
-        std::for_each(m_bonusItems.begin(), m_bonusItems.end(),
-            [&window](const std::unique_ptr<BonusItem>& item) {
-                window.draw(*item);
-            });
-
-        // Draw player
-        window.draw(*m_player);
-
-        // Draw particle effects
-        std::for_each(m_particles.begin(), m_particles.end(),
-            [&window](const ParticleEffect& particle) {
-                window.draw(particle.shape);
-            });
-
-        // Draw floating scores
-        m_scoreSystem->drawFloatingScores(window);
-
-        // Draw game systems UI
-        window.draw(*m_growthMeter);
-        window.draw(*m_frenzySystem);
-
-        // Draw HUD
-        window.draw(m_scoreText);
-        window.draw(m_livesText);
-        window.draw(m_levelText);
-        window.draw(m_chainText);
-        window.draw(m_powerUpText);
-        window.draw(m_fpsText);
-
-        // Draw message if game won or level complete
-        if (m_gameWon || m_levelComplete)
-        {
-            // Draw semi-transparent overlay
-            sf::RectangleShape overlay(sf::Vector2f(window.getSize()));
-            overlay.setFillColor(sf::Color(0, 0, 0, 128));
-            window.draw(overlay);
-
-            window.draw(m_messageText);
-        }
-    }
-
     void PlayState::updateGameplay(sf::Time deltaTime)
     {
-        m_levelTime += deltaTime;
+        m_gameState.levelTime += deltaTime;
 
-        // Update game systems
+        // Update all systems
+        updateSystems(deltaTime);
+
+        // Check win condition
+        if (!m_gameState.gameWon && !m_gameState.levelComplete)
+        {
+            checkWinCondition();
+        }
+        else if (m_gameState.gameWon)
+        {
+            m_gameState.winTimer += deltaTime;
+            if (m_gameState.enemiesFleeing && areAllEnemiesGone())
+            {
+                m_gameState.enemiesFleeing = false;
+                showMessage("Level Complete!\nPress ENTER to continue");
+                m_gameState.levelComplete = true;
+            }
+        }
+
+        // Update entities
+        updateEntities(deltaTime);
+
+        // Handle spawning (unless game is won)
+        if (!m_gameState.gameWon)
+        {
+            m_fishSpawner->update(deltaTime, m_gameState.currentLevel);
+            auto& spawnedFish = m_fishSpawner->getSpawnedFish();
+            processSpawnedEntities(spawnedFish);
+        }
+
+        // Update bonus items
+        m_bonusItemManager->update(deltaTime);
+        auto newItems = m_bonusItemManager->collectSpawnedItems();
+        std::move(newItems.begin(), newItems.end(), std::back_inserter(m_bonusItems));
+
+        // Update containers
+        updateContainer(m_bonusItems, deltaTime);
+        updateContainer(m_entities, deltaTime);
+
+        // Update particles
+        std::for_each(std::execution::par_unseq, m_particles.begin(), m_particles.end(),
+            [deltaTime](ParticleEffect& particle) {
+                particle.lifetime -= deltaTime;
+                particle.shape.move(particle.velocity * deltaTime.asSeconds());
+                particle.alpha = std::max(0.0f, particle.alpha - Constants::PARTICLE_FADE_RATE * deltaTime.asSeconds());
+                sf::Color color = particle.shape.getFillColor();
+                color.a = static_cast<sf::Uint8>(particle.alpha);
+                particle.shape.setFillColor(color);
+            });
+
+        // Remove dead entities
+        removeDeadEntities(m_entities, [](const auto& entity) { return !entity->isAlive(); });
+        removeDeadEntities(m_bonusItems, [](const auto& item) {
+            return !item->isAlive() || item->hasExpired();
+            });
+        removeDeadEntities(m_particles, [](const auto& particle) {
+            return particle.lifetime <= sf::Time::Zero;
+            });
+
+        // Check collisions
+        checkCollisions();
+
+        // Update HUD
+        updateHUD();
+    }
+
+    void PlayState::updateSystems(sf::Time deltaTime)
+    {
+        // Update core systems
         m_frenzySystem->update(deltaTime);
         m_powerUpManager->update(deltaTime);
         m_scoreSystem->update(deltaTime);
         m_growthMeter->update(deltaTime);
-
-        // Check win condition only if not already won
-        if (!m_gameWon && !m_levelComplete)
-        {
-            checkWinCondition();
-        }
-        else if (m_gameWon)
-        {
-            // Update win timer
-            m_winTimer += deltaTime;
-
-            // Check if all enemies are gone
-            if (m_enemiesFleeing && areAllEnemiesGone())
-            {
-                m_enemiesFleeing = false;
-                showBonusPointsMessage();
-                m_levelComplete = true;
-            }
-        }
+        m_oysterManager->update(deltaTime);
 
         // Update schooling system
-        updateSchoolingBehavior(deltaTime);
+        m_schoolingSystem->update(deltaTime);
 
-        // Update fish spawner (unless game is won)
-        if (!m_gameWon)
+        // Periodically extract fish from schools
+        static sf::Time extractTimer = sf::Time::Zero;
+        extractTimer += deltaTime;
+
+        if (extractTimer >= Constants::SCHOOL_EXTRACT_INTERVAL)
         {
-            m_fishSpawner->update(deltaTime, m_currentLevel);
+            extractTimer = sf::Time::Zero;
 
-            // Get newly spawned fish
-            auto& spawnedFish = m_fishSpawner->getSpawnedFish();
-            std::move(spawnedFish.begin(), spawnedFish.end(), std::back_inserter(m_entities));
-            m_fishSpawner->clearSpawnedFish();
+            auto schoolFish = m_schoolingSystem->extractAllFish();
+            processSpawnedEntities(schoolFish);
+
+            // Try to re-add small fish to schools
+            std::vector<std::unique_ptr<Entity>> remainingEntities;
+
+            std::partition_copy(
+                std::make_move_iterator(m_entities.begin()),
+                std::make_move_iterator(m_entities.end()),
+                std::back_inserter(remainingEntities),
+                std::back_inserter(remainingEntities),
+                [this](const std::unique_ptr<Entity>& entity) {
+                    if (auto* smallFish = dynamic_cast<SmallFish*>(entity.get()))
+                    {
+                        if (smallFish->isAlive())
+                        {
+                            auto schoolMember = std::make_unique<SmallFish>(m_gameState.currentLevel);
+                            schoolMember->setPosition(smallFish->getPosition());
+                            schoolMember->setVelocity(smallFish->getVelocity());
+                            schoolMember->setWindowBounds(getGame().getWindow().getSize());
+                            return m_schoolingSystem->tryAddToSchool(std::move(schoolMember));
+                        }
+                    }
+                    return false;
+                });
+
+            m_entities = std::move(remainingEntities);
         }
-
-        // Update bonus items
-        updateBonusItems(deltaTime);
-
-        // Update power-ups
-        updatePowerUps(deltaTime);
-
-        // Update fixed oysters
-        m_oysterManager->update(deltaTime);
 
         // Update player
         m_player->update(deltaTime);
+    }
 
+    void PlayState::updateEntities(sf::Time deltaTime)
+    {
         // Update all entities and their AI
-        std::for_each(m_entities.begin(), m_entities.end(),
-            [this, deltaTime](const std::unique_ptr<Entity>& entity) {
+        std::for_each(std::execution::par_unseq, m_entities.begin(), m_entities.end(),
+            [this, deltaTime](const auto& entity) {
                 entity->update(deltaTime);
 
-                // Update fish AI
                 if (Fish* fish = dynamic_cast<Fish*>(entity.get()))
                 {
                     fish->updateAI(m_entities, m_player.get(), deltaTime);
@@ -322,135 +339,15 @@ namespace FishGame
             });
 
         // Handle special fish behaviors
-        handleSpecialFishBehaviors(deltaTime);
-
-        // Update particles
-        std::for_each(m_particles.begin(), m_particles.end(),
-            [deltaTime](ParticleEffect& particle) {
-                particle.lifetime -= deltaTime;
-                particle.shape.move(particle.velocity * deltaTime.asSeconds());
-                particle.alpha = std::max(0.0f, particle.alpha - 255.0f * deltaTime.asSeconds());
-                sf::Color color = particle.shape.getFillColor();
-                color.a = static_cast<sf::Uint8>(particle.alpha);
-                particle.shape.setFillColor(color);
-            });
-
-        // Remove dead entities and expired particles using STL algorithms
-        m_entities.erase(
-            std::remove_if(m_entities.begin(), m_entities.end(),
-                [](const std::unique_ptr<Entity>& entity) {
-                    return !entity->isAlive();
-                }),
-            m_entities.end()
-        );
-
-        m_bonusItems.erase(
-            std::remove_if(m_bonusItems.begin(), m_bonusItems.end(),
-                [](const std::unique_ptr<BonusItem>& item) {
-                    return !item->isAlive() || item->hasExpired();
-                }),
-            m_bonusItems.end()
-        );
-
-        m_particles.erase(
-            std::remove_if(m_particles.begin(), m_particles.end(),
-                [](const ParticleEffect& particle) {
-                    return particle.lifetime <= sf::Time::Zero;
-                }),
-            m_particles.end()
-        );
-
-        // Check collisions
-        checkCollisions();
-        checkTailBiteOpportunities();
-
-        // Update HUD
-        updateHUD();
-    }
-
-    void PlayState::updateBonusItems(sf::Time deltaTime)
-    {
-        // Update bonus item manager
-        m_bonusItemManager->update(deltaTime);
-
-        // Collect newly spawned items
-        auto newItems = m_bonusItemManager->collectSpawnedItems();
-        std::move(newItems.begin(), newItems.end(), std::back_inserter(m_bonusItems));
-
-        // Update existing items
-        std::for_each(m_bonusItems.begin(), m_bonusItems.end(),
-            [deltaTime](const std::unique_ptr<BonusItem>& item) {
-                item->update(deltaTime);
-            });
-    }
-
-    void PlayState::updatePowerUps(sf::Time deltaTime)
-    {
-        // Power-ups are now handled by BonusItemManager
-    }
-
-    void PlayState::updateSchoolingBehavior(sf::Time deltaTime)
-    {
-        // Update schooling system
-        m_schoolingSystem->update(deltaTime);
-
-        // Periodically extract fish from schools for rendering
-        static sf::Time extractTimer = sf::Time::Zero;
-        extractTimer += deltaTime;
-
-        if (extractTimer >= sf::seconds(0.1f))
-        {
-            extractTimer = sf::Time::Zero;
-
-            // Get fish from schools
-            auto schoolFish = m_schoolingSystem->extractAllFish();
-
-            // Add them back to entities
-            std::move(schoolFish.begin(), schoolFish.end(),
-                std::back_inserter(m_entities));
-
-            // Try to re-add fish to schools
-            std::vector<std::unique_ptr<Entity>> remainingEntities;
-
-            for (auto& entity : m_entities)
-            {
-                bool addedToSchool = false;
-
-                // Only try to add small fish to schools  
-                if (auto* smallFish = dynamic_cast<SmallFish*>(entity.get()))
-                {
-                    if (smallFish->isAlive())
-                    {
-                        auto schoolMember = std::make_unique<SmallFish>(m_currentLevel);
-                        schoolMember->setPosition(smallFish->getPosition());
-                        schoolMember->setVelocity(smallFish->getVelocity());
-                        schoolMember->setWindowBounds(getGame().getWindow().getSize());
-
-                        addedToSchool = m_schoolingSystem->tryAddToSchool(std::move(schoolMember));
-                    }
-                }
-
-                if (!addedToSchool)
-                {
-                    remainingEntities.push_back(std::move(entity));
-                }
-            }
-
-            m_entities = std::move(remainingEntities);
-        }
-    }
-
-    void PlayState::handleSpecialFishBehaviors(sf::Time deltaTime)
-    {
-        // Handle Pufferfish threat detection and Angelfish AI
         std::for_each(m_entities.begin(), m_entities.end(),
-            [this, deltaTime](const std::unique_ptr<Entity>& entity)  // Fixed: Added deltaTime to capture list
-            {
+            [this, deltaTime](const auto& entity) {
                 if (auto* pufferfish = dynamic_cast<Pufferfish*>(entity.get()))
                 {
-                    checkPufferfishThreat(pufferfish);
+                    if (pufferfish->isInflated() && pufferfish->canPushEntity(*m_player))
+                    {
+                        // This is handled in collision detection
+                    }
                 }
-                // Update Angelfish AI
                 else if (auto* angelfish = dynamic_cast<Angelfish*>(entity.get()))
                 {
                     angelfish->updateAI(m_entities, m_player.get(), deltaTime);
@@ -460,335 +357,227 @@ namespace FishGame
 
     void PlayState::checkCollisions()
     {
-        // Check player collisions with entities
-        std::for_each(m_entities.begin(), m_entities.end(),
-            [this](std::unique_ptr<Entity>& entity) {
-                if (CollisionDetector::checkCircleCollision(*m_player, *entity))
-                {
-                    handleFishCollision(*entity);
-                }
-            });
+        // Player vs entities
+        checkCollisionsWithContainer(*m_player, m_entities,
+            [this](Entity& entity) { handleFishCollision(entity); });
 
-        // Check player collisions with fixed oysters
+        // Player vs fixed oysters
         m_oysterManager->checkCollisions(*m_player,
-            [this](PermanentOyster* oyster) {
-                if (oyster->canDamagePlayer())
-                {
-                    // Oyster is closed - damage player
-                    if (!m_player->isInvulnerable())
-                    {
-                        m_player->takeDamage();
-                        handlePlayerDeath();
-                        createParticleEffect(m_player->getPosition(), sf::Color::Red);
-                    }
-                }
-                else if (oyster->canBeEaten())
-                {
-                    // Oyster is open - player eats it for points
-                    oyster->onCollect();
+            [this](PermanentOyster* oyster) { handleOysterCollision(oyster); });
 
-                    // Add points based on oyster type
-                    int points = oyster->hasBlackPearl() ? Constants::BLACK_OYSTER_POINTS : Constants::WHITE_OYSTER_POINTS;
-                    m_player->addPoints(points);
+        // Player vs bonus items
+        checkCollisionsWithContainer(*m_player, m_bonusItems,
+            [this](BonusItem& item) { handleBonusItemCollision(item); });
 
-                    // Add growth for visual effect
-                    m_player->grow(oyster->getGrowthPoints());
-
-                    // Add score with multipliers
-                    int frenzyMultiplier = m_frenzySystem->getMultiplier();
-                    float powerUpMultiplier = m_powerUpManager->getScoreMultiplier();
-
-                    m_scoreSystem->addScore(ScoreEventType::BonusCollected, oyster->getPoints(),
-                        oyster->getPosition(), frenzyMultiplier, powerUpMultiplier);
-
-                    createParticleEffect(oyster->getPosition(),
-                        oyster->hasBlackPearl() ? sf::Color::Magenta : sf::Color::White);
-                }
-            });
-
-        // Check player collisions with bonus items
-        std::for_each(m_bonusItems.begin(), m_bonusItems.end(),
-            [this](std::unique_ptr<BonusItem>& item) {
-                if (CollisionDetector::checkCircleCollision(*m_player, *item))
-                {
-                    handleBonusItemCollision(*item);
-                }
-            });
-
-        // Check fish-to-fish collisions
+        // Fish-to-fish collisions
         for (size_t i = 0; i < m_entities.size(); ++i)
         {
             Fish* fish1 = dynamic_cast<Fish*>(m_entities[i].get());
-            if (!fish1 || !fish1->isAlive())
-                continue;
+            if (!fish1 || !fish1->isAlive()) continue;
 
             for (size_t j = i + 1; j < m_entities.size(); ++j)
             {
                 Fish* fish2 = dynamic_cast<Fish*>(m_entities[j].get());
-                if (!fish2 || !fish2->isAlive())
-                    continue;
+                if (!fish2 || !fish2->isAlive()) continue;
 
-                if (CollisionDetector::checkCircleCollision(*fish1, *fish2))
-                {
-                    // Larger fish eats smaller fish
-                    if (fish1->canEat(*fish2))
-                    {
-                        fish2->destroy();
-                        createParticleEffect(fish2->getPosition(), sf::Color::Red);
-                    }
-                    else if (fish2->canEat(*fish1))
-                    {
-                        fish1->destroy();
-                        createParticleEffect(fish1->getPosition(), sf::Color::Red);
-                    }
-                }
+                checkCollisionPair(*fish1, *fish2,
+                    [this](Fish& f1, Fish& f2) {
+                        if (f1.canEat(f2))
+                        {
+                            f2.destroy();
+                            createParticleEffect(f2.getPosition(), Constants::DEATH_PARTICLE_COLOR);
+                        }
+                        else if (f2.canEat(f1))
+                        {
+                            f1.destroy();
+                            createParticleEffect(f1.getPosition(), Constants::DEATH_PARTICLE_COLOR);
+                        }
+                    });
             }
         }
 
-        // NEW: Check enemy fish collisions with fixed oysters
+        // Enemy fish vs oysters
         std::for_each(m_entities.begin(), m_entities.end(),
-            [this](std::unique_ptr<Entity>& entity) {
+            [this](auto& entity) {
                 if (Fish* fish = dynamic_cast<Fish*>(entity.get()))
                 {
                     m_oysterManager->checkCollisions(*fish,
                         [this, &fish](PermanentOyster* oyster) {
-                            if (oyster->canDamagePlayer()) // Closed oyster
+                            if (oyster->canDamagePlayer())
                             {
-                                // Enemy fish dies when trying to eat closed oyster
                                 fish->destroy();
-                                createParticleEffect(fish->getPosition(), sf::Color::Red);
-                                createParticleEffect(oyster->getPosition(), sf::Color(100, 100, 100)); // Gray for oyster
+                                createParticleEffect(fish->getPosition(), Constants::DEATH_PARTICLE_COLOR);
+                                createParticleEffect(oyster->getPosition(), Constants::OYSTER_IMPACT_COLOR);
                             }
-                            // Enemy fish do NOT collect points from open oysters
                         });
+                }
+            });
+
+        // Check tail-bite opportunities
+        std::for_each(m_entities.begin(), m_entities.end(),
+            [this](auto& entity) {
+                if (m_player->attemptTailBite(*entity))
+                {
+                    createParticleEffect(m_player->getPosition(), Constants::TAILBITE_PARTICLE_COLOR);
                 }
             });
     }
 
     void PlayState::handleFishCollision(Entity& fish)
     {
-        // Skip if player is invulnerable
         if (m_player->isInvulnerable())
             return;
 
-        // Determine if player can eat this fish
-        bool playerCanEat = m_player->canEat(fish);
-
-        // Determine if fish can eat player
-        bool fishCanEatPlayer = false;
-        if (Fish* fishPtr = dynamic_cast<Fish*>(&fish))
+        // Special fish handling using visitor pattern
+        struct FishCollisionVisitor
         {
-            fishCanEatPlayer = fishPtr->canEat(*m_player);
-        }
+            PlayState* state;
+            Entity& fish;
 
-        // Handle special fish types first
-        if (auto* pufferfish = dynamic_cast<Pufferfish*>(&fish))
-        {
-            if (pufferfish->isInflated())
-            {
-                // Player tries to eat inflated pufferfish
-                if (!m_player->hasRecentlyTakenDamage())
+            void operator()(Pufferfish* puffer) {
+                if (puffer->isInflated() && !state->m_player->hasRecentlyTakenDamage())
                 {
-                    // Push player away
-                    pufferfish->pushEntity(*m_player);
-
-                    // Reduce score by 20 (but not below 0)
-                    int currentScore = m_scoreSystem->getCurrentScore();
-                    int newScore = std::max(0, currentScore - 20);
-                    m_scoreSystem->setCurrentScore(newScore);
-
-                    // Create visual feedback for score reduction
-                    createScoreReductionEffect(m_player->getPosition(), -20);
-                    createParticleEffect(m_player->getPosition(), sf::Color::Yellow);
-                }
-                return;
-            }
-            // Non-inflated pufferfish uses normal logic below
-        }
-        else if (auto* angelfish = dynamic_cast<Angelfish*>(&fish))
-        {
-            if (playerCanEat)
-            {
-                if (m_player->attemptEat(fish))
-                {
-                    createParticleEffect(fish.getPosition(), sf::Color::Cyan);
-                    createParticleEffect(fish.getPosition(), sf::Color::Magenta);
-                    createParticleEffect(fish.getPosition(), sf::Color::Yellow);
-                    fish.destroy();
+                    puffer->pushEntity(*state->m_player);
+                    int penalty = Constants::PUFFERFISH_SCORE_PENALTY;
+                    state->m_scoreSystem->setCurrentScore(
+                        std::max(0, state->m_scoreSystem->getCurrentScore() - penalty)
+                    );
+                    state->createParticleEffect(state->m_player->getPosition(),
+                        Constants::PUFFERFISH_IMPACT_COLOR);
                 }
             }
-            return;
-        }
-        else if (auto* barracuda = dynamic_cast<Barracuda*>(&fish))
-        {
-            if (playerCanEat)
-            {
-                if (m_player->attemptEat(fish))
-                {
-                    fish.destroy();
-                    createParticleEffect(fish.getPosition(), sf::Color::Green);
-                }
-            }
-            else if (fishCanEatPlayer)
-            {
-                if (!m_player->hasRecentlyTakenDamage())
-                {
-                    m_player->takeDamage();
-                    createParticleEffect(m_player->getPosition(), sf::Color::Red);
-                    createParticleEffect(m_player->getPosition(), sf::Color(100, 0, 0));
-                    handlePlayerDeath();
-                }
-            }
-            return;
-        }
 
-        // Handle normal fish collision
-        if (playerCanEat)
-        {
-            if (m_player->attemptEat(fish))
-            {
-                fish.destroy();
-                createParticleEffect(fish.getPosition(), sf::Color::Green);
+            void operator()(Angelfish* angel) {
+                if (state->m_player->canEat(fish))
+                {
+                    if (state->m_player->attemptEat(fish))
+                    {
+                        state->createParticleEffect(fish.getPosition(),
+                            Constants::ANGELFISH_PARTICLE_COLOR,
+                            Constants::ANGELFISH_PARTICLE_COUNT);
+                        fish.destroy();
+                    }
+                }
             }
-        }
-        else if (fishCanEatPlayer)
-        {
-            // Enemy fish eats player - player dies
-            if (!m_player->hasRecentlyTakenDamage())
-            {
-                m_player->takeDamage();
-                createParticleEffect(m_player->getPosition(), sf::Color::Red);
-                handlePlayerDeath();
+
+            void operator()(Fish* regularFish) {
+                bool playerCanEat = state->m_player->canEat(fish);
+                bool fishCanEatPlayer = regularFish->canEat(*state->m_player);
+
+                if (playerCanEat)
+                {
+                    if (state->m_player->attemptEat(fish))
+                    {
+                        fish.destroy();
+                        state->createParticleEffect(fish.getPosition(),
+                            Constants::EAT_PARTICLE_COLOR);
+                    }
+                }
+                else if (fishCanEatPlayer && !state->m_player->hasRecentlyTakenDamage())
+                {
+                    state->m_player->takeDamage();
+                    state->createParticleEffect(state->m_player->getPosition(),
+                        Constants::DAMAGE_PARTICLE_COLOR);
+                    state->handlePlayerDeath();
+                }
             }
-        }
+        } visitor{ this, fish };
+
+        // Apply visitor pattern
+        if (auto* puffer = dynamic_cast<Pufferfish*>(&fish))
+            visitor(puffer);
+        else if (auto* angel = dynamic_cast<Angelfish*>(&fish))
+            visitor(angel);
+        else if (auto* regularFish = dynamic_cast<Fish*>(&fish))
+            visitor(regularFish);
     }
 
     void PlayState::handleBonusItemCollision(BonusItem& item)
     {
-        // Check specific bonus item types
         if (PearlOyster* oyster = dynamic_cast<PearlOyster*>(&item))
         {
             if (!oyster->isOpen())
                 return;
         }
 
-        // Collect the item
         item.onCollect();
 
-        // Handle power-ups separately
         if (PowerUp* powerUp = dynamic_cast<PowerUp*>(&item))
         {
             handlePowerUpCollision(*powerUp);
         }
         else
         {
-            // Regular bonus item - add score
             int frenzyMultiplier = m_frenzySystem->getMultiplier();
             float powerUpMultiplier = m_powerUpManager->getScoreMultiplier();
 
             m_scoreSystem->addScore(ScoreEventType::BonusCollected, item.getPoints(),
                 item.getPosition(), frenzyMultiplier, powerUpMultiplier);
 
-            createParticleEffect(item.getPosition(), sf::Color::Yellow);
+            createParticleEffect(item.getPosition(), Constants::BONUS_PARTICLE_COLOR);
         }
     }
 
     void PlayState::handlePowerUpCollision(PowerUp& powerUp)
     {
-        PowerUpType type = powerUp.getPowerUpType();
+        // Power-up handling using map dispatch
+        static const std::unordered_map<PowerUpType, std::function<void(PlayState*, PowerUp&)>> powerUpHandlers = {
+            {PowerUpType::ScoreDoubler, [](PlayState* state, PowerUp& pu) {
+                state->m_powerUpManager->activatePowerUp(pu.getPowerUpType(), pu.getDuration());
+                state->createParticleEffect(pu.getPosition(), Constants::SCORE_DOUBLER_COLOR);
+            }},
+            {PowerUpType::FrenzyStarter, [](PlayState* state, PowerUp& pu) {
+                state->m_frenzySystem->forceFrenzy();
+                state->createParticleEffect(pu.getPosition(), Constants::FRENZY_STARTER_COLOR);
+            }},
+            {PowerUpType::SpeedBoost, [](PlayState* state, PowerUp& pu) {
+                state->m_player->applySpeedBoost(Constants::SPEED_BOOST_MULTIPLIER, pu.getDuration());
+                state->createParticleEffect(pu.getPosition(), Constants::SPEED_BOOST_COLOR);
+            }},
+            {PowerUpType::Invincibility, [](PlayState* state, PowerUp& pu) {
+                state->m_player->applyInvincibility(pu.getDuration());
+                state->createParticleEffect(pu.getPosition(), Constants::INVINCIBILITY_COLOR);
+            }}
+        };
 
-        switch (type)
+        if (auto it = powerUpHandlers.find(powerUp.getPowerUpType()); it != powerUpHandlers.end())
         {
-        case PowerUpType::ScoreDoubler:
-            m_powerUpManager->activatePowerUp(type, powerUp.getDuration());
-            createParticleEffect(powerUp.getPosition(), sf::Color::Yellow);
-            break;
-
-        case PowerUpType::FrenzyStarter:
-            m_frenzySystem->forceFrenzy();
-            createParticleEffect(powerUp.getPosition(), sf::Color::Magenta);
-            break;
-
-        case PowerUpType::SpeedBoost:
-            m_player->applySpeedBoost(1.5f, powerUp.getDuration());
-            createParticleEffect(powerUp.getPosition(), sf::Color::Cyan);
-            break;
-
-        case PowerUpType::Invincibility:
-            m_player->applyInvincibility(powerUp.getDuration());
-            createParticleEffect(powerUp.getPosition(), sf::Color(255, 215, 0));
-            break;
+            it->second(this, powerUp);
         }
     }
 
-    void PlayState::checkTailBiteOpportunities()
+    void PlayState::handleOysterCollision(PermanentOyster* oyster)
     {
-        std::for_each(m_entities.begin(), m_entities.end(),
-            [this](std::unique_ptr<Entity>& entity) {
-                if (m_player->attemptTailBite(*entity))
-                {
-                    createParticleEffect(m_player->getPosition(), sf::Color::Magenta);
-                }
-            });
-    }
-
-    void PlayState::checkPufferfishThreat(Pufferfish* pufferfish)
-    {
-        if (!pufferfish || !pufferfish->isAlive())
-            return;
-
-        // Check for inflated pufferfish pushing entities
-        if (pufferfish->isInflated())
+        if (oyster->canDamagePlayer() && !m_player->isInvulnerable())
         {
-            // Check player
-            if (pufferfish->canPushEntity(*m_player))
-            {
-                // This is handled in handleFishCollision
-            }
-
-            // Check other fish
-            std::for_each(m_entities.begin(), m_entities.end(),
-                [pufferfish, this](std::unique_ptr<Entity>& entity)
-                {
-                    if (entity.get() != pufferfish && entity->isAlive())
-                    {
-                        if (pufferfish->canPushEntity(*entity))
-                        {
-                            // Push the entity away
-                            pufferfish->pushEntity(*entity);
-
-                            // Create visual effect
-                            createParticleEffect(entity->getPosition(), sf::Color::Yellow);
-                        }
-                    }
-                });
+            m_player->takeDamage();
+            handlePlayerDeath();
+            createParticleEffect(m_player->getPosition(), Constants::DAMAGE_PARTICLE_COLOR);
         }
-    }
-
-    void PlayState::handlePlayerDeath()
-    {
-        // Only handle death if player isn't invulnerable
-        if (m_player->isInvulnerable())
-            return;
-
-        m_playerLives--;
-        m_player->die();
-
-        if (m_playerLives <= 0)
+        else if (oyster->canBeEaten())
         {
-            gameOver();
-        }
-        else
-        {
-            // Respawn the player after death
-            m_player->respawn();
-            createParticleEffect(m_player->getPosition(), sf::Color::Red);
+            oyster->onCollect();
+
+            int points = oyster->hasBlackPearl()
+                ? Constants::BLACK_OYSTER_POINTS
+                : Constants::WHITE_OYSTER_POINTS;
+
+            m_player->addPoints(points);
+            m_player->grow(oyster->getGrowthPoints());
+
+            int frenzyMultiplier = m_frenzySystem->getMultiplier();
+            float powerUpMultiplier = m_powerUpManager->getScoreMultiplier();
+
+            m_scoreSystem->addScore(ScoreEventType::BonusCollected, oyster->getPoints(),
+                oyster->getPosition(), frenzyMultiplier, powerUpMultiplier);
+
+            createParticleEffect(oyster->getPosition(),
+                oyster->hasBlackPearl() ? Constants::BLACK_PEARL_COLOR : Constants::WHITE_PEARL_COLOR);
         }
     }
 
     void PlayState::checkWinCondition()
     {
-        // Win when player reaches 400 points
         if (m_player->getPoints() >= Constants::POINTS_TO_WIN)
         {
             triggerWinSequence();
@@ -797,12 +586,12 @@ namespace FishGame
 
     void PlayState::triggerWinSequence()
     {
-        m_gameWon = true;
-        m_enemiesFleeing = true;
-        m_winTimer = sf::Time::Zero;
+        m_gameState.gameWon = true;
+        m_gameState.enemiesFleeing = true;
+        m_gameState.winTimer = sf::Time::Zero;
 
         makeAllEnemiesFlee();
-        showWinMessage();
+        showMessage("LEVEL COMPLETE!\n\nEat the fleeing fish for bonus points!");
 
         // Disable spawning
         m_fishSpawner->setLevel(-1);
@@ -813,8 +602,7 @@ namespace FishGame
     void PlayState::makeAllEnemiesFlee()
     {
         std::for_each(m_entities.begin(), m_entities.end(),
-            [](std::unique_ptr<Entity>& entity)
-            {
+            [](auto& entity) {
                 if (Fish* fish = dynamic_cast<Fish*>(entity.get()))
                 {
                     fish->startFleeing();
@@ -825,103 +613,55 @@ namespace FishGame
     bool PlayState::areAllEnemiesGone() const
     {
         return std::none_of(m_entities.begin(), m_entities.end(),
-            [](const std::unique_ptr<Entity>& entity)
-            {
+            [](const auto& entity) {
                 return entity->isAlive() &&
                     dynamic_cast<const Fish*>(entity.get()) != nullptr;
             });
     }
 
-    void PlayState::showWinMessage()
+    void PlayState::handlePlayerDeath()
     {
-        std::ostringstream messageStream;
-        messageStream << "LEVEL COMPLETE!\n\n"
-            << "Points: " << m_player->getPoints() << "\n"
-            << "Score: " << m_scoreSystem->getCurrentScore() << "\n"
-            << "Eat the fleeing fish for bonus points!";
+        if (m_player->isInvulnerable())
+            return;
 
-        m_messageText.setString(messageStream.str());
+        m_gameState.playerLives--;
+        m_player->die();
 
-        sf::FloatRect bounds = m_messageText.getLocalBounds();
-        m_messageText.setOrigin(bounds.width / 2.0f, bounds.height / 2.0f);
-        m_messageText.setPosition(getGame().getWindow().getSize().x / 2.0f,
-            getGame().getWindow().getSize().y / 2.0f - 100.0f);
-    }
-
-    void PlayState::showBonusPointsMessage()
-    {
-        std::ostringstream messageStream;
-        messageStream << "LEVEL " << m_currentLevel << " COMPLETE!\n\n"
-            << "Final Points: " << m_player->getPoints() << "\n"
-            << "Final Score: " << m_scoreSystem->getCurrentScore() << "\n"
-            << "Total Fish Eaten: " << m_player->getTotalFishEaten() << "\n\n"
-            << "Press ENTER for Level " << (m_currentLevel + 1);
-
-        m_messageText.setString(messageStream.str());
-
-        sf::FloatRect bounds = m_messageText.getLocalBounds();
-        m_messageText.setOrigin(bounds.width / 2.0f, bounds.height / 2.0f);
-        m_messageText.setPosition(getGame().getWindow().getSize().x / 2.0f,
-            getGame().getWindow().getSize().y / 2.0f);
-    }
-
-    void PlayState::completeLevel()
-    {
-        m_levelComplete = true;
-        m_levelTransitionTimer = sf::Time::Zero;
-
-        m_levelStats.completionTime = m_levelTime;
-        m_levelStats.reachedMaxSize = m_player->isAtMaxSize();
-        m_levelStats.tookNoDamage = !m_player->hasTakenDamage();
-
-        m_levelStats.timeBonus = m_scoreSystem->calculateTimeBonus(m_levelTime, m_targetLevelTime);
-        m_levelStats.growthBonus = m_scoreSystem->calculateGrowthBonus(m_levelStats.reachedMaxSize);
-        m_levelStats.untouchableBonus = m_scoreSystem->calculateUntouchableBonus(m_levelStats.tookNoDamage);
-        m_levelStats.totalBonus = m_levelStats.timeBonus + m_levelStats.growthBonus + m_levelStats.untouchableBonus;
-
-        m_scoreSystem->addScore(ScoreEventType::LevelComplete, m_levelStats.totalBonus,
-            sf::Vector2f(getGame().getWindow().getSize().x / 2.0f,
-                getGame().getWindow().getSize().y / 2.0f),
-            1, 1.0f);
-
-        showEndOfLevelStats();
-    }
-
-    void PlayState::showEndOfLevelStats()
-    {
-        std::ostringstream messageStream;
-        messageStream << "Level " << m_currentLevel << " Complete!\n\n"
-            << "Time: " << std::fixed << std::setprecision(1)
-            << m_levelTime.asSeconds() << "s\n"
-            << "Fish Eaten: " << m_player->getTotalFishEaten() << "\n"
-            << "Points: " << m_player->getPoints() << "\n"
-            << "Time Bonus: " << m_levelStats.timeBonus << "\n"
-            << "Untouchable Bonus: " << m_levelStats.untouchableBonus << "\n"
-            << "Total Bonus: " << m_levelStats.totalBonus;
-
-        m_messageText.setString(messageStream.str());
-
-        sf::FloatRect bounds = m_messageText.getLocalBounds();
-        m_messageText.setOrigin(bounds.width / 2.0f, bounds.height / 2.0f);
-        m_messageText.setPosition(getGame().getWindow().getSize().x / 2.0f,
-            getGame().getWindow().getSize().y / 2.0f);
+        if (m_gameState.playerLives <= 0)
+        {
+            gameOver();
+        }
+        else
+        {
+            m_player->respawn();
+            createParticleEffect(m_player->getPosition(), Constants::RESPAWN_PARTICLE_COLOR);
+        }
     }
 
     void PlayState::advanceLevel()
     {
-        m_currentLevel++;
-        m_totalScore += m_scoreSystem->getCurrentScore();
+        m_gameState.currentLevel++;
+        m_gameState.totalScore += m_scoreSystem->getCurrentScore();
         m_scoreSystem->addToTotalScore(m_scoreSystem->getCurrentScore());
 
-        // Reset for new level
-        m_player->fullReset();
-        m_levelComplete = false;
-        m_gameWon = false;
-        m_enemiesFleeing = false;
-        m_levelTime = sf::Time::Zero;
-        m_levelStartTime = sf::Time::Zero;
+        resetLevel();
+        updateLevelDifficulty();
 
-        // Clear entities and items
+        m_hud.messageText.setString("");
+    }
+
+    void PlayState::resetLevel()
+    {
+        // Reset player
+        m_player->fullReset();
+
+        // Reset game state
+        m_gameState.levelComplete = false;
+        m_gameState.gameWon = false;
+        m_gameState.enemiesFleeing = false;
+        m_gameState.levelTime = sf::Time::Zero;
+
+        // Clear containers
         m_entities.clear();
         m_bonusItems.clear();
         m_particles.clear();
@@ -932,165 +672,92 @@ namespace FishGame
         m_powerUpManager->reset();
         m_growthMeter->reset();
         m_oysterManager->resetAll();
-
-        // Update difficulty
-        m_fishSpawner->setLevel(m_currentLevel);
-        m_bonusItemManager->setLevel(m_currentLevel);
-        updateLevelDifficulty();
 
         // Re-enable spawning
         m_bonusItemManager->setStarfishEnabled(true);
         m_bonusItemManager->setPowerUpsEnabled(true);
-
-        // Clear messages
-        m_messageText.setString("");
     }
 
     void PlayState::gameOver()
     {
-        // Reset current level
-        m_playerLives = 3;
-        m_player->fullReset();
-        m_entities.clear();
-        m_bonusItems.clear();
-        m_particles.clear();
+        m_gameState.playerLives = Constants::INITIAL_LIVES;
+        resetLevel();
 
-        // Reset systems
-        m_scoreSystem->reset();
-        m_frenzySystem->reset();
-        m_powerUpManager->reset();
-        m_growthMeter->reset();
-        m_oysterManager->resetAll();
-
-        m_levelTime = sf::Time::Zero;
-        m_levelStartTime = sf::Time::Zero;
-        m_gameWon = false;
-        m_enemiesFleeing = false;
-
-        // Display game over message
-        m_messageText.setString("Game Over! Restarting Level " + std::to_string(m_currentLevel));
-        sf::FloatRect bounds = m_messageText.getLocalBounds();
-        m_messageText.setOrigin(bounds.width / 2.0f, bounds.height / 2.0f);
-        m_messageText.setPosition(getGame().getWindow().getSize().x / 2.0f,
-            getGame().getWindow().getSize().y / 2.0f);
+        showMessage("Game Over! Press ESC for menu");
     }
 
     void PlayState::updateLevelDifficulty()
     {
-        m_bonusItemManager->setLevel(m_currentLevel);
+        m_bonusItemManager->setLevel(m_gameState.currentLevel);
 
-        SpecialFishConfig specialConfig;
+        SpecialFishConfig config;
 
-        // Base rates with controlled increments
-        specialConfig.barracudaSpawnRate = 0.05f + (m_currentLevel - 1) * 0.01f;    // 0.05, 0.06, 0.07
-        specialConfig.pufferfishSpawnRate = 0.15f + (m_currentLevel - 1) * 0.02f;   // Increased: 0.15, 0.17, 0.19
-        specialConfig.angelfishSpawnRate = 0.02f + (m_currentLevel - 1) * 0.01f;    // Rare: 0.02, 0.03, 0.04
+        // Calculate difficulty multipliers
+        float levelMultiplier = 1.0f + (m_gameState.currentLevel - 1) * Constants::DIFFICULTY_INCREMENT;
 
-        // Keep school spawn chance low and controlled
-        specialConfig.schoolSpawnChance = 0.05f + (m_currentLevel - 1) * 0.02f;     // 0.05, 0.07, 0.09
+        config.barracudaSpawnRate = Constants::BARRACUDA_SPAWN_RATE * levelMultiplier;
+        config.pufferfishSpawnRate = Constants::PUFFERFISH_SPAWN_RATE * levelMultiplier;
+        config.angelfishSpawnRate = Constants::ANGELFISH_SPAWN_RATE * levelMultiplier;
+        config.schoolSpawnChance = std::min(Constants::MAX_SCHOOL_SPAWN_CHANCE,
+            Constants::SCHOOL_SPAWN_CHANCE * levelMultiplier);
 
-        // Cap the maximum school spawn chance
-        specialConfig.schoolSpawnChance = std::min(0.10f, specialConfig.schoolSpawnChance);
-
-        m_fishSpawner->setSpecialFishConfig(specialConfig);
-        m_fishSpawner->setLevel(m_currentLevel);
+        m_fishSpawner->setSpecialFishConfig(config);
+        m_fishSpawner->setLevel(m_gameState.currentLevel);
     }
 
-    void PlayState::createParticleEffect(sf::Vector2f position, sf::Color color)
+    void PlayState::createParticleEffect(const sf::Vector2f& position, const sf::Color& color, int count)
     {
-        std::uniform_real_distribution<float> angleDist(0.0f, 360.0f);
-        std::uniform_real_distribution<float> speedDist(50.0f, 150.0f);
+        m_particles.reserve(m_particles.size() + count);
 
-        constexpr int particleCount = 8;
-        m_particles.reserve(m_particles.size() + particleCount);
-
-        std::generate_n(std::back_inserter(m_particles), particleCount,
-            [this, &position, &color, &angleDist, &speedDist]() {
+        std::generate_n(std::back_inserter(m_particles), count,
+            [this, &position, &color]() {
                 ParticleEffect particle;
-                particle.shape = sf::CircleShape(3.0f);
+                particle.shape = sf::CircleShape(Constants::PARTICLE_RADIUS);
                 particle.shape.setFillColor(color);
                 particle.shape.setPosition(position);
 
-                float angle = angleDist(m_randomEngine) * 3.14159f / 180.0f;
-                float speed = speedDist(m_randomEngine);
+                float angle = m_angleDist(m_randomEngine) * Constants::DEG_TO_RAD;
+                float speed = m_speedDist(m_randomEngine);
                 particle.velocity = sf::Vector2f(std::cos(angle) * speed, std::sin(angle) * speed);
 
-                particle.lifetime = sf::seconds(1.0f);
-                particle.alpha = 255.0f;
+                particle.lifetime = sf::seconds(Constants::PARTICLE_LIFETIME);
+                particle.alpha = Constants::PARTICLE_INITIAL_ALPHA;
 
                 return particle;
             });
     }
 
-    void PlayState::createScoreReductionEffect(sf::Vector2f position, int points)
-    {
-        // Create a temporary floating text effect for score reduction
-        struct ScoreReduction
-        {
-            sf::Text text;
-            sf::Vector2f position;
-            float lifetime;
-        };
-
-        static std::vector<ScoreReduction> scoreReductions;
-
-        ScoreReduction reduction;
-        reduction.text.setFont(getGame().getFonts().get(Fonts::Main));
-        reduction.text.setString(std::to_string(points));
-        reduction.text.setCharacterSize(36);
-        reduction.text.setFillColor(sf::Color::Red);
-        reduction.text.setOutlineColor(sf::Color::Black);
-        reduction.text.setOutlineThickness(2.0f);
-        reduction.position = position;
-        reduction.lifetime = 1.5f;
-
-        // Center the text
-        sf::FloatRect bounds = reduction.text.getLocalBounds();
-        reduction.text.setOrigin(bounds.width / 2.0f, bounds.height / 2.0f);
-        reduction.text.setPosition(position);
-
-        // Create upward floating particles
-        createParticleEffect(position, sf::Color::Red);
-    }
-
     void PlayState::updateHUD()
     {
-        // Update score display - show both Score and Points
-        std::ostringstream scoreStream;
-        scoreStream << "Score: " << m_scoreSystem->getCurrentScore();
-        scoreStream << " | Points: " << m_player->getPoints() << "/" << Constants::POINTS_TO_WIN;
-        m_scoreText.setString(scoreStream.str());
+        // Use string stream for efficient string building
+        auto formatText = [](sf::Text& text, const auto&... args) {
+            std::ostringstream stream;
+            ((stream << args), ...);
+            text.setString(stream.str());
+            };
 
-        // Update lives display
-        std::ostringstream livesStream;
-        livesStream << "Lives: " << m_playerLives;
-        m_livesText.setString(livesStream.str());
+        formatText(m_hud.scoreText,
+            "Score: ", m_scoreSystem->getCurrentScore(),
+            " | Points: ", m_player->getPoints(), "/", Constants::POINTS_TO_WIN);
 
-        // Update level display with stage information
-        std::ostringstream levelStream;
-        levelStream << "Level: " << m_currentLevel
-            << " | Stage: " << m_player->getCurrentStage() << "/" << Constants::MAX_STAGES;
+        formatText(m_hud.livesText, "Lives: ", m_gameState.playerLives);
 
-        if (m_gameWon)
-        {
-            levelStream << " | COMPLETE!";
-        }
+        formatText(m_hud.levelText,
+            "Level: ", m_gameState.currentLevel,
+            " | Stage: ", m_player->getCurrentStage(), "/", Constants::MAX_STAGES,
+            m_gameState.gameWon ? " | COMPLETE!" : "");
 
-        m_levelText.setString(levelStream.str());
-
-        // Update chain display
+        // Chain display
         if (m_scoreSystem->getChainBonus() > 0)
         {
-            std::ostringstream chainStream;
-            chainStream << "Chain Bonus: +" << m_scoreSystem->getChainBonus();
-            m_chainText.setString(chainStream.str());
+            formatText(m_hud.chainText, "Chain Bonus: +", m_scoreSystem->getChainBonus());
         }
         else
         {
-            m_chainText.setString("");
+            m_hud.chainText.setString("");
         }
 
-        // Update power-up display
+        // Power-up display
         auto activePowerUps = m_powerUpManager->getActivePowerUps();
         if (!activePowerUps.empty())
         {
@@ -1099,29 +766,109 @@ namespace FishGame
 
             std::for_each(activePowerUps.begin(), activePowerUps.end(),
                 [this, &powerUpStream](PowerUpType type) {
-                    switch (type)
+                    static const std::unordered_map<PowerUpType, std::string> powerUpNames = {
+                        {PowerUpType::ScoreDoubler, "2X Score"},
+                        {PowerUpType::SpeedBoost, "Speed Boost"},
+                        {PowerUpType::Invincibility, "Invincible"}
+                    };
+
+                    if (auto it = powerUpNames.find(type); it != powerUpNames.end())
                     {
-                    case PowerUpType::ScoreDoubler:
-                        powerUpStream << "2X Score - "
-                            << std::fixed << std::setprecision(1)
-                            << m_powerUpManager->getRemainingTime(type).asSeconds() << "s\n";
-                        break;
-                    case PowerUpType::SpeedBoost:
-                        powerUpStream << "Speed Boost\n";
-                        break;
-                    case PowerUpType::Invincibility:
-                        powerUpStream << "Invincible\n";
-                        break;
-                    default:
-                        break;
+                        powerUpStream << it->second;
+                        if (type == PowerUpType::ScoreDoubler)
+                        {
+                            powerUpStream << " - " << std::fixed << std::setprecision(1)
+                                << m_powerUpManager->getRemainingTime(type).asSeconds() << "s";
+                        }
+                        powerUpStream << "\n";
                     }
                 });
 
-            m_powerUpText.setString(powerUpStream.str());
+            m_hud.powerUpText.setString(powerUpStream.str());
         }
         else
         {
-            m_powerUpText.setString("");
+            m_hud.powerUpText.setString("");
         }
+    }
+
+    void PlayState::updatePerformanceMetrics(sf::Time deltaTime)
+    {
+        m_metrics.frameCount++;
+        m_metrics.fpsUpdateTime += deltaTime;
+
+        if (m_metrics.fpsUpdateTime >= Constants::FPS_UPDATE_INTERVAL)
+        {
+            m_metrics.currentFPS = static_cast<float>(m_metrics.frameCount) /
+                m_metrics.fpsUpdateTime.asSeconds();
+            m_metrics.frameCount = 0;
+            m_metrics.fpsUpdateTime = sf::Time::Zero;
+
+            std::ostringstream fpsStream;
+            fpsStream << std::fixed << std::setprecision(1) << "FPS: " << m_metrics.currentFPS;
+            m_hud.fpsText.setString(fpsStream.str());
+        }
+    }
+
+    void PlayState::centerText(sf::Text& text)
+    {
+        sf::FloatRect bounds = text.getLocalBounds();
+        text.setOrigin(bounds.width / 2.0f, bounds.height / 2.0f);
+        auto windowSize = getGame().getWindow().getSize();
+        text.setPosition(windowSize.x / 2.0f, windowSize.y / 2.0f);
+    }
+
+    void PlayState::render()
+    {
+        auto& window = getGame().getWindow();
+
+        // Render all entities
+        std::for_each(m_entities.begin(), m_entities.end(),
+            [&window](const auto& entity) { window.draw(*entity); });
+
+        // Render systems
+        m_oysterManager->draw(window);
+
+        // Render bonus items
+        std::for_each(m_bonusItems.begin(), m_bonusItems.end(),
+            [&window](const auto& item) { window.draw(*item); });
+
+        // Render player
+        window.draw(*m_player);
+
+        // Render particles
+        std::for_each(m_particles.begin(), m_particles.end(),
+            [&window](const ParticleEffect& particle) { window.draw(particle.shape); });
+
+        // Render UI systems
+        m_scoreSystem->drawFloatingScores(window);
+        window.draw(*m_growthMeter);
+        window.draw(*m_frenzySystem);
+
+        // Render HUD
+        window.draw(m_hud.scoreText);
+        window.draw(m_hud.livesText);
+        window.draw(m_hud.levelText);
+        window.draw(m_hud.chainText);
+        window.draw(m_hud.powerUpText);
+        window.draw(m_hud.fpsText);
+
+        // Render overlay and message if needed
+        if (m_gameState.gameWon || m_gameState.levelComplete)
+        {
+            sf::RectangleShape overlay(sf::Vector2f(window.getSize()));
+            overlay.setFillColor(Constants::OVERLAY_COLOR);
+            window.draw(overlay);
+            window.draw(m_hud.messageText);
+        }
+    }
+
+    void PlayState::onActivate()
+    {
+        // Reset state when becoming active
+        resetLevel();
+        m_gameState.currentLevel = 1;
+        m_gameState.playerLives = Constants::INITIAL_LIVES;
+        m_gameState.totalScore = 0;
     }
 }
