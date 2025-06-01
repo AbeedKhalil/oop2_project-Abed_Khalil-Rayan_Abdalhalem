@@ -1,10 +1,17 @@
 #pragma once
 
-#include <array>
+#include <SFML/Graphics.hpp>
+#include <memory>
 #include <stack>
+#include <map>
+#include <vector>
+#include <functional>
+#include <algorithm>
+#include <type_traits>
 #include "ResourceHolder.h"
 #include "State.h"
 #include "Player.h"
+#include "GameConstants.h"
 
 namespace FishGame
 {
@@ -14,7 +21,7 @@ namespace FishGame
         Game();
         ~Game() = default;
 
-        // Delete copy and move operations
+        // Delete copy and move operations - Game is a singleton-like manager
         Game(const Game&) = delete;
         Game& operator=(const Game&) = delete;
         Game(Game&&) = delete;
@@ -33,39 +40,83 @@ namespace FishGame
         void popState();
         void clearStates();
 
+        // Template method for state queries
+        template<typename StateType>
+        StateType* getCurrentState() const
+        {
+            static_assert(std::is_base_of_v<State, StateType>,
+                "StateType must be derived from State");
+
+            if (!m_stateStack.empty())
+            {
+                return dynamic_cast<StateType*>(m_stateStack.top().get());
+            }
+            return nullptr;
+        }
+
     private:
+        // Core game loop methods
         void processInput();
         void update(sf::Time deltaTime);
         void render();
-        void registerStates();
 
+        // State management
+        void registerStates();
+        void applyPendingStateChanges();
+
+        // Template method for state registration
         template<typename T>
-        void registerState(StateID id);
+        void registerState(StateID id)
+        {
+            static_assert(std::is_base_of_v<State, T>,
+                "T must be derived from State");
+
+            m_stateFactories[id] = [this]() -> std::unique_ptr<State>
+                {
+                    return std::make_unique<T>(*this);
+                };
+        }
+
+        // Template method for efficient state creation
+        template<typename StateType, typename... Args>
+        std::unique_ptr<State> createStateWithArgs(Args&&... args)
+        {
+            return std::make_unique<StateType>(*this, std::forward<Args>(args)...);
+        }
 
         std::unique_ptr<State> createState(StateID id);
 
     private:
-        static constexpr unsigned int m_windowWidth = 1920;
-        static constexpr unsigned int m_windowHeight = 1080;
+        // Window and timing constants from GameConstants.h
+        static constexpr unsigned int m_windowWidth = Constants::WINDOW_WIDTH;
+        static constexpr unsigned int m_windowHeight = Constants::WINDOW_HEIGHT;
+        static constexpr unsigned int m_frameRateLimit = Constants::FRAMERATE_LIMIT;
         static const sf::Time m_timePerFrame;
 
+        // Core systems
         sf::RenderWindow m_window;
         TextureHolder m_textures;
         FontHolder m_fonts;
 
-        std::stack<std::unique_ptr<State>> m_stateStack;
-        std::vector<std::pair<StateAction, StateID>> m_pendingList;
+        // State management using STL containers
+        using StatePtr = std::unique_ptr<State>;
+        using StateFactory = std::function<StatePtr()>;
 
-        std::map<StateID, std::function<std::unique_ptr<State>()>> m_stateFactories;
+        std::stack<StatePtr> m_stateStack;
+        std::vector<std::pair<StateAction, StateID>> m_pendingList;
+        std::map<StateID, StateFactory> m_stateFactories;
+
+        // Performance tracking
+        struct PerformanceMetrics
+        {
+            sf::Time accumulatedTime = sf::Time::Zero;
+            std::size_t frameCount = 0;
+            float currentFPS = 0.0f;
+        } m_metrics;
     };
 
-    // Template implementation
+    // Template utility for state validation
     template<typename T>
-    void Game::registerState(StateID id)
-    {
-        m_stateFactories[id] = [this]()
-            {
-                return std::make_unique<T>(*this);
-            };
-    }
+    inline constexpr bool is_valid_state_v = std::is_base_of_v<State, T> &&
+        !std::is_same_v<State, T>;
 }
