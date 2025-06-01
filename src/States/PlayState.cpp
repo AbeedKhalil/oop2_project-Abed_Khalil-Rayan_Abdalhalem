@@ -102,6 +102,7 @@ namespace FishGame
 
         // Initialize environment system
         m_environmentSystem->setEnvironment(EnvironmentType::OpenOcean);
+        m_environmentSystem->pauseDayNightCycle();  // Pause day/night cycle
         m_environmentSystem->setOnEnvironmentChange([this](EnvironmentType type) {
             // Adjust spawn rates based on environment
             switch (type)
@@ -232,7 +233,8 @@ namespace FishGame
                 break;
 
             case sf::Keyboard::Enter:
-                if (m_gameState.levelComplete && !m_gameState.enemiesFleeing)
+                // Fixed condition - check if level is complete regardless of enemies fleeing
+                if (m_gameState.levelComplete)
                 {
                     advanceLevel();
                 }
@@ -278,13 +280,7 @@ namespace FishGame
         // Update performance metrics
         updatePerformanceMetrics(deltaTime);
 
-        // Don't update gameplay if waiting for level transition
-        if (m_gameState.levelComplete && !m_gameState.enemiesFleeing)
-        {
-            return false;
-        }
-
-        // Main gameplay update
+        // Update gameplay
         updateGameplay(deltaTime);
 
         // Process deferred actions
@@ -312,20 +308,30 @@ namespace FishGame
         // Check bonus stage
         checkBonusStage();
 
-        // Check win condition
-        if (!m_gameState.gameWon && !m_gameState.levelComplete)
-        {
-            checkWinCondition();
-        }
-        else if (m_gameState.gameWon)
+        // Handle game state
+        if (m_gameState.gameWon)
         {
             m_gameState.winTimer += deltaTime;
+
+            // Check if all enemies are gone
             if (m_gameState.enemiesFleeing && areAllEnemiesGone())
             {
                 m_gameState.enemiesFleeing = false;
-                showMessage("Level Complete!\nPress ENTER to continue");
                 m_gameState.levelComplete = true;
+                showMessage("Level Complete!\nPress ENTER to continue");
+                return; // Stop processing after showing message
             }
+
+            // Don't process further updates if level is complete
+            if (m_gameState.levelComplete)
+            {
+                return;
+            }
+        }
+        else if (!m_gameState.levelComplete)
+        {
+            // Only check win condition if not already won or complete
+            checkWinCondition();
         }
 
         // Update entities
@@ -1065,6 +1071,9 @@ namespace FishGame
                 (static_cast<int>(m_environmentSystem->getCurrentEnvironment()) + 1) % 3);
             m_environmentSystem->setEnvironment(newEnv);
         }
+
+        // Set random time of day for the new level
+        m_environmentSystem->setRandomTimeOfDay();
 
         resetLevel();
         updateLevelDifficulty();

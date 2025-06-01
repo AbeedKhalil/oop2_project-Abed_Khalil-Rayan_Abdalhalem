@@ -220,7 +220,10 @@ namespace FishGame
         , m_transitionTimer(sf::Time::Zero)
         , m_predatorAggressionBase(1.0f)
         , m_isTransitioning(false)
+        , m_dayNightCyclePaused(true)  // Start paused by default
         , m_onEnvironmentChange(nullptr)
+        , m_randomEngine(std::chrono::steady_clock::now().time_since_epoch().count())
+        , m_timeDist(0, 3)
     {
         m_lightingOverlay.setFillColor(sf::Color(0, 0, 0, 0));
     }
@@ -235,8 +238,11 @@ namespace FishGame
         // Update ocean currents
         m_oceanCurrents->update(deltaTime);
 
-        // Update day/night cycle
-        updateDayNightCycle(deltaTime);
+        // Update day/night cycle only if not paused
+        if (!m_dayNightCyclePaused)
+        {
+            updateDayNightCycle(deltaTime);
+        }
 
         // Handle environment transitions
         if (m_isTransitioning)
@@ -265,6 +271,20 @@ namespace FishGame
         // Update lighting overlay
         sf::Color overlayColor = getAmbientLightColor();
         m_lightingOverlay.setFillColor(overlayColor);
+    }
+
+    void EnvironmentSystem::setRandomTimeOfDay()
+    {
+        // Array of all possible times
+        const TimeOfDay times[] = {
+            TimeOfDay::Day,
+            TimeOfDay::Dusk,
+            TimeOfDay::Night,
+            TimeOfDay::Dawn
+        };
+
+        // Select a random time
+        setTimeOfDay(times[m_timeDist(m_randomEngine)]);
     }
 
     float EnvironmentSystem::getPredatorAggressionMultiplier() const
@@ -326,6 +346,10 @@ namespace FishGame
 
     void EnvironmentSystem::updateDayNightCycle(sf::Time deltaTime)
     {
+        // Only update if cycle is not paused
+        if (m_dayNightCyclePaused)
+            return;
+
         m_dayNightTimer += deltaTime;
 
         float cycleProgress = m_dayNightTimer.asSeconds() / m_dayDuration;
