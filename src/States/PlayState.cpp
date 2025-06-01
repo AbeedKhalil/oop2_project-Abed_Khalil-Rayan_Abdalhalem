@@ -40,6 +40,8 @@ namespace FishGame
         , m_extendedPowerUpSpawnTimer(sf::Time::Zero)
         , m_levelsUntilBonus(3)
         , m_bonusStageTriggered(false)
+        , m_returningFromBonusStage(false)  // Initialize new flag
+        , m_savedLevel(1)                    // Initialize saved level
         , m_metrics()
         , m_particles()
         , m_randomEngine(std::random_device{}())
@@ -1148,14 +1150,14 @@ namespace FishGame
 
     void PlayState::checkBonusStage()
     {
-        if (!m_bonusStageTriggered && m_gameState.levelComplete)
+        // Check if we should trigger bonus stage after completing a regular level
+        if (!m_bonusStageTriggered && m_gameState.levelComplete && !m_returningFromBonusStage)
         {
-            m_levelsUntilBonus--;
-
-            if (m_levelsUntilBonus <= 0)
+            // Check if this is a 3rd, 6th, 9th, etc. level
+            if (m_gameState.currentLevel % 3 == 0)
             {
                 m_bonusStageTriggered = true;
-                m_levelsUntilBonus = 3; // Reset counter
+                m_savedLevel = m_gameState.currentLevel; // Save current level
 
                 // Determine bonus stage type
                 BonusStageType bonusType = static_cast<BonusStageType>(
@@ -1163,8 +1165,8 @@ namespace FishGame
 
                 // Push bonus stage
                 deferAction([this, bonusType]() {
+                    m_returningFromBonusStage = true; // Set flag before pushing
                     requestStackPush(StateID::BonusStage);
-                    // Note: You'll need to modify Game class to handle BonusStage state
                     });
             }
         }
@@ -1207,11 +1209,16 @@ namespace FishGame
 
         formatText(m_hud.livesText, "Lives: ", m_gameState.playerLives);
 
+        // Updated level text formatting for bonus stage indication
+        int levelsUntilBonus = 3 - (m_gameState.currentLevel % 3);
+        if (levelsUntilBonus == 3) levelsUntilBonus = 0; // Just completed bonus stage cycle
+
         formatText(m_hud.levelText,
             "Level: ", m_gameState.currentLevel,
             " | Stage: ", m_player->getCurrentStage(), "/", Constants::MAX_STAGES,
             m_gameState.gameWon ? " | COMPLETE!" : "",
-            " | Bonus in: ", m_levelsUntilBonus, " levels");
+            levelsUntilBonus > 0 ? " | Bonus in: " : " | Bonus after this level!",
+            levelsUntilBonus > 0 ? std::to_string(levelsUntilBonus) + " levels" : "");
 
         // Chain display
         if (m_scoreSystem->getChainBonus() > 0)
@@ -1389,12 +1396,38 @@ namespace FishGame
 
     void PlayState::onActivate()
     {
-        // Reset state when becoming active
-        resetLevel();
-        m_gameState.currentLevel = 1;
-        m_gameState.playerLives = Constants::INITIAL_LIVES;
-        m_gameState.totalScore = 0;
-        m_levelsUntilBonus = 3;
-        m_bonusStageTriggered = false;
+        // Check if we're returning from a bonus stage
+        if (m_returningFromBonusStage)
+        {
+            // Don't reset everything - just prepare for next level
+            m_returningFromBonusStage = false;
+            m_bonusStageTriggered = false;
+
+            // Advance to next level after bonus stage
+            m_gameState.currentLevel = m_savedLevel + 1;
+            m_gameState.levelComplete = false;
+            m_gameState.gameWon = false;
+            m_gameState.enemiesFleeing = false;
+            m_gameState.levelTime = sf::Time::Zero;
+
+            // Reset level-specific items but keep progress
+            resetLevel();
+            updateLevelDifficulty();
+
+            // Clear any messages
+            m_hud.messageText.setString("");
+        }
+        else
+        {
+            // Normal activation - starting fresh
+            resetLevel();
+            m_gameState.currentLevel = 1;
+            m_gameState.playerLives = Constants::INITIAL_LIVES;
+            m_gameState.totalScore = 0;
+            m_levelsUntilBonus = 3;
+            m_bonusStageTriggered = false;
+            m_returningFromBonusStage = false;
+            m_savedLevel = 1;
+        }
     }
 }

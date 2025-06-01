@@ -54,6 +54,17 @@ namespace FishGame
             return nullptr;
         }
 
+        template<typename StateType>
+        StateType* getPreviousState() const
+        {
+            if (m_stateStack.size() >= 2)
+            {
+                auto& container = m_stateStack._Get_container();
+                return dynamic_cast<StateType*>(container[container.size() - 2].get());
+            }
+            return nullptr;
+        }
+
     private:
         // Core game loop methods
         void processInput();

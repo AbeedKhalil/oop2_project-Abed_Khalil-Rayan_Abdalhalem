@@ -275,6 +275,8 @@ namespace FishGame
         // Bonus stage tracking
         int m_levelsUntilBonus;
         bool m_bonusStageTriggered;
+        bool m_returningFromBonusStage;
+        int m_savedLevel;
 
         // Performance tracking
         struct PerformanceMetrics
