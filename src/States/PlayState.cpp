@@ -435,15 +435,43 @@ namespace FishGame
             Entity& fish;
 
             void operator()(Pufferfish* puffer) {
-                if (puffer->isInflated() && !state->m_player->hasRecentlyTakenDamage())
+                if (puffer->isInflated())
                 {
-                    puffer->pushEntity(*state->m_player);
-                    int penalty = Constants::PUFFERFISH_SCORE_PENALTY;
-                    state->m_scoreSystem->setCurrentScore(
-                        std::max(0, state->m_scoreSystem->getCurrentScore() - penalty)
-                    );
-                    state->createParticleEffect(state->m_player->getPosition(),
-                        Constants::PUFFERFISH_IMPACT_COLOR);
+                    // Handle inflated pufferfish - push player
+                    if (!state->m_player->hasRecentlyTakenDamage())
+                    {
+                        puffer->pushEntity(*state->m_player);
+                        int penalty = Constants::PUFFERFISH_SCORE_PENALTY;
+                        state->m_scoreSystem->setCurrentScore(
+                            std::max(0, state->m_scoreSystem->getCurrentScore() - penalty)
+                        );
+                        state->createParticleEffect(state->m_player->getPosition(),
+                            Constants::PUFFERFISH_IMPACT_COLOR);
+                    }
+                }
+                else
+                {
+                    // Handle non-inflated pufferfish - can be eaten
+                    if (state->m_player->canEat(fish))
+                    {
+                        if (state->m_player->attemptEat(fish))
+                        {
+                            fish.destroy();
+                            state->createParticleEffect(fish.getPosition(),
+                                Constants::EAT_PARTICLE_COLOR);
+                        }
+                    }
+                    else
+                    {
+                        // Pufferfish can eat player if it's larger
+                        if (puffer->canEat(*state->m_player) && !state->m_player->hasRecentlyTakenDamage())
+                        {
+                            state->m_player->takeDamage();
+                            state->createParticleEffect(state->m_player->getPosition(),
+                                Constants::DAMAGE_PARTICLE_COLOR);
+                            state->handlePlayerDeath();
+                        }
+                    }
                 }
             }
 
