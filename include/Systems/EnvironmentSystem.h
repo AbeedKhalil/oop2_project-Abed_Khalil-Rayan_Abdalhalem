@@ -82,6 +82,14 @@ namespace FishGame
         EnvironmentSystem();
         ~EnvironmentSystem() = default;
 
+        // Delete copy operations
+        EnvironmentSystem(const EnvironmentSystem&) = delete;
+        EnvironmentSystem& operator=(const EnvironmentSystem&) = delete;
+
+        // Allow move operations
+        EnvironmentSystem(EnvironmentSystem&&) = default;
+        EnvironmentSystem& operator=(EnvironmentSystem&&) = default;
+
         void update(sf::Time deltaTime);
         void setEnvironment(EnvironmentType type);
         void setTimeOfDay(TimeOfDay time);
@@ -92,6 +100,11 @@ namespace FishGame
         float getPredatorAggressionMultiplier() const;
         sf::Color getAmbientLightColor() const;
         sf::Vector2f getOceanCurrentForce(const sf::Vector2f& position) const;
+
+        // Day/night cycle control methods
+        void pauseDayNightCycle() { m_dayNightCyclePaused = true; }
+        void resumeDayNightCycle() { m_dayNightCyclePaused = false; }
+        void setRandomTimeOfDay();
 
         // Callbacks
         void setOnEnvironmentChange(std::function<void(EnvironmentType)> callback)
@@ -123,8 +136,13 @@ namespace FishGame
 
         float m_predatorAggressionBase;
         bool m_isTransitioning;
+        bool m_dayNightCyclePaused;
 
         std::function<void(EnvironmentType)> m_onEnvironmentChange;
+
+        // Random number generation for time of day
+        std::mt19937 m_randomEngine;
+        std::uniform_int_distribution<int> m_timeDist;
 
         // Day/night cycle configuration
         static constexpr float m_dayDuration = 60.0f; // 60 seconds per full cycle
