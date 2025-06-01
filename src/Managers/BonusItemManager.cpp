@@ -1,6 +1,7 @@
 #include "BonusItemManager.h"
 #include <algorithm>
 #include <numeric>
+#include <ExtendedPowerUps.h>
 
 namespace FishGame
 {
@@ -148,7 +149,8 @@ namespace FishGame
 
     std::unique_ptr<PowerUp> BonusItemManager::createRandomPowerUp()
     {
-        int type = m_powerUpTypeDist(m_randomEngine);
+        // Extended to include new power-ups
+        int type = std::uniform_int_distribution<int>(0, 6)(m_randomEngine);
 
         switch (type)
         {
@@ -158,9 +160,28 @@ namespace FishGame
             powerUp->setFont(m_font);
             return powerUp;
         }
-
         case 1:
             return std::make_unique<FrenzyStarterPowerUp>();
+
+        case 2:
+        {
+            auto powerUp = std::make_unique<FreezePowerUp>();
+            powerUp->setFont(m_font);
+            return powerUp;
+        }
+        case 3:
+            return std::make_unique<ExtraLifePowerUp>();
+
+        case 4:
+            return std::make_unique<SpeedBoostPowerUp>();
+
+        case 5:
+            // Shield power-up (you'd need to create this)
+            return std::make_unique<ScoreDoublerPowerUp>(); // Placeholder
+
+        case 6:
+            // Invincibility power-up
+            return std::make_unique<ScoreDoublerPowerUp>(); // Placeholder
 
         default:
             return nullptr;

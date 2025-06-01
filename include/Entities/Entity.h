@@ -34,8 +34,8 @@ namespace FishGame
         Entity(Entity&&) = default;
         Entity& operator=(Entity&&) = default;
 
-        // Pure virtual functions
-        virtual void update(sf::Time deltaTime) = 0;
+        // Pure virtual functions - MUST be implemented by derived classes
+        virtual void update(sf::Time deltaTime) = 0;  // This MUST be = 0
         virtual sf::FloatRect getBounds() const = 0;
         virtual EntityType getType() const = 0;
 
