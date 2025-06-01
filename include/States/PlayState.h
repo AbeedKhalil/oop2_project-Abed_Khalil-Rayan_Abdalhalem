@@ -11,6 +11,10 @@
 #include "OysterManager.h"
 #include "ScoreSystem.h"
 #include "PowerUp.h"
+#include "ExtendedPowerUps.h"
+#include "Hazard.h"
+#include "EnvironmentSystem.h"
+#include "BonusStageState.h"
 #include "GameConstants.h"
 #include <memory>
 #include <vector>
@@ -111,6 +115,8 @@ namespace FishGame
             sf::Text messageText;
             sf::Text chainText;
             sf::Text powerUpText;
+            sf::Text environmentText;
+            sf::Text effectsText;
         };
 
     private:
@@ -120,6 +126,9 @@ namespace FishGame
         void updateEntities(sf::Time deltaTime);
         void updateHUD();
         void updatePerformanceMetrics(sf::Time deltaTime);
+        void updateEnvironmentalEffects(sf::Time deltaTime);
+        void updateHazards(sf::Time deltaTime);
+        void updatePlayerEffects(sf::Time deltaTime);
 
         // Template update methods
         template<typename Container>
@@ -145,6 +154,7 @@ namespace FishGame
 
         // Collision handling
         void checkCollisions();
+        void checkHazardCollisions();
 
         template<typename Entity1, typename Entity2, typename Handler>
         void checkCollisionPair(Entity1& entity1, Entity2& entity2, Handler handler)
@@ -173,6 +183,7 @@ namespace FishGame
         void handleBonusItemCollision(BonusItem& item);
         void handlePowerUpCollision(PowerUp& powerUp);
         void handleOysterCollision(PermanentOyster* oyster);
+        void handleHazardCollision(Hazard& hazard);
 
         // Game flow
         void handlePlayerDeath();
@@ -180,6 +191,11 @@ namespace FishGame
         void gameOver();
         void checkWinCondition();
         void triggerWinSequence();
+        void checkBonusStage();
+
+        // Spawning methods
+        void spawnHazards(sf::Time deltaTime);
+        void spawnExtendedPowerUps();
 
         // Template utility methods
         template<typename MessageType>
@@ -207,6 +223,8 @@ namespace FishGame
         // Helper methods
         bool areAllEnemiesGone() const;
         void makeAllEnemiesFlee();
+        void applyFreeze();
+        void reverseControls();
 
         // Template spawn management
         template<typename EntityType>
@@ -223,6 +241,10 @@ namespace FishGame
         std::unique_ptr<SchoolingSystem> m_schoolingSystem;
         std::vector<std::unique_ptr<Entity>> m_entities;
         std::vector<std::unique_ptr<BonusItem>> m_bonusItems;
+        std::vector<std::unique_ptr<Hazard>> m_hazards;
+
+        // Environmental system
+        std::unique_ptr<EnvironmentSystem> m_environmentSystem;
 
         // Game systems (using unordered_map for extensibility)
         std::unordered_map<std::string, std::unique_ptr<void, std::function<void(void*)>>> m_systems;
@@ -240,6 +262,20 @@ namespace FishGame
         LevelStats m_levelStats;
         HUDElements m_hud;
 
+        // Extended state tracking for Stage 4
+        bool m_isPlayerFrozen;
+        bool m_hasControlsReversed;
+        bool m_isPlayerStunned;
+        sf::Time m_controlReverseTimer;
+        sf::Time m_freezeTimer;
+        sf::Time m_stunTimer;
+        sf::Time m_hazardSpawnTimer;
+        sf::Time m_extendedPowerUpSpawnTimer;
+
+        // Bonus stage tracking
+        int m_levelsUntilBonus;
+        bool m_bonusStageTriggered;
+
         // Performance tracking
         struct PerformanceMetrics
         {
@@ -255,5 +291,11 @@ namespace FishGame
         std::mt19937 m_randomEngine;
         std::uniform_real_distribution<float> m_angleDist;
         std::uniform_real_distribution<float> m_speedDist;
+        std::uniform_int_distribution<int> m_hazardTypeDist;
+        std::uniform_int_distribution<int> m_extendedPowerUpDist;
+
+        // Spawn rates for Stage 4
+        static constexpr float m_hazardSpawnInterval = 8.0f;
+        static constexpr float m_extendedPowerUpInterval = 15.0f;
     };
 }

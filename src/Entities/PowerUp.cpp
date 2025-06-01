@@ -1,7 +1,5 @@
 #include "PowerUp.h"
-#include <algorithm>
 #include <cmath>
-#include <numeric>
 
 namespace FishGame
 {
@@ -27,6 +25,8 @@ namespace FishGame
         m_aura.setFillColor(sf::Color::Transparent);
         m_aura.setOutlineThickness(3.0f);
     }
+
+    // Do NOT implement update() here - let derived classes handle it
 
     // ScoreDoublerPowerUp implementation
     ScoreDoublerPowerUp::ScoreDoublerPowerUp()
@@ -254,12 +254,17 @@ namespace FishGame
 
         if (isActive(PowerUpType::ScoreDoubler))
         {
-            multiplier *= 2.0f;
+            multiplier *= m_scoreDoubleMultiplier;
         }
 
         // Add other score-affecting power-ups here
 
         return multiplier;
+    }
+
+    float PowerUpManager::getSpeedMultiplier() const
+    {
+        return isActive(PowerUpType::SpeedBoost) ? m_speedBoostMultiplier : 1.0f;
     }
 
     std::vector<PowerUpType> PowerUpManager::getActivePowerUps() const

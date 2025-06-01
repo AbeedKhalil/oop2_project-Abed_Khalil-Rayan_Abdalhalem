@@ -1,16 +1,24 @@
 #pragma once
 
 #include "BonusItem.h"
+#include <vector>
+#include <algorithm>
+#include <unordered_map>
+#include <functional>
+#include <type_traits>
 
 namespace FishGame
 {
-    // Power-up types
+    // Extended power-up types
     enum class PowerUpType
     {
         ScoreDoubler,
         FrenzyStarter,
         SpeedBoost,
-        Invincibility
+        Invincibility,
+        Freeze,
+        ExtraLife,
+        Shield
     };
 
     // Base class for all power-ups
@@ -88,6 +96,13 @@ namespace FishGame
         {
             return std::make_unique<T>();
         }
+
+        // Template method for creating with custom parameters
+        template<typename... Args>
+        static std::unique_ptr<PowerUp> createWithParams(Args&&... args)
+        {
+            return std::make_unique<T>(std::forward<Args>(args)...);
+        }
     };
 
     // Power-up manager to handle active effects
@@ -118,6 +133,30 @@ namespace FishGame
         // Get all active power-ups
         std::vector<PowerUpType> getActivePowerUps() const;
 
+        // Specific power-up queries
+        bool hasShield() const { return isActive(PowerUpType::Shield); }
+        bool isFreezeActive() const { return isActive(PowerUpType::Freeze); }
+        bool hasSpeedBoost() const { return isActive(PowerUpType::SpeedBoost); }
+        bool hasInvincibility() const { return isActive(PowerUpType::Invincibility); }
+
+        // Get effect values
+        float getSpeedMultiplier() const;
+        float getFreezeSlowdown() const { return m_freezeSlowdown; }
+
+        // Template method for applying effects
+        template<typename Entity>
+        void applyEffects(Entity& entity)
+        {
+            if (hasSpeedBoost())
+            {
+                entity.setSpeedMultiplier(m_speedBoostMultiplier);
+            }
+            if (hasShield())
+            {
+                entity.enableShield();
+            }
+        }
+
     private:
         struct ActivePowerUp
         {
@@ -133,5 +172,116 @@ namespace FishGame
         {
             return std::find_if(m_activePowerUps.begin(), m_activePowerUps.end(), pred);
         }
+
+        template<typename Predicate>
+        auto findPowerUp(Predicate pred) const
+        {
+            return std::find_if(m_activePowerUps.begin(), m_activePowerUps.end(), pred);
+        }
+
+        // Power-up effect values
+        static constexpr float m_freezeSlowdown = 0.1f;        // 90% speed reduction
+        static constexpr float m_shieldDuration = 10.0f;       // Shield lasts 10 seconds
+        static constexpr float m_speedBoostMultiplier = 1.5f;  // 50% speed increase
+        static constexpr float m_scoreDoubleMultiplier = 2.0f; // Double score
+    };
+
+    // Template specialization for power-up type traits
+    template<PowerUpType Type>
+    struct PowerUpTraits
+    {
+        static constexpr float duration = 10.0f;
+        static constexpr const char* name = "Unknown";
+    };
+
+    // Specializations for each power-up type
+    template<>
+    struct PowerUpTraits<PowerUpType::ScoreDoubler>
+    {
+        static constexpr float duration = 10.0f;
+        static constexpr const char* name = "Score Doubler";
+    };
+
+    template<>
+    struct PowerUpTraits<PowerUpType::FrenzyStarter>
+    {
+        static constexpr float duration = 0.0f; // Instant effect
+        static constexpr const char* name = "Frenzy Starter";
+    };
+
+    template<>
+    struct PowerUpTraits<PowerUpType::SpeedBoost>
+    {
+        static constexpr float duration = 8.0f;
+        static constexpr const char* name = "Speed Boost";
+    };
+
+    template<>
+    struct PowerUpTraits<PowerUpType::Invincibility>
+    {
+        static constexpr float duration = 5.0f;
+        static constexpr const char* name = "Invincibility";
+    };
+
+    template<>
+    struct PowerUpTraits<PowerUpType::Freeze>
+    {
+        static constexpr float duration = 5.0f;
+        static constexpr const char* name = "Freeze";
+    };
+
+    template<>
+    struct PowerUpTraits<PowerUpType::ExtraLife>
+    {
+        static constexpr float duration = 0.0f; // Instant effect
+        static constexpr const char* name = "Extra Life";
+    };
+
+    template<>
+    struct PowerUpTraits<PowerUpType::Shield>
+    {
+        static constexpr float duration = 10.0f;
+        static constexpr const char* name = "Shield";
+    };
+
+    // Template utility for creating power-ups by type
+    template<PowerUpType Type>
+    class TypedPowerUpFactory
+    {
+    public:
+        static std::unique_ptr<PowerUp> create();
+    };
+
+    // Factory method for creating power-ups dynamically
+    class PowerUpCreator
+    {
+    public:
+        using CreatorFunc = std::function<std::unique_ptr<PowerUp>()>;
+
+        static PowerUpCreator& getInstance()
+        {
+            static PowerUpCreator instance;
+            return instance;
+        }
+
+        template<typename PowerUpClass>
+        void registerPowerUp(PowerUpType type)
+        {
+            m_creators[type] = []() { return PowerUpFactory<PowerUpClass>::create(); };
+        }
+
+        std::unique_ptr<PowerUp> create(PowerUpType type) const
+        {
+            auto it = m_creators.find(type);
+            if (it != m_creators.end())
+            {
+                return it->second();
+            }
+            return nullptr;
+        }
+
+    private:
+        PowerUpCreator() = default;
+        std::unordered_map<PowerUpType, CreatorFunc> m_creators;
     };
 }

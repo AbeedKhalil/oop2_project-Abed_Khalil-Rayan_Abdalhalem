@@ -199,6 +199,12 @@ namespace FishGame
         // Register all game states using template method
         registerState<MenuState>(StateID::Menu);
         registerState<PlayState>(StateID::Play);
+        // Register bonus stage
+        m_stateFactories[StateID::BonusStage] = [this]() -> std::unique_ptr<State>
+            {
+                // Default to treasure hunt, level 1
+                return std::make_unique<BonusStageState>(*this, BonusStageType::TreasureHunt, 1);
+            };
 
         // TODO: Register additional states as they are implemented
         // registerState<PauseState>(StateID::Pause);

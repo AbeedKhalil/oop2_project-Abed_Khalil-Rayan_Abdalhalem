@@ -19,7 +19,8 @@ namespace FishGame
         Pause,
         GameOver,
         Settings,
-        Credits
+        Credits,
+        BonusStage
     };
 
     // State stack actions

@@ -2,6 +2,7 @@
 #include "Game.h"
 #include "CollisionDetector.h"
 #include "Fish.h"
+#include "ExtendedPowerUps.h"
 #include <algorithm>
 #include <sstream>
 #include <iomanip>
@@ -17,6 +18,8 @@ namespace FishGame
         , m_schoolingSystem(std::make_unique<SchoolingSystem>())
         , m_entities()
         , m_bonusItems()
+        , m_hazards()
+        , m_environmentSystem(std::make_unique<EnvironmentSystem>())
         , m_systems()
         , m_growthMeter(nullptr)
         , m_frenzySystem(nullptr)
@@ -27,17 +30,30 @@ namespace FishGame
         , m_gameState()
         , m_levelStats()
         , m_hud()
+        , m_isPlayerFrozen(false)
+        , m_hasControlsReversed(false)
+        , m_isPlayerStunned(false)
+        , m_controlReverseTimer(sf::Time::Zero)
+        , m_freezeTimer(sf::Time::Zero)
+        , m_stunTimer(sf::Time::Zero)
+        , m_hazardSpawnTimer(sf::Time::Zero)
+        , m_extendedPowerUpSpawnTimer(sf::Time::Zero)
+        , m_levelsUntilBonus(3)
+        , m_bonusStageTriggered(false)
         , m_metrics()
         , m_particles()
         , m_randomEngine(std::random_device{}())
         , m_angleDist(0.0f, 360.0f)
         , m_speedDist(Constants::MIN_PARTICLE_SPEED, Constants::MAX_PARTICLE_SPEED)
+        , m_hazardTypeDist(0, 2)
+        , m_extendedPowerUpDist(0, 2)
     {
         initializeSystems();
 
         // Reserve capacity for containers
         m_entities.reserve(Constants::MAX_ENTITIES);
         m_bonusItems.reserve(Constants::MAX_BONUS_ITEMS);
+        m_hazards.reserve(20);
         m_particles.reserve(Constants::MAX_PARTICLES);
     }
 
@@ -84,6 +100,25 @@ namespace FishGame
             [](void* p) { delete static_cast<FixedOysterManager*>(p); }
         );
 
+        // Initialize environment system
+        m_environmentSystem->setEnvironment(EnvironmentType::OpenOcean);
+        m_environmentSystem->setOnEnvironmentChange([this](EnvironmentType type) {
+            // Adjust spawn rates based on environment
+            switch (type)
+            {
+            case EnvironmentType::CoralReef:
+                m_bonusItemManager->setStarfishEnabled(true);
+                m_bonusItemManager->setPowerUpsEnabled(true);
+                break;
+            case EnvironmentType::KelpForest:
+                // More hazards in kelp forest
+                break;
+            case EnvironmentType::OpenOcean:
+                // Default rates
+                break;
+            }
+            });
+
         // Initialize player with systems
         m_player->setWindowBounds(window.getSize());
         m_player->initializeSystems(m_growthMeter, m_frenzySystem, m_powerUpManager, m_scoreSystem);
@@ -124,6 +159,13 @@ namespace FishGame
         initText(m_hud.fpsText, Constants::HUD_FONT_SIZE,
             sf::Vector2f(window.getSize().x - Constants::FPS_TEXT_X_OFFSET, Constants::HUD_MARGIN));
 
+        // Environment and effects text
+        initText(m_hud.environmentText, 20,
+            sf::Vector2f(window.getSize().x - 300.0f, 100.0f));
+        initText(m_hud.effectsText, 18,
+            sf::Vector2f(50.0f, window.getSize().y - 100.0f));
+        m_hud.effectsText.setFillColor(sf::Color::Yellow);
+
         // Message text setup
         m_hud.messageText.setFont(font);
         m_hud.messageText.setCharacterSize(Constants::MESSAGE_FONT_SIZE);
@@ -140,10 +182,47 @@ namespace FishGame
 
     void PlayState::handleEvent(const sf::Event& event)
     {
-        switch (event.type)
+        // Handle stunned state
+        if (m_isPlayerStunned)
+            return;
+
+        // Handle controls reversal
+        sf::Event processedEvent = event;
+        if (m_hasControlsReversed && event.type == sf::Event::KeyPressed)
+        {
+            switch (event.key.code)
+            {
+            case sf::Keyboard::W:
+                processedEvent.key.code = sf::Keyboard::S;
+                break;
+            case sf::Keyboard::S:
+                processedEvent.key.code = sf::Keyboard::W;
+                break;
+            case sf::Keyboard::A:
+                processedEvent.key.code = sf::Keyboard::D;
+                break;
+            case sf::Keyboard::D:
+                processedEvent.key.code = sf::Keyboard::A;
+                break;
+            case sf::Keyboard::Up:
+                processedEvent.key.code = sf::Keyboard::Down;
+                break;
+            case sf::Keyboard::Down:
+                processedEvent.key.code = sf::Keyboard::Up;
+                break;
+            case sf::Keyboard::Left:
+                processedEvent.key.code = sf::Keyboard::Right;
+                break;
+            case sf::Keyboard::Right:
+                processedEvent.key.code = sf::Keyboard::Left;
+                break;
+            }
+        }
+
+        switch (processedEvent.type)
         {
         case sf::Event::KeyPressed:
-            switch (event.key.code)
+            switch (processedEvent.key.code)
             {
             case sf::Keyboard::Escape:
                 deferAction([this]() {
@@ -171,10 +250,22 @@ namespace FishGame
             break;
 
         case sf::Event::MouseMoved:
-            m_player->followMouse(sf::Vector2f(
-                static_cast<float>(event.mouseMove.x),
-                static_cast<float>(event.mouseMove.y)
-            ));
+            if (!m_hasControlsReversed)
+            {
+                m_player->followMouse(sf::Vector2f(
+                    static_cast<float>(event.mouseMove.x),
+                    static_cast<float>(event.mouseMove.y)
+                ));
+            }
+            else
+            {
+                // Reverse mouse movement
+                auto windowSize = getGame().getWindow().getSize();
+                m_player->followMouse(sf::Vector2f(
+                    windowSize.x - static_cast<float>(event.mouseMove.x),
+                    windowSize.y - static_cast<float>(event.mouseMove.y)
+                ));
+            }
             break;
 
         default:
@@ -206,8 +297,20 @@ namespace FishGame
     {
         m_gameState.levelTime += deltaTime;
 
+        // Update environment system
+        m_environmentSystem->update(deltaTime);
+
         // Update all systems
         updateSystems(deltaTime);
+
+        // Update player effects
+        updatePlayerEffects(deltaTime);
+
+        // Apply environmental effects
+        updateEnvironmentalEffects(deltaTime);
+
+        // Check bonus stage
+        checkBonusStage();
 
         // Check win condition
         if (!m_gameState.gameWon && !m_gameState.levelComplete)
@@ -234,6 +337,12 @@ namespace FishGame
             m_fishSpawner->update(deltaTime, m_gameState.currentLevel);
             auto& spawnedFish = m_fishSpawner->getSpawnedFish();
             processSpawnedEntities(spawnedFish);
+
+            // Spawn hazards
+            spawnHazards(deltaTime);
+
+            // Spawn extended power-ups
+            spawnExtendedPowerUps();
         }
 
         // Update bonus items
@@ -244,6 +353,7 @@ namespace FishGame
         // Update containers
         updateContainer(m_bonusItems, deltaTime);
         updateContainer(m_entities, deltaTime);
+        updateContainer(m_hazards, deltaTime);
 
         // Update particles
         std::for_each(std::execution::par_unseq, m_particles.begin(), m_particles.end(),
@@ -261,12 +371,14 @@ namespace FishGame
         removeDeadEntities(m_bonusItems, [](const auto& item) {
             return !item->isAlive() || item->hasExpired();
             });
+        removeDeadEntities(m_hazards, [](const auto& hazard) { return !hazard->isAlive(); });
         removeDeadEntities(m_particles, [](const auto& particle) {
             return particle.lifetime <= sf::Time::Zero;
             });
 
         // Check collisions
         checkCollisions();
+        checkHazardCollisions();
 
         // Update HUD
         updateHUD();
@@ -322,7 +434,10 @@ namespace FishGame
         }
 
         // Update player
-        m_player->update(deltaTime);
+        if (!m_isPlayerStunned)
+        {
+            m_player->update(deltaTime);
+        }
     }
 
     void PlayState::updateEntities(sf::Time deltaTime)
@@ -334,6 +449,12 @@ namespace FishGame
 
                 if (Fish* fish = dynamic_cast<Fish*>(entity.get()))
                 {
+                    // Apply freeze effect
+                    if (m_isPlayerFrozen)
+                    {
+                        fish->setVelocity(fish->getVelocity() * 0.1f);
+                    }
+
                     fish->updateAI(m_entities, m_player.get(), deltaTime);
                 }
             });
@@ -353,6 +474,158 @@ namespace FishGame
                     angelfish->updateAI(m_entities, m_player.get(), deltaTime);
                 }
             });
+    }
+
+    void PlayState::updatePlayerEffects(sf::Time deltaTime)
+    {
+        // Handle freeze effect
+        if (m_isPlayerFrozen)
+        {
+            m_freezeTimer -= deltaTime;
+            if (m_freezeTimer <= sf::Time::Zero)
+            {
+                m_isPlayerFrozen = false;
+                // Unfreeze all entities
+                std::for_each(m_entities.begin(), m_entities.end(),
+                    [](auto& entity) {
+                        if (Fish* fish = dynamic_cast<Fish*>(entity.get()))
+                        {
+                            fish->setVelocity(fish->getVelocity() * 10.0f); // Restore speed
+                        }
+                    });
+            }
+        }
+
+        // Handle control reversal
+        if (m_hasControlsReversed)
+        {
+            m_controlReverseTimer -= deltaTime;
+            if (m_controlReverseTimer <= sf::Time::Zero)
+            {
+                m_hasControlsReversed = false;
+            }
+        }
+
+        // Handle stun effect
+        if (m_isPlayerStunned)
+        {
+            m_stunTimer -= deltaTime;
+            if (m_stunTimer <= sf::Time::Zero)
+            {
+                m_isPlayerStunned = false;
+            }
+        }
+    }
+
+    void PlayState::updateEnvironmentalEffects(sf::Time deltaTime)
+    {
+        // Apply ocean currents to all entities
+        sf::Vector2f playerCurrent = m_environmentSystem->getOceanCurrentForce(m_player->getPosition());
+
+        if (!m_isPlayerStunned)
+        {
+            m_player->setVelocity(m_player->getVelocity() + playerCurrent * deltaTime.asSeconds() * 0.3f);
+        }
+
+        // Apply currents to fish with reduced effect
+        std::for_each(m_entities.begin(), m_entities.end(),
+            [this, deltaTime](auto& entity) {
+                sf::Vector2f current = m_environmentSystem->getOceanCurrentForce(entity->getPosition());
+                entity->setVelocity(entity->getVelocity() + current * deltaTime.asSeconds() * 0.1f);
+            });
+
+        // Apply aggression multiplier
+        float aggressionMult = m_environmentSystem->getPredatorAggressionMultiplier();
+        // This would affect AI behavior in fish update
+    }
+
+    void PlayState::spawnHazards(sf::Time deltaTime)
+    {
+        m_hazardSpawnTimer += deltaTime;
+
+        if (m_hazardSpawnTimer.asSeconds() >= m_hazardSpawnInterval)
+        {
+            m_hazardSpawnTimer = sf::Time::Zero;
+
+            int hazardType = m_hazardTypeDist(m_randomEngine);
+            std::unique_ptr<Hazard> hazard;
+
+            switch (hazardType)
+            {
+            case 0: // Bomb
+                hazard = std::make_unique<Bomb>();
+                break;
+            case 1: // Poison Fish
+                hazard = std::make_unique<PoisonFish>();
+                break;
+            case 2: // Jellyfish
+                hazard = std::make_unique<Jellyfish>();
+                break;
+            }
+
+            if (hazard)
+            {
+                // Random position
+                float x = std::uniform_real_distribution<float>(100.0f, 1820.0f)(m_randomEngine);
+                float y = std::uniform_real_distribution<float>(100.0f, 980.0f)(m_randomEngine);
+                hazard->setPosition(x, y);
+
+                // Set velocity for moving hazards
+                if (dynamic_cast<PoisonFish*>(hazard.get()))
+                {
+                    bool fromLeft = m_randomEngine() % 2 == 0;
+                    hazard->setVelocity(fromLeft ? 100.0f : -100.0f, 0.0f);
+                }
+                else if (dynamic_cast<Jellyfish*>(hazard.get()))
+                {
+                    hazard->setVelocity(0.0f, 20.0f);
+                }
+
+                m_hazards.push_back(std::move(hazard));
+            }
+        }
+    }
+
+    void PlayState::spawnExtendedPowerUps()
+    {
+        m_extendedPowerUpSpawnTimer += sf::seconds(1.0f / 60.0f); // Frame time
+
+        if (m_extendedPowerUpSpawnTimer.asSeconds() >= m_extendedPowerUpInterval)
+        {
+            m_extendedPowerUpSpawnTimer = sf::Time::Zero;
+
+            int powerUpType = m_extendedPowerUpDist(m_randomEngine);
+            std::unique_ptr<PowerUp> powerUp;
+
+            switch (powerUpType)
+            {
+            case 0: // Freeze
+                powerUp = std::make_unique<FreezePowerUp>();
+                if (auto* freeze = dynamic_cast<FreezePowerUp*>(powerUp.get()))
+                {
+                    freeze->setFont(getGame().getFonts().get(Fonts::Main));
+                }
+                break;
+            case 1: // Extra Life
+                powerUp = std::make_unique<ExtraLifePowerUp>();
+                break;
+            case 2: // Speed Boost
+                powerUp = std::make_unique<SpeedBoostPowerUp>();
+                break;
+            }
+
+            if (powerUp)
+            {
+                float x = std::uniform_real_distribution<float>(100.0f, 1820.0f)(m_randomEngine);
+                float y = std::uniform_real_distribution<float>(100.0f, 980.0f)(m_randomEngine);
+                powerUp->setPosition(x, y);
+
+                // Store base Y for bobbing
+                powerUp->m_baseY = y;
+
+                m_bonusItems.push_back(std::move(powerUp));
+            }
+        }
     }
 
     void PlayState::checkCollisions()
@@ -419,6 +692,43 @@ namespace FishGame
                 if (m_player->attemptTailBite(*entity))
                 {
                     createParticleEffect(m_player->getPosition(), Constants::TAILBITE_PARTICLE_COLOR);
+                }
+            });
+    }
+
+    void PlayState::checkHazardCollisions()
+    {
+        // Player vs hazards
+        checkCollisionsWithContainer(*m_player, m_hazards,
+            [this](Hazard& hazard) { handleHazardCollision(hazard); });
+
+        // Check bomb explosions vs entities
+        std::for_each(m_hazards.begin(), m_hazards.end(),
+            [this](auto& hazard) {
+                if (Bomb* bomb = dynamic_cast<Bomb*>(hazard.get()))
+                {
+                    if (bomb->isExploding())
+                    {
+                        // Check explosion radius against all entities
+                        std::for_each(m_entities.begin(), m_entities.end(),
+                            [bomb](auto& entity) {
+                                float dist = CollisionDetector::getDistance(
+                                    bomb->getPosition(), entity->getPosition());
+                                if (dist < bomb->getExplosionRadius())
+                                {
+                                    entity->destroy();
+                                }
+                            });
+
+                        // Check against player
+                        float playerDist = CollisionDetector::getDistance(
+                            bomb->getPosition(), m_player->getPosition());
+                        if (playerDist < bomb->getExplosionRadius() && !m_player->isInvulnerable())
+                        {
+                            m_player->takeDamage();
+                            handlePlayerDeath();
+                        }
+                    }
                 }
             });
     }
@@ -559,12 +869,27 @@ namespace FishGame
                 state->createParticleEffect(pu.getPosition(), Constants::FRENZY_STARTER_COLOR);
             }},
             {PowerUpType::SpeedBoost, [](PlayState* state, PowerUp& pu) {
-                state->m_player->applySpeedBoost(Constants::SPEED_BOOST_MULTIPLIER, pu.getDuration());
+                state->m_powerUpManager->activatePowerUp(pu.getPowerUpType(), pu.getDuration());
+                state->m_player->applySpeedBoost(state->m_powerUpManager->getSpeedMultiplier(), pu.getDuration());
                 state->createParticleEffect(pu.getPosition(), Constants::SPEED_BOOST_COLOR);
             }},
             {PowerUpType::Invincibility, [](PlayState* state, PowerUp& pu) {
                 state->m_player->applyInvincibility(pu.getDuration());
                 state->createParticleEffect(pu.getPosition(), Constants::INVINCIBILITY_COLOR);
+            }},
+            {PowerUpType::Freeze, [](PlayState* state, PowerUp& pu) {
+                state->m_powerUpManager->activatePowerUp(pu.getPowerUpType(), pu.getDuration());
+                state->applyFreeze();
+                state->createParticleEffect(pu.getPosition(), sf::Color::Cyan, 20);
+            }},
+            {PowerUpType::ExtraLife, [](PlayState* state, PowerUp& pu) {
+                state->m_gameState.playerLives++;
+                state->createParticleEffect(pu.getPosition(), sf::Color::Green, 15);
+            }},
+            {PowerUpType::Shield, [](PlayState* state, PowerUp& pu) {
+                state->m_powerUpManager->activatePowerUp(pu.getPowerUpType(), pu.getDuration());
+                state->m_player->applyInvincibility(pu.getDuration());
+                state->createParticleEffect(pu.getPosition(), sf::Color(255, 215, 0), 20);
             }}
         };
 
@@ -602,6 +927,67 @@ namespace FishGame
             createParticleEffect(oyster->getPosition(),
                 oyster->hasBlackPearl() ? Constants::BLACK_PEARL_COLOR : Constants::WHITE_PEARL_COLOR);
         }
+    }
+
+    void PlayState::handleHazardCollision(Hazard& hazard)
+    {
+        if (m_player->isInvulnerable())
+            return;
+
+        switch (hazard.getHazardType())
+        {
+        case HazardType::Bomb:
+            if (Bomb* bomb = dynamic_cast<Bomb*>(&hazard))
+            {
+                bomb->onContact(*m_player);
+                m_player->takeDamage();
+                handlePlayerDeath();
+                createParticleEffect(m_player->getPosition(), sf::Color::Red, 20);
+            }
+            break;
+
+        case HazardType::PoisonFish:
+            if (PoisonFish* poison = dynamic_cast<PoisonFish*>(&hazard))
+            {
+                poison->onContact(*m_player);
+                reverseControls();
+                m_controlReverseTimer = poison->getPoisonDuration();
+                createParticleEffect(m_player->getPosition(), sf::Color::Magenta, 15);
+            }
+            break;
+
+        case HazardType::Jellyfish:
+            if (Jellyfish* jelly = dynamic_cast<Jellyfish*>(&hazard))
+            {
+                jelly->onContact(*m_player);
+                m_isPlayerStunned = true;
+                m_stunTimer = jelly->getStunDuration();
+                m_player->setVelocity(0.0f, 0.0f);
+                createParticleEffect(m_player->getPosition(), sf::Color(255, 255, 0, 150), 10);
+            }
+            break;
+        }
+    }
+
+    void PlayState::applyFreeze()
+    {
+        m_isPlayerFrozen = true;
+        m_freezeTimer = sf::seconds(5.0f);
+
+        // Slow down all entities
+        std::for_each(m_entities.begin(), m_entities.end(),
+            [](auto& entity) {
+                if (Fish* fish = dynamic_cast<Fish*>(entity.get()))
+                {
+                    fish->setVelocity(fish->getVelocity() * 0.1f); // 90% speed reduction
+                }
+            });
+    }
+
+    void PlayState::reverseControls()
+    {
+        m_hasControlsReversed = true;
+        // Control reversal is handled in handleEvent()
     }
 
     void PlayState::checkWinCondition()
@@ -672,10 +1058,19 @@ namespace FishGame
         m_gameState.totalScore += m_scoreSystem->getCurrentScore();
         m_scoreSystem->addToTotalScore(m_scoreSystem->getCurrentScore());
 
+        // Change environment every few levels
+        if (m_gameState.currentLevel % 3 == 0)
+        {
+            EnvironmentType newEnv = static_cast<EnvironmentType>(
+                (static_cast<int>(m_environmentSystem->getCurrentEnvironment()) + 1) % 3);
+            m_environmentSystem->setEnvironment(newEnv);
+        }
+
         resetLevel();
         updateLevelDifficulty();
 
         m_hud.messageText.setString("");
+        m_bonusStageTriggered = false;
     }
 
     void PlayState::resetLevel()
@@ -692,6 +1087,7 @@ namespace FishGame
         // Clear containers
         m_entities.clear();
         m_bonusItems.clear();
+        m_hazards.clear();
         m_particles.clear();
 
         // Reset systems
@@ -700,6 +1096,14 @@ namespace FishGame
         m_powerUpManager->reset();
         m_growthMeter->reset();
         m_oysterManager->resetAll();
+
+        // Reset effect states
+        m_isPlayerFrozen = false;
+        m_hasControlsReversed = false;
+        m_isPlayerStunned = false;
+        m_controlReverseTimer = sf::Time::Zero;
+        m_freezeTimer = sf::Time::Zero;
+        m_stunTimer = sf::Time::Zero;
 
         // Re-enable spawning
         m_bonusItemManager->setStarfishEnabled(true);
@@ -731,6 +1135,30 @@ namespace FishGame
 
         m_fishSpawner->setSpecialFishConfig(config);
         m_fishSpawner->setLevel(m_gameState.currentLevel);
+    }
+
+    void PlayState::checkBonusStage()
+    {
+        if (!m_bonusStageTriggered && m_gameState.levelComplete)
+        {
+            m_levelsUntilBonus--;
+
+            if (m_levelsUntilBonus <= 0)
+            {
+                m_bonusStageTriggered = true;
+                m_levelsUntilBonus = 3; // Reset counter
+
+                // Determine bonus stage type
+                BonusStageType bonusType = static_cast<BonusStageType>(
+                    std::uniform_int_distribution<int>(0, 2)(m_randomEngine));
+
+                // Push bonus stage
+                deferAction([this, bonusType]() {
+                    requestStackPush(StateID::BonusStage);
+                    // Note: You'll need to modify Game class to handle BonusStage state
+                    });
+            }
+        }
     }
 
     void PlayState::createParticleEffect(const sf::Vector2f& position, const sf::Color& color, int count)
@@ -773,7 +1201,8 @@ namespace FishGame
         formatText(m_hud.levelText,
             "Level: ", m_gameState.currentLevel,
             " | Stage: ", m_player->getCurrentStage(), "/", Constants::MAX_STAGES,
-            m_gameState.gameWon ? " | COMPLETE!" : "");
+            m_gameState.gameWon ? " | COMPLETE!" : "",
+            " | Bonus in: ", m_levelsUntilBonus, " levels");
 
         // Chain display
         if (m_scoreSystem->getChainBonus() > 0)
@@ -797,16 +1226,19 @@ namespace FishGame
                     static const std::unordered_map<PowerUpType, std::string> powerUpNames = {
                         {PowerUpType::ScoreDoubler, "2X Score"},
                         {PowerUpType::SpeedBoost, "Speed Boost"},
-                        {PowerUpType::Invincibility, "Invincible"}
+                        {PowerUpType::Invincibility, "Invincible"},
+                        {PowerUpType::Freeze, "Freeze"},
+                        {PowerUpType::Shield, "Shield"}
                     };
 
                     if (auto it = powerUpNames.find(type); it != powerUpNames.end())
                     {
                         powerUpStream << it->second;
-                        if (type == PowerUpType::ScoreDoubler)
+                        sf::Time remaining = m_powerUpManager->getRemainingTime(type);
+                        if (remaining > sf::Time::Zero)
                         {
                             powerUpStream << " - " << std::fixed << std::setprecision(1)
-                                << m_powerUpManager->getRemainingTime(type).asSeconds() << "s";
+                                << remaining.asSeconds() << "s";
                         }
                         powerUpStream << "\n";
                     }
@@ -818,6 +1250,52 @@ namespace FishGame
         {
             m_hud.powerUpText.setString("");
         }
+
+        // Environment info
+        std::ostringstream envStream;
+        envStream << "Environment: ";
+        switch (m_environmentSystem->getCurrentEnvironment())
+        {
+        case EnvironmentType::CoralReef:
+            envStream << "Coral Reef";
+            break;
+        case EnvironmentType::OpenOcean:
+            envStream << "Open Ocean";
+            break;
+        case EnvironmentType::KelpForest:
+            envStream << "Kelp Forest";
+            break;
+        }
+        envStream << "\nTime: ";
+        switch (m_environmentSystem->getCurrentTimeOfDay())
+        {
+        case TimeOfDay::Day:
+            envStream << "Day";
+            break;
+        case TimeOfDay::Dusk:
+            envStream << "Dusk";
+            break;
+        case TimeOfDay::Night:
+            envStream << "Night";
+            break;
+        case TimeOfDay::Dawn:
+            envStream << "Dawn";
+            break;
+        }
+        m_hud.environmentText.setString(envStream.str());
+
+        // Effects info
+        std::ostringstream effectStream;
+        if (m_isPlayerFrozen)
+            effectStream << "FREEZE ACTIVE: " << std::fixed << std::setprecision(1)
+            << m_freezeTimer.asSeconds() << "s\n";
+        if (m_hasControlsReversed)
+            effectStream << "CONTROLS REVERSED: " << std::fixed << std::setprecision(1)
+            << m_controlReverseTimer.asSeconds() << "s\n";
+        if (m_isPlayerStunned)
+            effectStream << "STUNNED: " << std::fixed << std::setprecision(1)
+            << m_stunTimer.asSeconds() << "s\n";
+        m_hud.effectsText.setString(effectStream.str());
     }
 
     void PlayState::updatePerformanceMetrics(sf::Time deltaTime)
@@ -850,6 +1328,13 @@ namespace FishGame
     {
         auto& window = getGame().getWindow();
 
+        // Draw environment first
+        window.draw(*m_environmentSystem);
+
+        // Render hazards
+        std::for_each(m_hazards.begin(), m_hazards.end(),
+            [&window](const auto& hazard) { window.draw(*hazard); });
+
         // Render all entities
         std::for_each(m_entities.begin(), m_entities.end(),
             [&window](const auto& entity) { window.draw(*entity); });
@@ -880,6 +1365,8 @@ namespace FishGame
         window.draw(m_hud.chainText);
         window.draw(m_hud.powerUpText);
         window.draw(m_hud.fpsText);
+        window.draw(m_hud.environmentText);
+        window.draw(m_hud.effectsText);
 
         // Render overlay and message if needed
         if (m_gameState.gameWon || m_gameState.levelComplete)
@@ -898,5 +1385,7 @@ namespace FishGame
         m_gameState.currentLevel = 1;
         m_gameState.playerLives = Constants::INITIAL_LIVES;
         m_gameState.totalScore = 0;
+        m_levelsUntilBonus = 3;
+        m_bonusStageTriggered = false;
     }
 }
