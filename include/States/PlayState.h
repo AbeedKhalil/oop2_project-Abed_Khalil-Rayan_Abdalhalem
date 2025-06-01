@@ -11,12 +11,22 @@
 #include "OysterManager.h"
 #include "ScoreSystem.h"
 #include "PowerUp.h"
+#include "GameConstants.h"
 #include <memory>
 #include <vector>
 #include <random>
+#include <unordered_map>
+#include <functional>
+#include <optional>
+#include <algorithm>
+#include <numeric>
 
 namespace FishGame
 {
+    // Template trait specialization
+    class PlayState;
+    template<> struct is_state<PlayState> : std::true_type {};
+
     class PlayState : public State
     {
     public:
@@ -26,87 +36,42 @@ namespace FishGame
         void handleEvent(const sf::Event& event) override;
         bool update(sf::Time deltaTime) override;
         void render() override;
+        void onActivate() override;
 
     private:
-        // Core update methods
-        void updateHUD();
-        void updateGameplay(sf::Time deltaTime);
-        void updateBonusItems(sf::Time deltaTime);
-        void updatePowerUps(sf::Time deltaTime);
-        void updateSchoolingBehavior(sf::Time deltaTime);
-        void handleSpecialFishBehaviors(sf::Time deltaTime);
+        // Template for update functions
+        template<typename System>
+        struct UpdateTask
+        {
+            std::function<void(System&, sf::Time)> update;
+            System* system;
+            bool enabled;
+        };
 
-        // Collision handling
-        void checkCollisions();
-        void handleFishCollision(Entity& fish);
-        void handleBonusItemCollision(BonusItem& item);
-        void handlePowerUpCollision(PowerUp& powerUp);
-        void checkTailBiteOpportunities();
-        void checkPufferfishThreat(Pufferfish* pufferfish);
+        // Template for collision handlers
+        template<typename EntityType>
+        using CollisionHandler = std::function<void(EntityType&)>;
 
-        // Game flow
-        void handlePlayerDeath();
-        void advanceLevel();
-        void gameOver();
-        void completeLevel();
-        void showEndOfLevelStats();
+        // Template for visual effects
+        template<typename EffectType>
+        struct VisualEffect
+        {
+            EffectType effect;
+            sf::Time lifetime;
+            std::function<void(EffectType&, sf::Time)> updateFunc;
+            std::function<void(const EffectType&, sf::RenderTarget&)> renderFunc;
+        };
 
-        // Win condition methods
-        void checkWinCondition();
-        void triggerWinSequence();
-        void makeAllEnemiesFlee();
-        bool areAllEnemiesGone() const;
-        void showWinMessage();
-        void showBonusPointsMessage();
+        // Particle effect structure
+        struct ParticleEffect
+        {
+            sf::CircleShape shape;
+            sf::Vector2f velocity;
+            sf::Time lifetime;
+            float alpha;
+        };
 
-        // Helper methods
-        void updateLevelDifficulty();
-        void createParticleEffect(sf::Vector2f position, sf::Color color);
-        void createScoreReductionEffect(sf::Vector2f position, int points);
-
-    private:
-        // Core game objects
-        std::unique_ptr<Player> m_player;
-        std::unique_ptr<EnhancedFishSpawner> m_fishSpawner;
-        std::unique_ptr<SchoolingSystem> m_schoolingSystem;
-        std::vector<std::unique_ptr<Entity>> m_entities;
-        std::vector<std::unique_ptr<BonusItem>> m_bonusItems;
-
-        // Game systems
-        std::unique_ptr<GrowthMeter> m_growthMeter;
-        std::unique_ptr<FrenzySystem> m_frenzySystem;
-        std::unique_ptr<PowerUpManager> m_powerUpManager;
-        std::unique_ptr<ScoreSystem> m_scoreSystem;
-        std::unique_ptr<BonusItemManager> m_bonusItemManager;
-        std::unique_ptr<FixedOysterManager> m_oysterManager;
-
-        // HUD elements
-        sf::Text m_scoreText;
-        sf::Text m_livesText;
-        sf::Text m_levelText;
-        sf::Text m_fpsText;
-        sf::Text m_messageText;
-        sf::Text m_chainText;
-        sf::Text m_powerUpText;
-
-        // Game state
-        int m_currentLevel;
-        int m_playerLives;
-        int m_totalScore;
-        sf::Time m_levelStartTime;
-        sf::Time m_levelTime;
-
-        // Level transition
-        bool m_levelComplete;
-        sf::Time m_levelTransitionTimer;
-        static const sf::Time m_levelTransitionDuration;
-
-        // Win condition tracking
-        bool m_gameWon;
-        bool m_enemiesFleeing;
-        sf::Time m_winTimer;
-
-        // End-of-level stats
+        // Level statistics
         struct LevelStats
         {
             sf::Time completionTime;
@@ -116,28 +81,179 @@ namespace FishGame
             int growthBonus;
             int untouchableBonus;
             int totalBonus;
-        };
-        LevelStats m_levelStats;
 
-        // Performance tracking
-        sf::Time m_fpsUpdateTime;
-        int m_frameCount;
-        float m_currentFPS;
+            int calculateTotalBonus() const
+            {
+                return timeBonus + growthBonus + untouchableBonus;
+            }
+        };
+
+        // Game state tracking
+        struct GameStateData
+        {
+            int currentLevel = 1;
+            int playerLives = Constants::INITIAL_LIVES;
+            int totalScore = 0;
+            sf::Time levelTime = sf::Time::Zero;
+            bool levelComplete = false;
+            bool gameWon = false;
+            bool enemiesFleeing = false;
+            sf::Time winTimer = sf::Time::Zero;
+        };
+
+        // HUD elements collection
+        struct HUDElements
+        {
+            sf::Text scoreText;
+            sf::Text livesText;
+            sf::Text levelText;
+            sf::Text fpsText;
+            sf::Text messageText;
+            sf::Text chainText;
+            sf::Text powerUpText;
+        };
+
+    private:
+        // Core update methods
+        void updateGameplay(sf::Time deltaTime);
+        void updateSystems(sf::Time deltaTime);
+        void updateEntities(sf::Time deltaTime);
+        void updateHUD();
+        void updatePerformanceMetrics(sf::Time deltaTime);
+
+        // Template update methods
+        template<typename Container>
+        void updateContainer(Container& container, sf::Time deltaTime)
+        {
+            std::for_each(container.begin(), container.end(),
+                [deltaTime](auto& item) {
+                    if (item && item->isAlive())
+                    {
+                        item->update(deltaTime);
+                    }
+                });
+        }
+
+        template<typename Container, typename Predicate>
+        void removeDeadEntities(Container& container, Predicate pred)
+        {
+            container.erase(
+                std::remove_if(container.begin(), container.end(), pred),
+                container.end()
+            );
+        }
+
+        // Collision handling
+        void checkCollisions();
+
+        template<typename Entity1, typename Entity2, typename Handler>
+        void checkCollisionPair(Entity1& entity1, Entity2& entity2, Handler handler)
+        {
+            if (CollisionDetector::checkCircleCollision(entity1, entity2))
+            {
+                handler(entity1, entity2);
+            }
+        }
+
+        template<typename Container, typename Entity, typename Handler>
+        void checkCollisionsWithContainer(Entity& entity, Container& container, Handler handler)
+        {
+            std::for_each(container.begin(), container.end(),
+                [&entity, &handler](auto& item) {
+                    if (item && item->isAlive() &&
+                        CollisionDetector::checkCircleCollision(entity, *item))
+                    {
+                        handler(*item);
+                    }
+                });
+        }
+
+        // Specialized collision handlers
+        void handleFishCollision(Entity& fish);
+        void handleBonusItemCollision(BonusItem& item);
+        void handlePowerUpCollision(PowerUp& powerUp);
+        void handleOysterCollision(PermanentOyster* oyster);
+
+        // Game flow
+        void handlePlayerDeath();
+        void advanceLevel();
+        void gameOver();
+        void checkWinCondition();
+        void triggerWinSequence();
+
+        // Template utility methods
+        template<typename MessageType>
+        void showMessage(const MessageType& message)
+        {
+            std::ostringstream stream;
+            stream << message;
+            m_hud.messageText.setString(stream.str());
+            centerText(m_hud.messageText);
+        }
+
+        void centerText(sf::Text& text);
 
         // Visual effects
-        struct ParticleEffect
+        void createParticleEffect(const sf::Vector2f& position, const sf::Color& color, int count = Constants::DEFAULT_PARTICLE_COUNT);
+
+        template<typename EffectParams>
+        void createCustomEffect(const sf::Vector2f& position, const EffectParams& params);
+
+        // Level management
+        void updateLevelDifficulty();
+        void resetLevel();
+        void initializeSystems();
+
+        // Helper methods
+        bool areAllEnemiesGone() const;
+        void makeAllEnemiesFlee();
+
+        // Template spawn management
+        template<typename EntityType>
+        void processSpawnedEntities(std::vector<std::unique_ptr<EntityType>>& source)
         {
-            sf::CircleShape shape;
-            sf::Vector2f velocity;
-            sf::Time lifetime;
-            float alpha;
-        };
+            std::move(source.begin(), source.end(), std::back_inserter(m_entities));
+            source.clear();
+        }
+
+    private:
+        // Core game objects
+        std::unique_ptr<Player> m_player;
+        std::unique_ptr<EnhancedFishSpawner> m_fishSpawner;
+        std::unique_ptr<SchoolingSystem> m_schoolingSystem;
+        std::vector<std::unique_ptr<Entity>> m_entities;
+        std::vector<std::unique_ptr<BonusItem>> m_bonusItems;
+
+        // Game systems (using unordered_map for extensibility)
+        std::unordered_map<std::string, std::unique_ptr<void, std::function<void(void*)>>> m_systems;
+
+        // Direct system pointers for performance
+        GrowthMeter* m_growthMeter;
+        FrenzySystem* m_frenzySystem;
+        PowerUpManager* m_powerUpManager;
+        ScoreSystem* m_scoreSystem;
+        BonusItemManager* m_bonusItemManager;
+        FixedOysterManager* m_oysterManager;
+
+        // State tracking
+        GameStateData m_gameState;
+        LevelStats m_levelStats;
+        HUDElements m_hud;
+
+        // Performance tracking
+        struct PerformanceMetrics
+        {
+            sf::Time fpsUpdateTime = sf::Time::Zero;
+            int frameCount = 0;
+            float currentFPS = 0.0f;
+        } m_metrics;
+
+        // Visual effects
         std::vector<ParticleEffect> m_particles;
 
         // Random number generation
         std::mt19937 m_randomEngine;
-
-        // Constants
-        static const sf::Time m_targetLevelTime;
+        std::uniform_real_distribution<float> m_angleDist;
+        std::uniform_real_distribution<float> m_speedDist;
     };
 }
