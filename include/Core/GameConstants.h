@@ -35,6 +35,7 @@ namespace FishGame
         constexpr int ANGELFISH_POINTS = 100;
         constexpr int PUFFERFISH_POINTS = 7;
         constexpr int PUFFERFISH_SCORE_PENALTY = 20;
+        constexpr int POISONFISH_POINTS_PENALTY = 0;
 
         // ==================== Game Rules - Points Thresholds ====================
         constexpr int INITIAL_LIVES = 3;
@@ -63,6 +64,7 @@ namespace FishGame
         constexpr float ANGELFISH_SPAWN_RATE = 0.1f;
         constexpr float SCHOOL_SPAWN_CHANCE = 0.05f;
         constexpr float MAX_SCHOOL_SPAWN_CHANCE = 0.10f;
+        constexpr float POISONFISH_SPAWN_RATE = 0.12f;
 
         // ==================== Visual Settings ====================
         constexpr float HUD_MARGIN = 20.0f;

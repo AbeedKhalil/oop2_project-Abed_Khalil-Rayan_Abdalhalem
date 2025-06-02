@@ -119,6 +119,40 @@ namespace FishGame
         static constexpr int m_spikeCount = 8;
     };
 
+    // PoisonFish - Can be eaten but reverses controls when consumed
+    class PoisonFish : public AdvancedFish
+    {
+    public:
+        explicit PoisonFish(int currentLevel = 1);
+        ~PoisonFish() override = default;
+
+        EntityType getType() const override { return EntityType::SmallFish; }
+        int getPointValue() const override { return m_poisonPoints; }
+
+        void update(sf::Time deltaTime) override;
+
+        // Get poison effect duration when eaten
+        sf::Time getPoisonDuration() const { return m_poisonDuration; }
+        bool isPoisonous() const { return true; }
+
+    protected:
+        void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+        void updateVisual() override;
+
+    private:
+        void updatePoisonBubbles(sf::Time deltaTime);
+
+    private:
+        std::vector<sf::CircleShape> m_poisonBubbles;
+        float m_wobbleAnimation;
+        sf::Time m_poisonDuration;
+        int m_poisonPoints; // Negative points for eating poison fish
+
+        static constexpr float m_poisonEffectDuration = 5.0f;
+        static constexpr int m_basePoisonPoints = -10; // Penalty for eating
+        static constexpr int m_bubbleCount = 6;
+    };
+
     // Angelfish - Gives bonus points and has erratic movement
     class Angelfish : public AdvancedFish
     {

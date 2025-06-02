@@ -563,10 +563,7 @@ namespace FishGame
             case 0: // Bomb
                 hazard = std::make_unique<Bomb>();
                 break;
-            case 1: // Poison Fish
-                hazard = std::make_unique<PoisonFish>();
-                break;
-            case 2: // Jellyfish
+            case 1: // Jellyfish
                 hazard = std::make_unique<Jellyfish>();
                 break;
             }
@@ -806,6 +803,25 @@ namespace FishGame
                 }
             }
 
+
+            void operator()(PoisonFish* poisonFish) {
+                if (state->m_player->canEat(fish))
+                {
+                    if (state->m_player->attemptEat(fish))
+                    {
+                        // Apply poison effect
+                        state->reverseControls();
+                        state->m_controlReverseTimer = poisonFish->getPoisonDuration();
+
+                        // Visual feedback
+                        state->createParticleEffect(fish.getPosition(), sf::Color::Magenta, 15);
+                        state->createParticleEffect(state->m_player->getPosition(), sf::Color::Magenta, 10);
+
+                        fish.destroy();
+                    }
+                }
+            }
+
             void operator()(Fish* regularFish) {
                 bool playerCanEat = state->m_player->canEat(fish);
                 bool fishCanEatPlayer = regularFish->canEat(*state->m_player);
@@ -834,6 +850,8 @@ namespace FishGame
             visitor(puffer);
         else if (auto* angel = dynamic_cast<Angelfish*>(&fish))
             visitor(angel);
+        else if (auto* poison = dynamic_cast<PoisonFish*>(&fish))
+            visitor(poison);
         else if (auto* regularFish = dynamic_cast<Fish*>(&fish))
             visitor(regularFish);
     }
@@ -951,16 +969,6 @@ namespace FishGame
                 m_player->takeDamage();
                 handlePlayerDeath();
                 createParticleEffect(m_player->getPosition(), sf::Color::Red, 20);
-            }
-            break;
-
-        case HazardType::PoisonFish:
-            if (PoisonFish* poison = dynamic_cast<PoisonFish*>(&hazard))
-            {
-                poison->onContact(*m_player);
-                reverseControls();
-                m_controlReverseTimer = poison->getPoisonDuration();
-                createParticleEffect(m_player->getPosition(), sf::Color::Magenta, 15);
             }
             break;
 
