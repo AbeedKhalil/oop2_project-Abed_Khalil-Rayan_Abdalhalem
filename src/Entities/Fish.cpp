@@ -23,6 +23,11 @@ namespace FishGame
         , m_isFleeing(false)
         , m_fleeSpeed(speed* m_fleeSpeedMultiplier)
         , m_fleeDirection(0.0f, 0.0f)
+        , m_isPoisoned(false)
+        , m_isStunned(false)
+        , m_poisonTimer(sf::Time::Zero)
+        , m_stunTimer(sf::Time::Zero)
+        , m_originalVelocity(0.0f, 0.0f)
     {
         // Set radius based on size
         switch (m_size)
@@ -84,6 +89,33 @@ namespace FishGame
         if (!m_isAlive)
             return;
 
+        // Handle stunned state
+        if (m_isStunned)
+        {
+            m_stunTimer -= deltaTime;
+            if (m_stunTimer <= sf::Time::Zero)
+            {
+                m_isStunned = false;
+                m_velocity = m_originalVelocity;
+            }
+            else
+            {
+                m_velocity = sf::Vector2f(0.0f, 0.0f);
+            }
+        }
+
+        // Handle poisoned state
+        if (m_isPoisoned && !m_isStunned)
+        {
+            m_poisonTimer -= deltaTime;
+            if (m_poisonTimer <= sf::Time::Zero)
+            {
+                m_isPoisoned = false;
+                // Reverse velocity back to normal
+                m_velocity = -m_velocity;
+            }
+        }
+
         // Update fleeing behavior if active
         if (m_isFleeing)
         {
@@ -125,6 +157,28 @@ namespace FishGame
     void Fish::setWindowBounds(const sf::Vector2u& windowSize)
     {
         m_windowBounds = windowSize;
+    }
+
+    void Fish::setPoisoned(sf::Time duration)
+    {
+        if (!m_isPoisoned && !m_isStunned)
+        {
+            m_isPoisoned = true;
+            m_poisonTimer = duration;
+            // Reverse movement direction
+            m_velocity = -m_velocity;
+        }
+    }
+
+    void Fish::setStunned(sf::Time duration)
+    {
+        if (!m_isStunned)
+        {
+            m_isStunned = true;
+            m_stunTimer = duration;
+            m_originalVelocity = m_velocity;
+            m_velocity = sf::Vector2f(0.0f, 0.0f);
+        }
     }
 
     bool Fish::canEat(const Entity& other) const

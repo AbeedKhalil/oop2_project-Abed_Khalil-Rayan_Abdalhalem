@@ -26,6 +26,16 @@ namespace FishGame
         bool isFleeing() const { return m_isFleeing; }
         void updateFleeingBehavior(sf::Time deltaTime);
 
+        // New state management methods
+        void setPoisoned(sf::Time duration);
+        void setStunned(sf::Time duration);
+        bool isPoisoned() const { return m_isPoisoned; }
+        bool isStunned() const { return m_isStunned; }
+
+        // Special fish type checking
+        virtual bool isSpecialFish() const { return false; }
+        virtual bool isBarracuda() const { return false; }
+
         // Entity interface implementation
         void update(sf::Time deltaTime) override;
         sf::FloatRect getBounds() const override;
@@ -60,6 +70,17 @@ namespace FishGame
         int m_pointValue;
         int m_currentLevel;
         sf::Vector2u m_windowBounds;
+
+        // New state members
+        bool m_isPoisoned;
+        bool m_isStunned;
+        sf::Time m_poisonTimer;
+        sf::Time m_stunTimer;
+        sf::Vector2f m_originalVelocity;
+
+        // State durations
+        static constexpr float m_defaultPoisonDuration = 5.0f;
+        static constexpr float m_defaultStunDuration = 1.0f;
 
         // Fleeing behavior
         bool m_isFleeing;

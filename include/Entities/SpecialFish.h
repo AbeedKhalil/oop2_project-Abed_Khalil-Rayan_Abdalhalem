@@ -50,6 +50,9 @@ namespace FishGame
 
         EntityType getType() const override { return EntityType::LargeFish; }
 
+        bool isSpecialFish() const override { return true; }
+        bool isBarracuda() const override { return true; }
+
         // Enhanced AI for aggressive hunting
         void updateAI(const std::vector<std::unique_ptr<Entity>>& entities,
             const Entity* player, sf::Time deltaTime);
@@ -76,6 +79,8 @@ namespace FishGame
         ~Pufferfish() override = default;
 
         EntityType getType() const override { return EntityType::MediumFish; }
+
+        bool isSpecialFish() const override { return true; }
 
         void update(sf::Time deltaTime) override;
         bool canEat(const Entity& other) const;
@@ -126,6 +131,8 @@ namespace FishGame
         explicit PoisonFish(int currentLevel = 1);
         ~PoisonFish() override = default;
 
+        bool isSpecialFish() const override { return true; }    
+
         EntityType getType() const override { return EntityType::SmallFish; }
         int getPointValue() const override { return m_poisonPoints; }
 
@@ -160,6 +167,7 @@ namespace FishGame
         explicit Angelfish(int currentLevel = 1);
         ~Angelfish() override = default;
 
+        bool isSpecialFish() const override { return true; }
         EntityType getType() const override { return EntityType::SmallFish; }
         int getPointValue() const { return m_bonusPoints; }
 
