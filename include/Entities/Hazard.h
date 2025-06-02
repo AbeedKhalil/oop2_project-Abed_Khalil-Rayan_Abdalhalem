@@ -10,7 +10,6 @@ namespace FishGame
     enum class HazardType
     {
         Bomb,
-        PoisonFish,
         Jellyfish
     };
 
@@ -69,31 +68,6 @@ namespace FishGame
         static constexpr float m_fuseDuration = 3.0f;
     };
 
-    // Poison Fish - reverses controls when touched
-    class PoisonFish : public Hazard
-    {
-    public:
-        PoisonFish();
-        ~PoisonFish() override = default;
-
-        void update(sf::Time deltaTime) override;
-        sf::FloatRect getBounds() const override;
-        void onContact(Entity& entity) override;
-
-        sf::Time getPoisonDuration() const { return m_poisonDuration; }
-
-    protected:
-        void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
-
-    private:
-        sf::CircleShape m_shape;
-        std::vector<sf::CircleShape> m_poisonBubbles;
-        float m_wobbleAnimation;
-        sf::Time m_poisonDuration;
-
-        static constexpr float m_poisonEffectDuration = 5.0f;
-    };
-
     // Jellyfish - stuns on contact
     class Jellyfish : public Hazard
     {
@@ -117,7 +91,7 @@ namespace FishGame
         float m_tentacleWave;
         sf::Time m_stunDuration;
 
-        static constexpr float m_stunEffectDuration = 2.0f;
+        static constexpr float m_stunEffectDuration = 1.0f;
         static constexpr int m_tentacleCount = 8;
     };
 }

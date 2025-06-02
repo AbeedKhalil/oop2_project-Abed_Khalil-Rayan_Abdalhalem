@@ -18,6 +18,7 @@ namespace FishGame
         float barracudaSpawnRate = 0.1f;
         float pufferfishSpawnRate = 0.15f;
         float angelfishSpawnRate = 0.2f;
+        float poisonFishSpawnRate = 0.12f;
         float schoolSpawnChance = 0.3f;
     };
 
@@ -56,6 +57,7 @@ namespace FishGame
         GenericSpawner<Barracuda> m_barracudaSpawner;
         GenericSpawner<Pufferfish> m_pufferfishSpawner;
         GenericSpawner<Angelfish> m_angelfishSpawner;
+        GenericSpawner<PoisonFish> m_poisonFishSpawner;
 
         // Configuration
         SpecialFishConfig m_specialConfig;

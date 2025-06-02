@@ -44,6 +44,10 @@ namespace FishGame
             {
                 return std::make_unique<FishType>(level);
             }
+            else if constexpr (std::is_same_v<FishType, PoisonFish>)
+            {
+                return std::make_unique<FishType>(level);
+            }
             else
             {
                 static_assert(std::is_base_of_v<Fish, FishType>,

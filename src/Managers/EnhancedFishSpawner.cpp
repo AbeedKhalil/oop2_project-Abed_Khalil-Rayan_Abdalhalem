@@ -14,11 +14,13 @@ namespace FishGame
         , m_schoolingSystem(nullptr)
         , m_schoolChanceDist(0.0f, 1.0f)
         , m_schoolSizeDist(2, 3)  // Reduced from (2, 4) to (2, 3) - smaller schools
+        , m_poisonFishSpawner()
     {
         // Initialize special spawn timers
         m_specialSpawnTimers["barracuda"] = sf::Time::Zero;
         m_specialSpawnTimers["pufferfish"] = sf::Time::Zero;
         m_specialSpawnTimers["angelfish"] = sf::Time::Zero;
+        m_specialSpawnTimers["poisonfish"] = sf::Time::Zero;
 
         // Configure special spawners
         configureSpecialSpawners(1);
@@ -43,6 +45,7 @@ namespace FishGame
             spawnSpecialFish<Barracuda>(m_specialConfig.barracudaSpawnRate, deltaTime);
             spawnSpecialFish<Pufferfish>(m_specialConfig.pufferfishSpawnRate, deltaTime);
             spawnSpecialFish<Angelfish>(m_specialConfig.angelfishSpawnRate, deltaTime);
+            spawnSpecialFish<PoisonFish>(m_specialConfig.poisonFishSpawnRate, deltaTime);
         }
 
         // Check for school spawning - ONLY FOR SMALL FISH
@@ -183,12 +186,22 @@ namespace FishGame
 
         m_angelfishSpawner.setConfig(angelfishConfig);
         m_angelfishSpawner.setFactory([level]() { return FishFactory<Angelfish>::create(level); });
+
+        // Configure poison fish spawner
+        SpawnerConfig<PoisonFish> poisonFishConfig;
+        poisonFishConfig.spawnRate = m_specialConfig.poisonFishSpawnRate * (1.0f + (level - 1) * 0.15f);
+        poisonFishConfig.minBounds = sf::Vector2f(-50.0f, 50.0f);
+        poisonFishConfig.maxBounds = sf::Vector2f(m_windowSize.x + 50.0f, m_windowSize.y - 50.0f);
+
+        m_poisonFishSpawner.setConfig(poisonFishConfig);
+        m_poisonFishSpawner.setFactory([level]() { return FishFactory<PoisonFish>::create(level); });
     }
 
     // Explicit template instantiations
     template void EnhancedFishSpawner::spawnSpecialFish<Barracuda>(float, sf::Time);
     template void EnhancedFishSpawner::spawnSpecialFish<Pufferfish>(float, sf::Time);
     template void EnhancedFishSpawner::spawnSpecialFish<Angelfish>(float, sf::Time);
+    template void EnhancedFishSpawner::spawnSpecialFish<PoisonFish>(float, sf::Time);
     template void EnhancedFishSpawner::spawnSchool<SmallFish>(size_t);
     template void EnhancedFishSpawner::spawnSchool<MediumFish>(size_t);
 }
