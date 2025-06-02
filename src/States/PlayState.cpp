@@ -647,6 +647,15 @@ namespace FishGame
         checkCollisionsWithContainer(*m_player, m_bonusItems,
             [this](BonusItem& item) { handleBonusItemCollision(item); });
 
+        // Use new template-based fish collision system
+        FishCollisionHandler::processFishCollisions(m_entities);
+
+        // Process fish-to-hazard collisions
+        FishCollisionHandler::processFishHazardCollisions(m_entities, m_hazards);
+
+        // Process bomb explosions
+        processBombExplosions(m_entities, m_hazards);
+
         // Fish-to-fish collisions
         for (size_t i = 0; i < m_entities.size(); ++i)
         {

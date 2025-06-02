@@ -102,7 +102,7 @@ namespace FishGame
 
     void Bomb::onContact(Entity& entity)
     {
-        if (!m_isExploding && entity.getType() == EntityType::Player)
+        if (!m_isExploding)
         {
             m_isExploding = true;
             m_explosionTimer = sf::Time::Zero;
