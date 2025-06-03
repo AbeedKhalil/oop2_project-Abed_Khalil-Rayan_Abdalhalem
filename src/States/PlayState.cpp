@@ -30,7 +30,7 @@ namespace FishGame
         , m_gameState()
         , m_levelStats()
         , m_hud()
-        , m_isPlayerFrozen(false)
+        , m_isFreezeActive(false)
         , m_hasControlsReversed(false)
         , m_isPlayerStunned(false)
         , m_controlReverseTimer(sf::Time::Zero)
@@ -457,12 +457,7 @@ namespace FishGame
 
                 if (Fish* fish = dynamic_cast<Fish*>(entity.get()))
                 {
-                    // Apply freeze effect
-                    if (m_isPlayerFrozen)
-                    {
-                        fish->setVelocity(fish->getVelocity() * 0.1f);
-                    }
-
+                    // AI update will be skipped if fish is frozen
                     fish->updateAI(m_entities, m_player.get(), deltaTime);
                 }
             });
@@ -487,18 +482,18 @@ namespace FishGame
     void PlayState::updatePlayerEffects(sf::Time deltaTime)
     {
         // Handle freeze effect
-        if (m_isPlayerFrozen)
+        if (m_isFreezeActive)
         {
             m_freezeTimer -= deltaTime;
             if (m_freezeTimer <= sf::Time::Zero)
             {
-                m_isPlayerFrozen = false;
+                m_isFreezeActive = false;
                 // Unfreeze all entities
                 std::for_each(m_entities.begin(), m_entities.end(),
                     [](auto& entity) {
                         if (Fish* fish = dynamic_cast<Fish*>(entity.get()))
                         {
-                            fish->setVelocity(fish->getVelocity() * 10.0f); // Restore speed
+                            fish->setFrozen(false);
                         }
                     });
             }
@@ -996,15 +991,15 @@ namespace FishGame
 
     void PlayState::applyFreeze()
     {
-        m_isPlayerFrozen = true;
+        m_isFreezeActive = true;
         m_freezeTimer = sf::seconds(5.0f);
 
-        // Slow down all entities
+        // Apply frozen state to all fish entities
         std::for_each(m_entities.begin(), m_entities.end(),
             [](auto& entity) {
                 if (Fish* fish = dynamic_cast<Fish*>(entity.get()))
                 {
-                    fish->setVelocity(fish->getVelocity() * 0.1f); // 90% speed reduction
+                    fish->setFrozen(true);
                 }
             });
     }
@@ -1126,7 +1121,7 @@ namespace FishGame
         m_oysterManager->resetAll();
 
         // Reset effect states
-        m_isPlayerFrozen = false;
+        m_isFreezeActive = false;
         m_hasControlsReversed = false;
         m_isPlayerStunned = false;
         m_controlReverseTimer = sf::Time::Zero;
@@ -1319,7 +1314,7 @@ namespace FishGame
 
         // Effects info
         std::ostringstream effectStream;
-        if (m_isPlayerFrozen)
+        if (m_isFreezeActive)
             effectStream << "FREEZE ACTIVE: " << std::fixed << std::setprecision(1)
             << m_freezeTimer.asSeconds() << "s\n";
         if (m_hasControlsReversed)

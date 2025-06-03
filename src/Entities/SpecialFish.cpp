@@ -23,6 +23,15 @@ namespace FishGame
         if (!m_isAlive)
             return;
 
+        // Check frozen state before any movement updates
+        if (m_isFrozen)
+        {
+            // Only update position with reduced velocity, skip pattern updates
+            updateMovement(deltaTime);
+            m_shape.setPosition(m_position);
+            return;
+        }
+
         m_patternTimer += deltaTime.asSeconds();
 
         // Update movement based on pattern
@@ -118,9 +127,10 @@ namespace FishGame
     void Barracuda::updateAI(const std::vector<std::unique_ptr<Entity>>& entities,
         const Entity* player, sf::Time deltaTime)
     {
-        if (!m_isAlive)
+        if (!m_isAlive || m_isFrozen || m_isStunned)
             return;
 
+        // Rest of the AI logic remains the same...
         m_huntTimer += deltaTime;
 
         // Find closest prey
@@ -231,6 +241,31 @@ namespace FishGame
 
     void Pufferfish::update(sf::Time deltaTime)
     {
+        // Check base frozen state first
+        if (m_isFrozen)
+        {
+            // Just update position with frozen velocity
+            updateMovement(deltaTime);
+            m_shape.setPosition(m_position);
+
+            // Still update visual elements but not state transitions
+            for (size_t i = 0; i < m_spikes.size(); ++i)
+            {
+                float angle = (360.0f / m_spikeCount) * i * 3.14159f / 180.0f;
+                float spikeRadius = m_radius + (m_inflationLevel * 10.0f);
+
+                sf::Vector2f spikePos(
+                    m_position.x + std::cos(angle) * spikeRadius,
+                    m_position.y + std::sin(angle) * spikeRadius
+                );
+
+                m_spikes[i].setPosition(spikePos);
+                m_spikes[i].setRotation(angle * 180.0f / 3.14159f);
+            }
+            return;
+        }
+
+        // Call base class update (which now also checks frozen state)
         AdvancedFish::update(deltaTime);
 
         if (!m_isAlive)
@@ -423,13 +458,23 @@ namespace FishGame
 
     void PoisonFish::update(sf::Time deltaTime)
     {
+        // Call base class update (which handles frozen state)
         AdvancedFish::update(deltaTime);
 
         if (!m_isAlive)
             return;
 
-        // Update wobble animation
-        m_wobbleAnimation += deltaTime.asSeconds() * 3.0f;
+        // Update visual effects even when frozen (but slower)
+        if (m_isFrozen)
+        {
+            // Slow down animation when frozen
+            m_wobbleAnimation += deltaTime.asSeconds() * 0.3f;
+        }
+        else
+        {
+            // Normal animation speed
+            m_wobbleAnimation += deltaTime.asSeconds() * 3.0f;
+        }
 
         // Update poison bubbles
         updatePoisonBubbles(deltaTime);
@@ -509,30 +554,35 @@ namespace FishGame
 
     void Angelfish::update(sf::Time deltaTime)
     {
+        // Call base class update (which handles frozen state)
         AdvancedFish::update(deltaTime);
 
         if (!m_isAlive)
             return;
 
-        // Update evasion timer
-        if (m_isEvading)
+        // Skip AI movement updates when frozen
+        if (!m_isFrozen)
         {
-            m_evasionTimer -= deltaTime;
-            if (m_evasionTimer <= sf::Time::Zero)
+            // Update evasion timer
+            if (m_isEvading)
             {
-                m_isEvading = false;
-                m_currentThreat = nullptr;
+                m_evasionTimer -= deltaTime;
+                if (m_evasionTimer <= sf::Time::Zero)
+                {
+                    m_isEvading = false;
+                    m_currentThreat = nullptr;
+                }
+            }
+
+            // Update erratic movement only when not evading or frozen
+            if (!m_isEvading)
+            {
+                updateErraticMovement(deltaTime);
             }
         }
 
-        // Update erratic movement only when not evading
-        if (!m_isEvading)
-        {
-            updateErraticMovement(deltaTime);
-        }
-
-        // Update color shift for rainbow effect
-        m_colorShift += deltaTime.asSeconds() * 2.0f;
+        // Update visual effects (continue even when frozen)
+        m_colorShift += deltaTime.asSeconds() * (m_isFrozen ? 0.5f : 2.0f);
 
         // Update fin positions with more dynamic movement
         for (size_t i = 0; i < m_fins.size(); ++i)
@@ -548,8 +598,8 @@ namespace FishGame
             m_fins[i].setPosition(finPos);
             m_fins[i].setRotation(finAngle * 180.0f / 3.14159f);
 
-            // Pulse fins when evading
-            if (m_isEvading)
+            // Pulse fins when evading (unless frozen)
+            if (m_isEvading && !m_isFrozen)
             {
                 float scale = 1.0f + 0.3f * std::sin(m_colorShift * 10.0f);
                 m_fins[i].setScale(scale, scale);
@@ -562,7 +612,7 @@ namespace FishGame
     void Angelfish::updateAI(const std::vector<std::unique_ptr<Entity>>& entities,
         const Entity* player, sf::Time deltaTime)
     {
-        if (!m_isAlive)
+        if (!m_isAlive || m_isFrozen || m_isStunned)
             return;
 
         // Collect all potential threats
