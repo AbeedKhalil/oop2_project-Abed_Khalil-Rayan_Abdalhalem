@@ -264,7 +264,7 @@ namespace FishGame
         HUDElements m_hud;
 
         // Extended state tracking for Stage 4
-        bool m_isPlayerFrozen;
+        bool m_isFreezeActive;
         bool m_hasControlsReversed;
         bool m_isPlayerStunned;
         sf::Time m_controlReverseTimer;

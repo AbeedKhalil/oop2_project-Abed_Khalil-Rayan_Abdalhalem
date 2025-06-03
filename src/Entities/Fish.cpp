@@ -28,6 +28,8 @@ namespace FishGame
         , m_poisonTimer(sf::Time::Zero)
         , m_stunTimer(sf::Time::Zero)
         , m_originalVelocity(0.0f, 0.0f)
+        , m_isFrozen(false)
+        ,m_velocityBeforeFreeze(0.0f, 0.0f)
     {
         // Set radius based on size
         switch (m_size)
@@ -82,6 +84,30 @@ namespace FishGame
 
         // Just maintain fleeing velocity
         // The fish will be destroyed when it goes off screen
+    }
+
+    void Fish::setFrozen(bool frozen)
+    {
+        if (frozen && !m_isFrozen)
+        {
+            // Entering frozen state
+            m_isFrozen = true;
+            m_velocityBeforeFreeze = m_velocity;
+            m_velocity = m_velocityBeforeFreeze * 0.1f; // 90% speed reduction
+        }
+        else if (!frozen && m_isFrozen)
+        {
+            // Exiting frozen state
+            m_isFrozen = false;
+            // Restore original direction but with current speed
+            float currentSpeed = std::sqrt(m_velocityBeforeFreeze.x * m_velocityBeforeFreeze.x +
+                m_velocityBeforeFreeze.y * m_velocityBeforeFreeze.y);
+            if (currentSpeed > 0.0f)
+            {
+                sf::Vector2f direction = m_velocityBeforeFreeze / currentSpeed;
+                m_velocity = direction * m_speed;
+            }
+        }
     }
 
     void Fish::update(sf::Time deltaTime)
@@ -215,8 +241,8 @@ namespace FishGame
     void Fish::updateAI(const std::vector<std::unique_ptr<Entity>>& entities,
         const Entity* player, sf::Time deltaTime)
     {
-        // Skip AI if fleeing
-        if (m_isFleeing)
+        // Skip AI if frozen, fleeing, or stunned
+        if (m_isFrozen || m_isFleeing || m_isStunned)
             return;
 
         // Default AI behavior - only medium and large fish have AI behavior by default

@@ -26,6 +26,9 @@ namespace FishGame
         bool isFleeing() const { return m_isFleeing; }
         void updateFleeingBehavior(sf::Time deltaTime);
 
+        void setFrozen(bool frozen);
+        bool isFrozen() const { return m_isFrozen; }
+
         // New state management methods
         void setPoisoned(sf::Time duration);
         void setStunned(sf::Time duration);
@@ -77,6 +80,9 @@ namespace FishGame
         sf::Time m_poisonTimer;
         sf::Time m_stunTimer;
         sf::Vector2f m_originalVelocity;
+
+        bool m_isFrozen;
+        sf::Vector2f m_velocityBeforeFreeze;
 
         // State durations
         static constexpr float m_defaultPoisonDuration = 5.0f;
