@@ -25,6 +25,7 @@
 #include <optional>
 #include <algorithm>
 #include <numeric>
+#include <type_traits>
 
 namespace FishGame
 {
@@ -44,28 +45,118 @@ namespace FishGame
         void onActivate() override;
 
     private:
-        // Template for update functions
-        template<typename System>
-        struct UpdateTask
-        {
-            std::function<void(System&, sf::Time)> update;
-            System* system;
-            bool enabled;
-        };
+        // ==================== Template Utilities ====================
 
-        // Template for collision handlers
-        template<typename EntityType>
-        using CollisionHandler = std::function<void(EntityType&)>;
+        // Generic entity predicate types
+        template<typename Entity>
+        using EntityPredicate = std::function<bool(const Entity&)>;
 
-        // Template for visual effects
-        template<typename EffectType>
-        struct VisualEffect
+        template<typename Entity>
+        using EntityAction = std::function<void(Entity&)>;
+
+        template<typename Entity1, typename Entity2>
+        using CollisionAction = std::function<void(Entity1&, Entity2&)>;
+
+        // Generic collision detection between two containers
+        template<typename Container1, typename Container2, typename CollisionFunc>
+        void processCollisionsBetween(Container1& container1, Container2& container2, CollisionFunc onCollision)
         {
-            EffectType effect;
-            sf::Time lifetime;
-            std::function<void(EffectType&, sf::Time)> updateFunc;
-            std::function<void(const EffectType&, sf::RenderTarget&)> renderFunc;
-        };
+            for (auto& item1 : container1)
+            {
+                if (!item1 || !item1->isAlive()) continue;
+
+                for (auto& item2 : container2)
+                {
+                    if (!item2 || !item2->isAlive() || item1 == item2) continue;
+
+                    if (CollisionDetector::checkCircleCollision(*item1, *item2))
+                    {
+                        onCollision(*item1, *item2);
+                    }
+                }
+            }
+        }
+
+        // Specialized collision detection for single entity vs container
+        template<typename Entity, typename Container, typename CollisionFunc>
+        void processEntityVsContainer(Entity& entity, Container& container, CollisionFunc onCollision)
+        {
+            if (!entity.isAlive()) return;
+
+            std::for_each(container.begin(), container.end(),
+                [&entity, &onCollision](auto& item) {
+                    if (item && item->isAlive() &&
+                        CollisionDetector::checkCircleCollision(entity, *item))
+                    {
+                        onCollision(*item);
+                    }
+                });
+        }
+
+        // Generic container update with optional filter
+        template<typename Container>
+        void updateEntities(Container& container, sf::Time deltaTime,
+            EntityPredicate<typename Container::value_type::element_type> filter = {})
+        {
+            for (auto& entity : container)
+            {
+                if (entity && entity->isAlive() && (!filter || filter(*entity)))
+                {
+                    entity->update(deltaTime);
+                }
+            }
+        }
+
+        // Generic dead entity removal
+        template<typename Container>
+        void removeDeadEntities(Container& container)
+        {
+            container.erase(
+                std::remove_if(container.begin(), container.end(),
+                    [](const auto& entity) {
+                        return !entity || !entity->isAlive();
+                    }),
+                container.end()
+            );
+        }
+
+        // Generic entity spawning
+        template<typename EntityType, typename... Args>
+        void spawnEntity(std::vector<std::unique_ptr<Entity>>& targetContainer,
+            const sf::Vector2f& position, Args&&... args)
+        {
+            auto entity = std::make_unique<EntityType>(std::forward<Args>(args)...);
+            entity->setPosition(position);
+            targetContainer.push_back(std::move(entity));
+        }
+
+        // Generic container rendering
+        template<typename Container>
+        void renderContainer(const Container& container, sf::RenderWindow& window)
+        {
+            std::for_each(container.begin(), container.end(),
+                [&window](const auto& item) {
+                    if (item && item->isAlive())
+                    {
+                        window.draw(*item);
+                    }
+                });
+        }
+
+        // Template for applying effects to entities
+        template<typename Container, typename EffectFunc>
+        void applyEffectToEntities(Container& container, EffectFunc effect)
+        {
+            std::for_each(container.begin(), container.end(),
+                [&effect](auto& entity) {
+                    if (entity && entity->isAlive())
+                    {
+                        effect(*entity);
+                    }
+                });
+        }
+
+        // ==================== Type Definitions ====================
 
         // Particle effect structure
         struct ParticleEffect
@@ -120,71 +211,72 @@ namespace FishGame
             sf::Text effectsText;
         };
 
-    private:
-        // Core update methods
+        // Performance metrics
+        struct PerformanceMetrics
+        {
+            sf::Time fpsUpdateTime = sf::Time::Zero;
+            int frameCount = 0;
+            float currentFPS = 0.0f;
+        };
+
+        // ==================== Collision Handler Functors ====================
+
+        struct FishCollisionHandler
+        {
+            PlayState* state;
+
+            void operator()(Entity& fish) const;
+        };
+
+        struct BonusItemCollisionHandler
+        {
+            PlayState* state;
+
+            void operator()(BonusItem& item) const;
+        };
+
+        struct HazardCollisionHandler
+        {
+            PlayState* state;
+
+            void operator()(Hazard& hazard) const;
+        };
+
+        // ==================== Helper Functions ====================
+
+        // Spawning helpers
+        void spawnRandomHazard();
+        void spawnRandomPowerUp();
+        sf::Vector2f generateRandomPosition();
+
+        // Effect helpers
+        void createParticleEffect(const sf::Vector2f& position, const sf::Color& color,
+            int count = Constants::DEFAULT_PARTICLE_COUNT);
+        void applyEnvironmentalForces(sf::Time deltaTime);
+
+        // State helpers
+        bool shouldSpawnSpecialEntity(sf::Time& timer, float interval);
+        void updateEffectTimers(sf::Time deltaTime);
+
+        // ==================== Core Methods ====================
+
+        // Initialization
+        void initializeSystems();
+        void initializeHUD();
+        template<typename SystemType>
+        SystemType* createAndStoreSystem(const std::string& name, const sf::Font& font);
+
+        // Update methods
         void updateGameplay(sf::Time deltaTime);
         void updateSystems(sf::Time deltaTime);
-        void updateEntities(sf::Time deltaTime);
+        void updateAllEntities(sf::Time deltaTime);
         void updateHUD();
         void updatePerformanceMetrics(sf::Time deltaTime);
-        void updateEnvironmentalEffects(sf::Time deltaTime);
-        void updateHazards(sf::Time deltaTime);
-        void updatePlayerEffects(sf::Time deltaTime);
-
-        // Template update methods
-        template<typename Container>
-        void updateContainer(Container& container, sf::Time deltaTime)
-        {
-            std::for_each(container.begin(), container.end(),
-                [deltaTime](auto& item) {
-                    if (item && item->isAlive())
-                    {
-                        item->update(deltaTime);
-                    }
-                });
-        }
-
-        template<typename Container, typename Predicate>
-        void removeDeadEntities(Container& container, Predicate pred)
-        {
-            container.erase(
-                std::remove_if(container.begin(), container.end(), pred),
-                container.end()
-            );
-        }
 
         // Collision handling
         void checkCollisions();
-        void checkHazardCollisions();
-
-        template<typename Entity1, typename Entity2, typename Handler>
-        void checkCollisionPair(Entity1& entity1, Entity2& entity2, Handler handler)
-        {
-            if (CollisionDetector::checkCircleCollision(entity1, entity2))
-            {
-                handler(entity1, entity2);
-            }
-        }
-
-        template<typename Container, typename Entity, typename Handler>
-        void checkCollisionsWithContainer(Entity& entity, Container& container, Handler handler)
-        {
-            std::for_each(container.begin(), container.end(),
-                [&entity, &handler](auto& item) {
-                    if (item && item->isAlive() &&
-                        CollisionDetector::checkCircleCollision(entity, *item))
-                    {
-                        handler(*item);
-                    }
-                });
-        }
-
-        // Specialized collision handlers
-        void handleFishCollision(Entity& fish);
-        void handleBonusItemCollision(BonusItem& item);
         void handlePowerUpCollision(PowerUp& powerUp);
         void handleOysterCollision(PermanentOyster* oyster);
-        void handleHazardCollision(Hazard& hazard);
 
         // Game flow
         void handlePlayerDeath();
@@ -194,49 +286,20 @@ namespace FishGame
         void triggerWinSequence();
         void checkBonusStage();
 
-        // Spawning methods
-        void spawnHazards(sf::Time deltaTime);
-        void spawnExtendedPowerUps();
-
-        // Template utility methods
-        template<typename MessageType>
-        void showMessage(const MessageType& message)
-        {
-            std::ostringstream stream;
-            stream << message;
-            m_hud.messageText.setString(stream.str());
-            centerText(m_hud.messageText);
-        }
-
-        void centerText(sf::Text& text);
-
-        // Visual effects
-        void createParticleEffect(const sf::Vector2f& position, const sf::Color& color, int count = Constants::DEFAULT_PARTICLE_COUNT);
-
-        template<typename EffectParams>
-        void createCustomEffect(const sf::Vector2f& position, const EffectParams& params);
-
         // Level management
         void updateLevelDifficulty();
         void resetLevel();
-        void initializeSystems();
 
         // Helper methods
         bool areAllEnemiesGone() const;
         void makeAllEnemiesFlee();
         void applyFreeze();
         void reverseControls();
-
-        // Template spawn management
-        template<typename EntityType>
-        void processSpawnedEntities(std::vector<std::unique_ptr<EntityType>>& source)
-        {
-            std::move(source.begin(), source.end(), std::back_inserter(m_entities));
-            source.clear();
-        }
+        void showMessage(const std::string& message);
+        void centerText(sf::Text& text);
 
     private:
-        // Core game objects
+        // ==================== Core Game Objects ====================
         std::unique_ptr<Player> m_player;
         std::unique_ptr<EnhancedFishSpawner> m_fishSpawner;
         std::unique_ptr<SchoolingSystem> m_schoolingSystem;
@@ -247,7 +310,7 @@ namespace FishGame
         // Environmental system
         std::unique_ptr<EnvironmentSystem> m_environmentSystem;
 
-        // Game systems (using unordered_map for extensibility)
+        // Game systems
         std::unordered_map<std::string, std::unique_ptr<void, std::function<void(void*)>>> m_systems;
 
         // Direct system pointers for performance
@@ -263,8 +326,8 @@ namespace FishGame
         LevelStats m_levelStats;
         HUDElements m_hud;
 
-        // Extended state tracking for Stage 4
-        bool m_isFreezeActive;
+        // Effect states
+        bool m_isPlayerFrozen;
         bool m_hasControlsReversed;
         bool m_isPlayerStunned;
         sf::Time m_controlReverseTimer;
@@ -280,12 +343,7 @@ namespace FishGame
         int m_savedLevel;
 
         // Performance tracking
-        struct PerformanceMetrics
-        {
-            sf::Time fpsUpdateTime = sf::Time::Zero;
-            int frameCount = 0;
-            float currentFPS = 0.0f;
-        } m_metrics;
+        PerformanceMetrics m_metrics;
 
         // Visual effects
         std::vector<ParticleEffect> m_particles;
@@ -294,10 +352,11 @@ namespace FishGame
         std::mt19937 m_randomEngine;
         std::uniform_real_distribution<float> m_angleDist;
         std::uniform_real_distribution<float> m_speedDist;
+        std::uniform_real_distribution<float> m_positionDist;
         std::uniform_int_distribution<int> m_hazardTypeDist;
-        std::uniform_int_distribution<int> m_extendedPowerUpDist;
+        std::uniform_int_distribution<int> m_powerUpTypeDist;
 
-        // Spawn rates for Stage 4
+        // Constants
         static constexpr float m_hazardSpawnInterval = 8.0f;
         static constexpr float m_extendedPowerUpInterval = 15.0f;
     };
