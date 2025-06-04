@@ -29,7 +29,7 @@ namespace FishGame
         , m_stunTimer(sf::Time::Zero)
         , m_originalVelocity(0.0f, 0.0f)
         , m_isFrozen(false)
-        ,m_velocityBeforeFreeze(0.0f, 0.0f)
+        , m_velocityBeforeFreeze(0.0f, 0.0f)
     {
         // Set radius based on size
         switch (m_size)
@@ -255,7 +255,7 @@ namespace FishGame
             const Player* playerPtr = dynamic_cast<const Player*>(player);
             if (playerPtr)
             {
-                float distance = CollisionDetector::getDistance(m_position, player->getPosition());
+                float distance = EntityUtils::distance(*this, *player);
 
                 // Check if player is larger and within flee range
                 FishSize playerSize = playerPtr->getCurrentFishSize();
@@ -297,7 +297,7 @@ namespace FishGame
                 {
                     if (pufferfish->isInflated() && pufferfish->isAlive())
                     {
-                        float distance = CollisionDetector::getDistance(m_position, pufferfish->getPosition());
+                        float distance = EntityUtils::distance(*this, *pufferfish);
 
                         // Avoid puffed pufferfish
                         if (distance < AI_FLEE_RANGE * 1.5f)
@@ -327,7 +327,7 @@ namespace FishGame
                             return;
                     }
 
-                    float distance = CollisionDetector::getDistance(m_position, entity->getPosition());
+                    float distance = EntityUtils::distance(*this, *entity);
                     if (distance < closestDistance && distance < AI_DETECTION_RANGE)
                     {
                         closestDistance = distance;

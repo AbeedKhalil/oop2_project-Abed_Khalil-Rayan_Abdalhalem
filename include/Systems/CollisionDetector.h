@@ -16,17 +16,7 @@ namespace FishGame
         // Check collision between two circular entities
         static bool checkCircleCollision(const Entity& entity1, const Entity& entity2)
         {
-            sf::Vector2f pos1 = entity1.getPosition();
-            sf::Vector2f pos2 = entity2.getPosition();
-
-            float dx = pos1.x - pos2.x;
-            float dy = pos1.y - pos2.y;
-            float distanceSquared = dx * dx + dy * dy;
-
-            float radiusSum = entity1.getRadius() + entity2.getRadius();
-            float radiusSumSquared = radiusSum * radiusSum;
-
-            return distanceSquared < radiusSumSquared;
+            return EntityUtils::areColliding(entity1, entity2);
         }
 
         // Check if a point is inside a circle
@@ -51,6 +41,12 @@ namespace FishGame
             float dx = point1.x - point2.x;
             float dy = point1.y - point2.y;
             return std::sqrt(dx * dx + dy * dy);
+        }
+
+        // Get distance between two entities
+        static float getDistance(const Entity& entity1, const Entity& entity2)
+        {
+            return EntityUtils::distance(entity1, entity2);
         }
 
         // Get squared distance between two points (more efficient when exact distance not needed)
