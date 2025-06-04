@@ -98,7 +98,7 @@ namespace FishGame
             // Remove dead members
             m_members.erase(
                 std::remove_if(m_members.begin(), m_members.end(),
-                    [](const MemberPtr& member) { return !member->isAlive(); }),
+                    [](const MemberPtr& member) { return !member || !member->isAlive(); }),
                 m_members.end()
             );
 

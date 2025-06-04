@@ -143,7 +143,7 @@ namespace FishGame
             const Player* playerPtr = dynamic_cast<const Player*>(player);
             if (playerPtr && canEat(*player))
             {
-                float distance = CollisionDetector::getDistance(m_position, player->getPosition());
+                float distance = EntityUtils::distance(*this, *player);
                 if (distance < closestDistance)
                 {
                     closestDistance = distance;
@@ -161,7 +161,7 @@ namespace FishGame
 
                 if (canEat(*entity))
                 {
-                    float distance = CollisionDetector::getDistance(m_position, entity->getPosition());
+                    float distance = EntityUtils::distance(*this, *entity);
                     if (distance < closestDistance)
                     {
                         closestDistance = distance;
@@ -328,7 +328,7 @@ namespace FishGame
         if (!isInflated())
             return false;
 
-        float distance = CollisionDetector::getDistance(m_position, entity.getPosition());
+        float distance = EntityUtils::distance(*this, entity);
         float pushRadius = m_radius + 10.0f; // Slightly larger than actual radius for push effect
 
         return distance < pushRadius;
@@ -622,7 +622,7 @@ namespace FishGame
         // Check player as threat
         if (player && player->isAlive())
         {
-            float distance = CollisionDetector::getDistance(m_position, player->getPosition());
+            float distance = EntityUtils::distance(*this, *player);
 
             if (distance < m_threatDetectionRange)
             {
@@ -653,7 +653,7 @@ namespace FishGame
                 if (!fish)
                     return;
 
-                float distance = CollisionDetector::getDistance(m_position, entity->getPosition());
+                float distance = EntityUtils::distance(*this, *entity);
 
                 if (distance < m_threatDetectionRange && fish->canEat(*this))
                 {
@@ -696,7 +696,7 @@ namespace FishGame
             const Player* playerPtr = dynamic_cast<const Player*>(player);
             if (playerPtr && playerPtr->canEat(*this))
             {
-                float distance = CollisionDetector::getDistance(m_position, player->getPosition());
+                float distance = EntityUtils::distance(*this, *player);
                 if (distance < m_threatDetectionRange)
                 {
                     threats.push_back(player);
@@ -713,7 +713,7 @@ namespace FishGame
                 const Fish* fish = dynamic_cast<const Fish*>(entity.get());
                 if (fish && fish->canEat(*this))
                 {
-                    float distance = CollisionDetector::getDistance(m_position, entity->getPosition());
+                    float distance = EntityUtils::distance(*this, *entity);
                     if (distance < m_threatDetectionRange)
                     {
                         threats.push_back(entity.get());

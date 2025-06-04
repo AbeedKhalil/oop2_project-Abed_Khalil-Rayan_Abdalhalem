@@ -338,8 +338,8 @@ namespace FishGame
             });
 
         // Remove dead entities from all containers
-        removeDeadEntities(m_entities);
-        removeDeadEntities(m_hazards);
+        EntityUtils::removeDeadEntities(m_entities);
+        EntityUtils::removeDeadEntities(m_hazards);
 
         // Special handling for bonus items (check expiration too)
         m_bonusItems.erase(
@@ -550,9 +550,23 @@ namespace FishGame
     void PlayState::checkCollisions()
     {
         // Player vs various containers
-        processEntityVsContainer(*m_player, m_entities, FishCollisionHandler{ this });
-        processEntityVsContainer(*m_player, m_bonusItems, BonusItemCollisionHandler{ this });
-        processEntityVsContainer(*m_player, m_hazards, HazardCollisionHandler{ this });
+        EntityUtils::forEachAlive(m_entities, [this](Entity& entity) {
+            if (EntityUtils::areColliding(*m_player, entity)) {
+                FishCollisionHandler{ this }(entity);
+            }
+            });
+
+        EntityUtils::forEachAlive(m_bonusItems, [this](Entity& item) {
+            if (EntityUtils::areColliding(*m_player, *static_cast<BonusItem*>(&item))) {
+                BonusItemCollisionHandler{ this }(*static_cast<BonusItem*>(&item));
+            }
+            });
+
+        EntityUtils::forEachAlive(m_hazards, [this](Entity& hazard) {
+            if (EntityUtils::areColliding(*m_player, *static_cast<Hazard*>(&hazard))) {
+                HazardCollisionHandler{ this }(*static_cast<Hazard*>(&hazard));
+            }
+            });
 
         // Player vs oysters
         m_oysterManager->checkCollisions(*m_player,
