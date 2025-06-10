@@ -25,7 +25,7 @@ namespace FishGame
     class EnhancedFishSpawner : public FishSpawner
     {
     public:
-        explicit EnhancedFishSpawner(const sf::Vector2u& windowSize);
+        EnhancedFishSpawner(const sf::Vector2u& windowSize, SpriteManager& spriteManager);
         ~EnhancedFishSpawner() = default;
 
         // Override update to include special fish

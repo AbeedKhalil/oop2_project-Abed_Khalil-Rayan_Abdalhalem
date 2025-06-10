@@ -27,6 +27,7 @@ namespace FishGame
         , m_frenzySystem(nullptr)
         , m_powerUpManager(nullptr)
         , m_scoreSystem(nullptr)
+        , m_spriteManager(nullptr)
         , m_invulnerabilityTimer(sf::Time::Zero)
         , m_damageCooldown(sf::Time::Zero)
         , m_speedMultiplier(1.0f)
@@ -63,6 +64,35 @@ namespace FishGame
         {
             m_growthMeter->setStage(m_currentStage);
             m_growthMeter->setOnStageComplete([this]() { checkStageAdvancement(); });
+        }
+    }
+
+    void Player::initializeSprite(SpriteManager& spriteManager)
+    {
+        m_spriteManager = &spriteManager;
+
+        auto sprite = spriteManager.createSpriteComponent(static_cast<Entity*>(this), getTextureID());
+        if (sprite)
+        {
+            auto config = spriteManager.getSpriteConfig<Entity>(getTextureID(), getCurrentFishSize());
+            sprite->configure(config);
+            setSpriteComponent(std::move(sprite));
+            setRenderMode(RenderMode::Sprite);
+        }
+    }
+
+    TextureID Player::getTextureID() const
+    {
+        switch (getCurrentFishSize())
+        {
+        case FishSize::Small:
+            return TextureID::PlayerSmall;
+        case FishSize::Medium:
+            return TextureID::PlayerMedium;
+        case FishSize::Large:
+            return TextureID::PlayerLarge;
+        default:
+            return TextureID::PlayerSmall;
         }
     }
 
@@ -134,6 +164,12 @@ namespace FishGame
         // Update visual representation
         m_shape.setPosition(m_position);
         m_shape.setScale(m_eatAnimationScale, m_eatAnimationScale);
+
+        if (m_renderMode == RenderMode::Sprite && m_sprite)
+        {
+            m_sprite->update(deltaTime);
+            m_sprite->setScale(sf::Vector2f(m_eatAnimationScale, m_eatAnimationScale));
+        }
     }
 
     void Player::handleInput()
@@ -525,7 +561,14 @@ namespace FishGame
             }
         }
 
-        target.draw(m_shape, states);
+        if (m_renderMode == RenderMode::Sprite && m_sprite)
+        {
+            target.draw(*m_sprite, states);
+        }
+        else
+        {
+            target.draw(m_shape, states);
+        }
     }
 
     void Player::updateStage()
@@ -548,6 +591,12 @@ namespace FishGame
         if (m_growthMeter)
         {
             m_growthMeter->setStage(m_currentStage);
+        }
+
+        if (m_sprite && m_renderMode == RenderMode::Sprite && m_spriteManager)
+        {
+            auto config = m_spriteManager->getSpriteConfig<Entity>(getTextureID(), getCurrentFishSize());
+            m_sprite->configure(config);
         }
 
         m_activeEffects.push_back({

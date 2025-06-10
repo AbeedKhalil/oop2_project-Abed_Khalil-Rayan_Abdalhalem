@@ -1,12 +1,13 @@
 #include "EnhancedFishSpawner.h"
+#include "SpriteManager.h"
 #include "FishFactory.h"
 #include "SpecialFish.h"
 #include <algorithm>
 
 namespace FishGame
 {
-    EnhancedFishSpawner::EnhancedFishSpawner(const sf::Vector2u& windowSize)
-        : FishSpawner(windowSize)
+    EnhancedFishSpawner::EnhancedFishSpawner(const sf::Vector2u& windowSize, SpriteManager& spriteManager)
+        : FishSpawner(windowSize, spriteManager)
         , m_barracudaSpawner()
         , m_pufferfishSpawner()
         , m_angelfishSpawner()
@@ -93,6 +94,7 @@ namespace FishGame
             fish->setPosition(x, y);
             fish->setDirection(fromLeft ? 1.0f : -1.0f, 0.0f);
             fish->setWindowBounds(m_windowSize);
+            fish->initializeSprite(*m_spriteManager);
 
             // Add to spawned fish
             m_spawnedFish.push_back(std::move(fish));
@@ -144,8 +146,11 @@ namespace FishGame
         // Add each fish to the school
         for (auto& fish : formation)
         {
+            fish->initializeSprite(*m_spriteManager);
+
             // Create school member using factory
             auto member = SchoolingFishFactory<FishType>::createFromFish(*fish, m_currentLevel);
+            member->initializeSprite(*m_spriteManager);
             member->setDirection(fromLeft ? 1.0f : -1.0f, 0.0f);
             member->setWindowBounds(m_windowSize);
 

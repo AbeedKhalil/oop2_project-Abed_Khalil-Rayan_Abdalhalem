@@ -13,7 +13,7 @@ namespace FishGame
     PlayState::PlayState(Game& game)
         : State(game)
         , m_player(std::make_unique<Player>())
-        , m_fishSpawner(std::make_unique<EnhancedFishSpawner>(getGame().getWindow().getSize()))
+        , m_fishSpawner(std::make_unique<EnhancedFishSpawner>(getGame().getWindow().getSize(), getGame().getSpriteManager()))
         , m_schoolingSystem(std::make_unique<SchoolingSystem>())
         , m_entities()
         , m_bonusItems()
@@ -110,6 +110,7 @@ namespace FishGame
         // Initialize player with systems
         m_player->setWindowBounds(window.getSize());
         m_player->initializeSystems(m_growthMeter, m_frenzySystem, m_powerUpManager, m_scoreSystem);
+        m_player->initializeSprite(getGame().getSpriteManager());
 
         // Configure spawners
         m_fishSpawner->setSchoolingSystem(m_schoolingSystem.get());

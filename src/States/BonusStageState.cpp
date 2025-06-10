@@ -86,6 +86,7 @@ namespace FishGame
         // Initialize player
         m_player->setWindowBounds(getGame().getWindow().getSize());
         m_player->setPosition(960.0f, 540.0f);
+        m_player->initializeSprite(getGame().getSpriteManager());
 
         // Reserve containers
         m_entities.reserve(50);
@@ -404,6 +405,7 @@ namespace FishGame
             fish->setPosition(x, y);
             fish->setDirection(fromLeft ? 1.0f : -1.0f, 0.0f);
             fish->setWindowBounds(getGame().getWindow().getSize());
+            fish->initializeSprite(getGame().getSpriteManager());
 
             m_entities.push_back(std::move(fish));
         }
@@ -422,6 +424,7 @@ namespace FishGame
 
             barracuda->setPosition(x, y);
             barracuda->setWindowBounds(getGame().getWindow().getSize());
+            barracuda->initializeSprite(getGame().getSpriteManager());
 
             m_entities.push_back(std::move(barracuda));
         }

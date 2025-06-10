@@ -17,10 +17,12 @@ namespace FishGame
         bool fromLeft;       // Spawn direction
     };
 
+    class SpriteManager;
+
     class FishSpawner
     {
     public:
-        explicit FishSpawner(const sf::Vector2u& windowSize);
+        FishSpawner(const sf::Vector2u& windowSize, SpriteManager& spriteManager);
         virtual ~FishSpawner() = default;
 
         // Virtual update for derived classes
@@ -54,5 +56,7 @@ namespace FishGame
 
         int m_currentLevel;
         std::mt19937 m_randomEngine;
+
+        SpriteManager* m_spriteManager;
     };
 }

@@ -1,12 +1,13 @@
 #include "FishSpawner.h"
 #include "GameConstants.h"
+#include "SpriteManager.h"
 #include <algorithm>
 
 namespace FishGame
 {
     using namespace Constants;
 
-    FishSpawner::FishSpawner(const sf::Vector2u& windowSize)
+    FishSpawner::FishSpawner(const sf::Vector2u& windowSize, SpriteManager& spriteManager)
         : m_windowSize(windowSize)
         , m_spawnedFish()
         , m_smallSpawner()
@@ -14,6 +15,7 @@ namespace FishGame
         , m_largeSpawner()
         , m_currentLevel(1)
         , m_randomEngine(std::random_device{}())
+        , m_spriteManager(&spriteManager)
     {
         // Initialize spawn configurations for each level
         // Significantly reduced small fish spawn rates
@@ -83,6 +85,7 @@ namespace FishGame
         smallSpawnerConfig.customizer = [this, &smallConfig](SmallFish& fish) {
             fish.setDirection(smallConfig.fromLeft ? 1.0f : -1.0f, 0.0f);
             fish.setWindowBounds(m_windowSize);
+            fish.initializeSprite(*m_spriteManager);
             };
 
         m_smallSpawner.setConfig(smallSpawnerConfig);
@@ -97,6 +100,7 @@ namespace FishGame
         mediumSpawnerConfig.customizer = [this, &mediumConfig](MediumFish& fish) {
             fish.setDirection(mediumConfig.fromLeft ? 1.0f : -1.0f, 0.0f);
             fish.setWindowBounds(m_windowSize);
+            fish.initializeSprite(*m_spriteManager);
             };
 
         m_mediumSpawner.setConfig(mediumSpawnerConfig);
@@ -111,6 +115,7 @@ namespace FishGame
         largeSpawnerConfig.customizer = [this, &largeConfig](LargeFish& fish) {
             fish.setDirection(largeConfig.fromLeft ? 1.0f : -1.0f, 0.0f);
             fish.setWindowBounds(m_windowSize);
+            fish.initializeSprite(*m_spriteManager);
             };
 
         m_largeSpawner.setConfig(largeSpawnerConfig);
