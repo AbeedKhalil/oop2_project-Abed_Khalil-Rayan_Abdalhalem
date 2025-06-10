@@ -158,7 +158,9 @@ namespace FishGame
         if (m_isTransitioning)
             return;
 
-        auto hoveredOption = findOptionAt(m_menuItems, mousePos);
+        auto hoveredOption = StateUtils::findItemAt(
+            m_menuItems, mousePos,
+            [](const auto& item) { return item.textObject.getGlobalBounds(); });
         if (hoveredOption.has_value())
         {
             m_selectedOption = static_cast<MenuOption>(hoveredOption.value());
@@ -171,7 +173,9 @@ namespace FishGame
         if (m_isTransitioning)
             return;
 
-        auto clickedOption = findOptionAt(m_menuItems, mousePos);
+        auto clickedOption = StateUtils::findItemAt(
+            m_menuItems, mousePos,
+            [](const auto& item) { return item.textObject.getGlobalBounds(); });
         if (clickedOption.has_value())
         {
             m_selectedOption = static_cast<MenuOption>(clickedOption.value());
@@ -213,12 +217,7 @@ namespace FishGame
         // Animate selected option with pulsing effect
         size_t selectedIndex = static_cast<size_t>(m_selectedOption);
         float scale = 1.0f + m_pulseAmplitude * std::sin(m_animationTime * m_pulseSpeed * 2.0f * Constants::PI);
-        applyPulseEffect(m_menuItems[selectedIndex].textObject, scale);
-    }
-
-    void MenuState::applyPulseEffect(sf::Text& text, float scale)
-    {
-        text.setScale(scale, scale);
+        StateUtils::applyPulseEffect(m_menuItems[selectedIndex].textObject, scale);
     }
 
     void MenuState::render()
