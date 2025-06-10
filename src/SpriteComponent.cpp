@@ -111,13 +111,23 @@ namespace FishGame
             {
                 m_sprite.setPosition(m_owner->getPosition());
 
-                // Flip sprite based on horizontal movement
+                // Determine horizontal direction
                 float vx = m_owner->getVelocity().x;
+                if (std::abs(vx) < 0.01f)
+                {
+                    if constexpr (std::is_same_v<OwnerType, Player>)
+                    {
+                        const Player* player = static_cast<const Player*>(m_owner);
+                        vx = player->getTargetPosition().x - player->getPosition().x;
+                    }
+                }
+
                 if (vx != 0.0f)
                 {
                     sf::Vector2f scale = m_sprite.getScale();
                     float absX = std::abs(scale.x);
-                    scale.x = (vx < 0.0f) ? -absX : absX;
+                    // Default sprite orientation faces left, so flip when moving right
+                    scale.x = (vx > 0.0f) ? -absX : absX;
                     m_sprite.setScale(scale);
                 }
             }

@@ -3,6 +3,7 @@
 #include "BonusItem.h"
 #include "PowerUp.h"
 #include "SpecialFish.h"
+#include "CollisionDetector.h"
 #include "GenericFish.h"
 #include <SFML/Window.hpp>
 #include <cmath>
@@ -168,7 +169,10 @@ namespace FishGame
         if (m_renderMode == RenderMode::Sprite && m_sprite)
         {
             m_sprite->update(deltaTime);
-            m_sprite->setScale(sf::Vector2f(m_eatAnimationScale, m_eatAnimationScale));
+
+            // Preserve horizontal orientation when applying scale animation
+            float sign = (m_sprite->getSprite().getScale().x < 0.0f) ? -1.0f : 1.0f;
+            m_sprite->setScale(sf::Vector2f(sign * m_eatAnimationScale, m_eatAnimationScale));
         }
     }
 
@@ -337,6 +341,26 @@ namespace FishGame
     bool Player::attemptEat(Entity& other)
     {
         if (!canEat(other))
+            return false;
+
+        // Only eat if the target intersects with the player's mouth area
+        sf::Vector2f mouthOffset(m_radius, 0.0f);
+        bool facingRight = true;
+        if (m_sprite)
+        {
+            facingRight = m_sprite->getSprite().getScale().x < 0.0f;
+        }
+        else if (m_velocity.x != 0.0f)
+        {
+            facingRight = m_velocity.x > 0.0f;
+        }
+        mouthOffset.x = facingRight ? mouthOffset.x : -mouthOffset.x;
+
+        sf::Vector2f mouthPos = m_position + mouthOffset * 0.8f;
+        float mouthRadius = m_radius * 0.5f;
+
+        float distance = CollisionDetector::getDistance(mouthPos, other.getPosition());
+        if (distance > mouthRadius + other.getRadius())
             return false;
 
         const Fish* fish = dynamic_cast<const Fish*>(&other);
