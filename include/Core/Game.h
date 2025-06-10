@@ -34,6 +34,7 @@ namespace FishGame
         const sf::RenderWindow& getWindow() const { return m_window; }
         TextureHolder& getTextures() { return m_textures; }
         FontHolder& getFonts() { return m_fonts; }
+        SpriteManager& getSpriteManager() { return *m_spriteManager; }
 
         // State management
         void pushState(StateID id);
@@ -70,6 +71,9 @@ namespace FishGame
         void processInput();
         void update(sf::Time deltaTime);
         void render();
+
+        // Initialize graphics system
+        void initializeGraphics();
 
         // State management
         void registerStates();
@@ -116,6 +120,8 @@ namespace FishGame
         std::stack<StatePtr> m_stateStack;
         std::vector<std::pair<StateAction, StateID>> m_pendingList;
         std::map<StateID, StateFactory> m_stateFactories;
+
+        std::unique_ptr<SpriteManager> m_spriteManager;
 
         // Performance tracking
         struct PerformanceMetrics

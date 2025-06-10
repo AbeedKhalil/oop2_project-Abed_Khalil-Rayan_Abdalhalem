@@ -1,1 +1,13 @@
 ﻿add_subdirectory (Fonts)
+
+configure_file ("Angelfish.png" ${CMAKE_BINARY_DIR} COPYONLY)
+configure_file ("Barracuda.png" ${CMAKE_BINARY_DIR} COPYONLY)
+configure_file ("Boomb.png" ${CMAKE_BINARY_DIR} COPYONLY)
+configure_file ("Jellyfish.png" ${CMAKE_BINARY_DIR} COPYONLY)
+configure_file ("LargeFish.png" ${CMAKE_BINARY_DIR} COPYONLY)
+configure_file ("MediumFish.png" ${CMAKE_BINARY_DIR} COPYONLY)
+configure_file ("Oyster.png" ${CMAKE_BINARY_DIR} COPYONLY)
+configure_file ("PlayerFish.png" ${CMAKE_BINARY_DIR} COPYONLY)
+configure_file ("Pufferfish.png" ${CMAKE_BINARY_DIR} COPYONLY)
+configure_file ("SmallFish.png" ${CMAKE_BINARY_DIR} COPYONLY)
+configure_file ("StarFish.png" ${CMAKE_BINARY_DIR} COPYONLY)

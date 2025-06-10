@@ -1,4 +1,6 @@
 #include "Fish.h"
+#include "SpriteManager.h"
+#include "SpriteComponent.h"
 #include "CollisionDetector.h"
 #include "GameConstants.h"
 #include "Player.h"
@@ -30,6 +32,7 @@ namespace FishGame
         , m_originalVelocity(0.0f, 0.0f)
         , m_isFrozen(false)
         , m_velocityBeforeFreeze(0.0f, 0.0f)
+        , m_damageFlashTimer(sf::Time::Zero)
     {
         // Set radius based on size
         switch (m_size)
@@ -84,6 +87,90 @@ namespace FishGame
 
         // Just maintain fleeing velocity
         // The fish will be destroyed when it goes off screen
+    }
+
+    void Fish::initializeSprite(SpriteManager& spriteManager)
+    {
+        // Create sprite component
+        auto sprite = spriteManager.createSpriteComponent(
+            static_cast<Entity*>(this), getTextureID());
+
+        // Configure sprite based on fish size
+        if (sprite)
+        {
+            auto config = spriteManager.getSpriteConfig<Entity>(getTextureID(), m_size);
+            sprite->configure(config);
+            setSpriteComponent(std::move(sprite));
+
+            // Set render mode to sprite
+            setRenderMode(RenderMode::Sprite);
+
+            // Apply initial visual state
+            updateVisualState();
+        }
+    }
+
+    void Fish::updateVisualState()
+    {
+        if (m_sprite)
+        {
+            // Update sprite color based on state
+            sf::Color spriteColor = sf::Color::White;
+
+            if (m_isPoisoned)
+            {
+                spriteColor = sf::Color(200, 100, 255); // Purple tint
+            }
+            else if (m_isStunned)
+            {
+                spriteColor = sf::Color(150, 150, 150); // Gray tint
+            }
+            else if (m_isFrozen)
+            {
+                spriteColor = sf::Color(150, 200, 255); // Blue tint
+            }
+
+            m_sprite->setColor(spriteColor);
+
+            // Apply effects
+            if (m_isFleeing)
+            {
+                m_sprite->applyPulseEffect(0.1f, 5.0f);
+            }
+        }
+    }
+
+    void Fish::updateSpriteEffects(sf::Time deltaTime)
+    {
+        // Override in derived classes for specific effects
+        
+        // Example: flash when hit
+        if (m_damageFlashTimer > sf::Time::Zero)
+        {
+            m_damageFlashTimer -= deltaTime;
+            float intensity = m_damageFlashTimer.asSeconds() / 0.2f;
+            
+            if (m_sprite)
+            {
+                m_sprite->applyFlashEffect(sf::Color::Red, intensity);
+            }
+        }
+    }
+
+    TextureID Fish::getTextureID() const
+    {
+        // Default implementation - override in derived classes
+        switch (m_size)
+        {
+        case FishSize::Small:
+            return TextureID::SmallFish;
+        case FishSize::Medium:
+            return TextureID::MediumFish;
+        case FishSize::Large:
+            return TextureID::LargeFish;
+        default:
+            return TextureID::SmallFish;
+        }
     }
 
     void Fish::setFrozen(bool frozen)
@@ -162,6 +249,16 @@ namespace FishGame
         }
 
         // Update visual position
+        m_shape.setPosition(m_position);
+
+        // Update sprite if present
+        if (m_sprite && m_renderMode == RenderMode::Sprite)
+        {
+            m_sprite->update(deltaTime);
+            updateSpriteEffects(deltaTime);
+        }
+
+        // Update visual position (both circle and sprite)
         m_shape.setPosition(m_position);
     }
 
@@ -346,7 +443,15 @@ namespace FishGame
 
     void Fish::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        target.draw(m_shape, states);
+        if (m_renderMode == RenderMode::Sprite && m_sprite)
+        {
+            target.draw(*m_sprite, states);
+        }
+        else
+        {
+            // Fallback to circle rendering
+            target.draw(m_shape, states);
+        }
     }
 
     void Fish::updateVisual()

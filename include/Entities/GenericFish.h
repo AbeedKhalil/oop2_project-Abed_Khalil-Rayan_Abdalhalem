@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Fish.h"
+#include "SpriteManager.h"
 #include <type_traits>
 
 namespace FishGame
@@ -68,6 +69,17 @@ namespace FishGame
                 return EntityType::MediumFish;
             else
                 return EntityType::LargeFish;
+        }
+
+        // Override to get specific texture
+        TextureID getTextureID() const override
+        {
+            if constexpr (Size == FishSize::Small)
+                return TextureID::SmallFish;
+            else if constexpr (Size == FishSize::Medium)
+                return TextureID::MediumFish;
+            else
+                return TextureID::LargeFish;
         }
 
     protected:

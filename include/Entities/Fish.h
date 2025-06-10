@@ -1,11 +1,17 @@
 #pragma once
 
 #include "Entity.h"
+#include "SpriteManager.h" 
 #include <vector>
 #include <memory>
 
 namespace FishGame
 {
+    // Forward declarations
+    //class SpriteManager;
+    enum class TextureID;
+    template<typename T> class SpriteComponent;
+
     // Fish size categories for gameplay mechanics
     enum class FishSize
     {
@@ -61,10 +67,20 @@ namespace FishGame
         // Static utility method
         static int getPointValue(FishSize size, int level);
 
+        // Sprite support methods
+        void initializeSprite(SpriteManager& spriteManager);
+        void updateVisualState();
+
     protected:
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
         virtual void updateVisual();
         void updateMovement(sf::Time deltaTime);
+
+        // Sprite-specific updates
+        virtual void updateSpriteEffects(sf::Time deltaTime);
+
+        // Get appropriate texture ID for this fish
+        virtual TextureID getTextureID() const;
 
     protected:
         sf::CircleShape m_shape;
@@ -74,7 +90,7 @@ namespace FishGame
         int m_currentLevel;
         sf::Vector2u m_windowBounds;
 
-        // New state members
+        // State members - these were missing from the error
         bool m_isPoisoned;
         bool m_isStunned;
         sf::Time m_poisonTimer;
@@ -99,5 +115,8 @@ namespace FishGame
         sf::Color m_baseColor;
         sf::Color m_outlineColor;
         float m_outlineThickness;
+
+        // Additional member for damage flash effect
+        sf::Time m_damageFlashTimer;
     };
 }

@@ -1,4 +1,5 @@
 #include "Game.h"
+#include "SpriteManager.h" 
 #include "MenuState.h"
 #include "PlayState.h"
 #include <algorithm>
@@ -21,6 +22,7 @@ namespace FishGame
         , m_pendingList()
         , m_stateFactories()
         , m_metrics()
+        , m_spriteManager(nullptr)
     {
         m_window.setFramerateLimit(m_frameRateLimit);
 
@@ -32,6 +34,8 @@ namespace FishGame
         {
             throw std::runtime_error("Failed to load font: Regular.ttf");
         }
+
+        initializeGraphics();
 
         registerStates();
         pushState(StateID::Menu);
@@ -76,6 +80,25 @@ namespace FishGame
 
             render();
         }
+    }
+
+    void Game::initializeGraphics()
+    {
+        // Create sprite manager with extended texture holder
+        auto extendedTextureHolder = std::make_unique<ResourceHolder<sf::Texture, TextureID>>();
+        m_spriteManager = std::make_unique<SpriteManager>(*extendedTextureHolder);
+
+        // Load all sprite textures
+        if (!m_spriteManager->loadTextures(""))
+        {
+        }
+
+        // Configure sprite scales
+        SpriteScaleConfig scaleConfig;
+        scaleConfig.small = 0.5f;    // Adjust based on your sprite sizes
+        scaleConfig.medium = 0.75f;
+        scaleConfig.large = 1.0f;
+        m_spriteManager->setScaleConfig(scaleConfig);
     }
 
     void Game::processInput()
