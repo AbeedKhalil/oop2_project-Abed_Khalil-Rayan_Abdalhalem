@@ -32,7 +32,7 @@ namespace FishGame
         {TextureID::PearlOysterOpen, "oyster_open.png"},
 
         // Hazards
-        {TextureID::Bomb, "Boomb.png"},
+        {TextureID::Bomb, "Bomb.png"},
         {TextureID::Jellyfish, "Jellyfish.png"},
 
         // Power-ups

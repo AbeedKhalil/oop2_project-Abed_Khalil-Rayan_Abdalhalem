@@ -2,7 +2,7 @@
 
 configure_file ("Angelfish.png" ${CMAKE_BINARY_DIR} COPYONLY)
 configure_file ("Barracuda.png" ${CMAKE_BINARY_DIR} COPYONLY)
-configure_file ("Boomb.png" ${CMAKE_BINARY_DIR} COPYONLY)
+configure_file ("Bomb.png" ${CMAKE_BINARY_DIR} COPYONLY)
 configure_file ("Jellyfish.png" ${CMAKE_BINARY_DIR} COPYONLY)
 configure_file ("LargeFish.png" ${CMAKE_BINARY_DIR} COPYONLY)
 configure_file ("MediumFish.png" ${CMAKE_BINARY_DIR} COPYONLY)

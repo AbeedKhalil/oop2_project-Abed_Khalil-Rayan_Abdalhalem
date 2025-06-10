@@ -21,7 +21,7 @@ namespace FishGame
         // Significantly reduced small fish spawn rates
 
         // Level 1: Easier difficulty
-        m_smallFishConfig[1] = { 0.15f, 100.0f, m_windowSize.y - 100.0f, true };   // Reduced from 0.0001f to 0.15f (1 every ~6.7 seconds)
+        m_smallFishConfig[1] = { 0.08f, 100.0f, m_windowSize.y - 100.0f, true };   // Further reduced spawn rate for level 1
         m_mediumFishConfig[1] = { 0.5f, 150.0f, m_windowSize.y - 150.0f, false };  // Reduced from 1.2f
         m_largeFishConfig[1] = { 0.3f, 200.0f, m_windowSize.y - 200.0f, true };    // Reduced from 0.8f
 
