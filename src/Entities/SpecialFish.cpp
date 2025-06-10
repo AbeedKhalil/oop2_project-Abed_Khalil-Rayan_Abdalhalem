@@ -1,5 +1,6 @@
 #include "SpecialFish.h"
 #include "CollisionDetector.h"
+#include "GameConstants.h"
 #include "Player.h"
 #include <random>
 #include <algorithm>
@@ -251,7 +252,7 @@ namespace FishGame
             // Still update visual elements but not state transitions
             for (size_t i = 0; i < m_spikes.size(); ++i)
             {
-                float angle = (360.0f / m_spikeCount) * i * 3.14159f / 180.0f;
+                float angle = (360.0f / m_spikeCount) * i * Constants::DEG_TO_RAD;
                 float spikeRadius = m_radius + (m_inflationLevel * 10.0f);
 
                 sf::Vector2f spikePos(
@@ -260,7 +261,7 @@ namespace FishGame
                 );
 
                 m_spikes[i].setPosition(spikePos);
-                m_spikes[i].setRotation(angle * 180.0f / 3.14159f);
+                m_spikes[i].setRotation(angle * Constants::RAD_TO_DEG);
             }
             return;
         }
@@ -277,7 +278,7 @@ namespace FishGame
         // Update spike positions
         for (size_t i = 0; i < m_spikes.size(); ++i)
         {
-            float angle = (360.0f / m_spikeCount) * i * 3.14159f / 180.0f;
+            float angle = (360.0f / m_spikeCount) * i * Constants::DEG_TO_RAD;
             float spikeRadius = m_radius + (m_inflationLevel * 10.0f);
 
             sf::Vector2f spikePos(
@@ -286,7 +287,7 @@ namespace FishGame
             );
 
             m_spikes[i].setPosition(spikePos);
-            m_spikes[i].setRotation(angle * 180.0f / 3.14159f);
+            m_spikes[i].setRotation(angle * Constants::DEG_TO_RAD);
         }
     }
 
@@ -484,7 +485,7 @@ namespace FishGame
     {
         for (size_t i = 0; i < m_poisonBubbles.size(); ++i)
         {
-            float angle = (60.0f * i + m_wobbleAnimation * 30.0f) * 3.14159f / 180.0f;
+            float angle = (60.0f * i + m_wobbleAnimation * 30.0f) * Constants::DEG_TO_RAD;
             float radius = 18.0f + 3.0f * std::sin(m_wobbleAnimation + i);
 
             sf::Vector2f bubblePos(
@@ -596,7 +597,7 @@ namespace FishGame
             );
 
             m_fins[i].setPosition(finPos);
-            m_fins[i].setRotation(finAngle * 180.0f / 3.14159f);
+            m_fins[i].setRotation(finAngle * Constants::DEG_TO_RAD);
 
             // Pulse fins when evading (unless frozen)
             if (m_isEvading && !m_isFrozen)
@@ -732,7 +733,7 @@ namespace FishGame
             static std::mt19937 rng(std::random_device{}());
             std::uniform_real_distribution<float> noiseDist(-30.0f, 30.0f);
 
-            float noise = noiseDist(rng) * 3.14159f / 180.0f;
+            float noise = noiseDist(rng) * Constants::DEG_TO_RAD;
             float cos_n = std::cos(noise);
             float sin_n = std::sin(noise);
 
@@ -780,7 +781,7 @@ namespace FishGame
             // No clear escape direction - pick random
             static std::mt19937 rng(std::random_device{}());
             std::uniform_real_distribution<float> angleDist(0.0f, 360.0f);
-            float angle = angleDist(rng) * 3.14159f / 180.0f;
+            float angle = angleDist(rng) * Constants::DEG_TO_RAD;
             compositeEscape = sf::Vector2f(std::cos(angle), std::sin(angle));
         }
 
@@ -848,7 +849,7 @@ namespace FishGame
             static std::mt19937 rng(std::random_device{}());
             std::uniform_real_distribution<float> angleDist(-60.0f, 60.0f);
 
-            float angleChange = angleDist(rng) * 3.14159f / 180.0f;
+            float angleChange = angleDist(rng) * Constants::DEG_TO_RAD;
 
             // Rotate velocity
             float cos_a = std::cos(angleChange);

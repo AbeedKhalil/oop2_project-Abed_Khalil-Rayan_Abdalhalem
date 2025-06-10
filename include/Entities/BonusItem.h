@@ -34,6 +34,10 @@ namespace FishGame
         void setLifetime(sf::Time lifetime) { m_lifetime = lifetime; }
         bool hasExpired() const { return m_lifetimeElapsed >= m_lifetime; }
 
+        // Helper for derived update methods
+        bool updateLifetime(sf::Time deltaTime);
+        float computeBobbingOffset(float freqMul = 1.0f, float ampMul = 1.0f) const;
+
     protected:
         BonusType m_bonusType;
         int m_points;

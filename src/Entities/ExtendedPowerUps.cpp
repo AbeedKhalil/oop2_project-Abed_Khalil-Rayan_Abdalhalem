@@ -1,6 +1,8 @@
 #include "ExtendedPowerUps.h"
 #include <algorithm>
 #include <cmath>
+#include <iterator>
+#include "Utils/DrawHelpers.h"
 
 namespace FishGame
 {
@@ -19,13 +21,13 @@ namespace FishGame
 
         // Create ice shard effects
         m_iceShards.reserve(6);
-        for (int i = 0; i < 6; ++i)
-        {
-            sf::RectangleShape shard(sf::Vector2f(3.0f, 15.0f));
-            shard.setFillColor(sf::Color(200, 240, 255));
-            shard.setOrigin(1.5f, 7.5f);
-            m_iceShards.push_back(shard);
-        }
+        std::generate_n(std::back_inserter(m_iceShards), 6, []
+            {
+                sf::RectangleShape shard(sf::Vector2f(3.0f, 15.0f));
+                shard.setFillColor(sf::Color(200, 240, 255));
+                shard.setOrigin(1.5f, 7.5f);
+                return shard;
+            });
 
         m_aura.setOutlineColor(getAuraColor());
     }
@@ -33,24 +35,15 @@ namespace FishGame
     void FreezePowerUp::update(sf::Time deltaTime)
     {
         // DO NOT call base class update - implement everything here
-        if (!m_isAlive)
+        if (!updateLifetime(deltaTime))
             return;
-
-        // Update lifetime (from BonusItem)
-        m_lifetimeElapsed += deltaTime;
-        if (hasExpired())
-        {
-            destroy();
-            return;
-        }
 
         // Update animations
         m_pulseAnimation += deltaTime.asSeconds() * 2.0f;
         float pulse = 1.0f + 0.2f * std::sin(m_pulseAnimation);
 
         // Bobbing animation
-        float bobOffset = std::sin(m_lifetimeElapsed.asSeconds() * m_bobFrequency) * m_bobAmplitude;
-        m_position.y = m_baseY + bobOffset;
+        m_position.y = m_baseY + computeBobbingOffset();
 
         // Update visual positions
         m_iconBackground.setPosition(m_position);
@@ -61,7 +54,7 @@ namespace FishGame
         // Update ice shards
         for (size_t i = 0; i < m_iceShards.size(); ++i)
         {
-            float angle = (60.0f * i + m_pulseAnimation * 30.0f) * 3.14159f / 180.0f;
+            float angle = (60.0f * i + m_pulseAnimation * 30.0f) * Constants::DEG_TO_RAD;
             float radius = 20.0f + 5.0f * std::sin(m_pulseAnimation);
 
             sf::Vector2f shardPos(
@@ -70,7 +63,7 @@ namespace FishGame
             );
 
             m_iceShards[i].setPosition(shardPos);
-            m_iceShards[i].setRotation(angle * 180.0f / 3.14159f);
+            m_iceShards[i].setRotation(angle * Constants::RAD_TO_DEG);
         }
 
         // Update aura glow
@@ -89,10 +82,7 @@ namespace FishGame
         target.draw(m_aura, states);
         target.draw(m_iconBackground, states);
 
-        std::for_each(m_iceShards.begin(), m_iceShards.end(),
-            [&target, &states](const sf::RectangleShape& shard) {
-                target.draw(shard, states);
-            });
+        DrawUtils::drawContainer(m_iceShards, target, states);
 
         target.draw(m_icon, states);
     }
@@ -114,16 +104,8 @@ namespace FishGame
     void ExtraLifePowerUp::update(sf::Time deltaTime)
     {
         // DO NOT call base class update - implement everything here
-        if (!m_isAlive)
+        if (!updateLifetime(deltaTime))
             return;
-
-        // Update lifetime
-        m_lifetimeElapsed += deltaTime;
-        if (hasExpired())
-        {
-            destroy();
-            return;
-        }
 
         // Update animations
         m_heartbeatAnimation += deltaTime.asSeconds() * m_heartbeatSpeed;
@@ -131,8 +113,7 @@ namespace FishGame
         m_pulseAnimation += deltaTime.asSeconds() * 3.0f;
 
         // Bobbing animation
-        float bobOffset = std::sin(m_lifetimeElapsed.asSeconds() * m_bobFrequency) * m_bobAmplitude;
-        m_position.y = m_baseY + bobOffset;
+        m_position.y = m_baseY + computeBobbingOffset();
 
         // Update positions
         m_iconBackground.setPosition(m_position);
@@ -166,16 +147,16 @@ namespace FishGame
     {
         // Create speed line effects
         m_speedLines.reserve(4);
-        for (int i = 0; i < 4; ++i)
-        {
-            sf::ConvexShape line(4);
-            line.setPoint(0, sf::Vector2f(0, -2));
-            line.setPoint(1, sf::Vector2f(15, -1));
-            line.setPoint(2, sf::Vector2f(15, 1));
-            line.setPoint(3, sf::Vector2f(0, 2));
-            line.setFillColor(sf::Color(0, 255, 255, 150));
-            m_speedLines.push_back(line);
-        }
+        std::generate_n(std::back_inserter(m_speedLines), 4, []
+            {
+                sf::ConvexShape line(4);
+                line.setPoint(0, sf::Vector2f(0, -2));
+                line.setPoint(1, sf::Vector2f(15, -1));
+                line.setPoint(2, sf::Vector2f(15, 1));
+                line.setPoint(3, sf::Vector2f(0, 2));
+                line.setFillColor(sf::Color(0, 255, 255, 150));
+                return line;
+            });
 
         m_aura.setOutlineColor(getAuraColor());
     }
@@ -183,16 +164,8 @@ namespace FishGame
     void SpeedBoostPowerUp::update(sf::Time deltaTime)
     {
         // DO NOT call base class update - implement everything here
-        if (!m_isAlive)
+        if (!updateLifetime(deltaTime))
             return;
-
-        // Update lifetime
-        m_lifetimeElapsed += deltaTime;
-        if (hasExpired())
-        {
-            destroy();
-            return;
-        }
 
         // Update animations
         m_lineAnimation += deltaTime.asSeconds() * 5.0f;
@@ -200,8 +173,7 @@ namespace FishGame
         float pulse = 1.0f + 0.15f * std::sin(m_pulseAnimation);
 
         // Bobbing animation
-        float bobOffset = std::sin(m_lifetimeElapsed.asSeconds() * m_bobFrequency * 1.5f) * m_bobAmplitude;
-        m_position.y = m_baseY + bobOffset;
+        m_position.y = m_baseY + computeBobbingOffset(1.5f);
 
         // Update positions
         m_iconBackground.setPosition(m_position);
@@ -211,7 +183,7 @@ namespace FishGame
         // Update speed lines
         for (size_t i = 0; i < m_speedLines.size(); ++i)
         {
-            float angle = (90.0f * i) * 3.14159f / 180.0f;
+            float angle = (90.0f * i) * Constants::DEG_TO_RAD;
             float offset = 10.0f + 10.0f * std::sin(m_lineAnimation + i);
 
             sf::Vector2f linePos(
@@ -220,7 +192,7 @@ namespace FishGame
             );
 
             m_speedLines[i].setPosition(linePos);
-            m_speedLines[i].setRotation(angle * 180.0f / 3.14159f);
+            m_speedLines[i].setRotation(angle * Constants::RAD_TO_DEG);
         }
 
         // Update aura
@@ -239,9 +211,6 @@ namespace FishGame
         target.draw(m_aura, states);
         target.draw(m_iconBackground, states);
 
-        std::for_each(m_speedLines.begin(), m_speedLines.end(),
-            [&target, &states](const sf::ConvexShape& line) {
-                target.draw(line, states);
-            });
+        DrawUtils::drawContainer(m_speedLines, target, states);
     }
 }

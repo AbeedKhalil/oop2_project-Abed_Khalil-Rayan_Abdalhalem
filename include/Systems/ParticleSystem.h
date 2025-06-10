@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <memory>
 #include <numeric>
+#include "GameConstants.h"
 
 namespace FishGame
 {
@@ -137,7 +138,7 @@ namespace FishGame
             particle.shape.setPosition(position);
             particle.shape.setFillColor(color);
 
-            float angle = angleDist(rng) * 3.14159f / 180.0f;
+            float angle = angleDist(rng) * Constants::DEG_TO_RAD;
             float speed = speedDist(rng);
             particle.velocity = sf::Vector2f(std::cos(angle) * speed, std::sin(angle) * speed);
 

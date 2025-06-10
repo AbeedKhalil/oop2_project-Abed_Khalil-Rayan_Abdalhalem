@@ -126,6 +126,11 @@ namespace FishGame
         // ==================== Difficulty ====================
         constexpr float DIFFICULTY_INCREMENT = 0.1f;
 
+        // ==================== PowerUp Settings ====================
+        constexpr float FREEZE_POWERUP_DURATION = 5.0f;
+        constexpr float SPEEDBOOST_POWERUP_DURATION = 8.0f;
+        constexpr float EXTRA_LIFE_HEARTBEAT_SPEED = 3.0f;
+
         // ==================== Colors - General ====================
         const sf::Color OCEAN_BLUE(0, 100, 150);
         const sf::Color PLAYER_COLOR = sf::Color::Yellow;
