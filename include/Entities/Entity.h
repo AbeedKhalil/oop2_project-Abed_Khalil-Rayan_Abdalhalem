@@ -6,9 +6,14 @@
 #include <string>
 #include <string_view>
 #include <algorithm>
+#include <optional>
 
 namespace FishGame
 {
+    // Forward declarations
+    template<typename T> class SpriteComponent;
+    enum class TextureID;
+
     // Entity types for identification
     enum class EntityType
     {
@@ -26,7 +31,7 @@ namespace FishGame
     {
     public:
         Entity();
-        virtual ~Entity() = default;
+        virtual ~Entity(); // Must be defined in .cpp for unique_ptr with incomplete type
 
         // Delete copy operations
         Entity(const Entity&) = delete;
@@ -70,6 +75,16 @@ namespace FishGame
         void clearTags() noexcept { m_tags.clear(); }
         const std::unordered_set<std::string>& getTags() const noexcept { return m_tags; }
 
+        // Sprite support - declared here, defined in Entity.cpp
+        void setSpriteComponent(std::unique_ptr<SpriteComponent<Entity>> sprite);
+        SpriteComponent<Entity>* getSpriteComponent();
+        const SpriteComponent<Entity>* getSpriteComponent() const;
+
+        // Visual mode
+        enum class RenderMode { Circle, Sprite };
+        void setRenderMode(RenderMode mode) { m_renderMode = mode; }
+        RenderMode getRenderMode() const { return m_renderMode; }
+
     protected:
         // Protected draw function for derived classes
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override = 0;
@@ -82,6 +97,10 @@ namespace FishGame
         sf::Vector2f m_velocity{ 0.0f, 0.0f };
         float m_radius{ 0.0f };
         bool m_isAlive{ true };
+
+        // Sprite component - using unique_ptr requires complete type in .cpp
+        std::unique_ptr<SpriteComponent<Entity>> m_sprite;
+        RenderMode m_renderMode = RenderMode::Circle;
 
     private:
         // Tag system implementation
