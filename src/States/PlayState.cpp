@@ -405,12 +405,12 @@ namespace FishGame
         // Update all entities with freeze effect
         auto freezeModifier = m_isPlayerFrozen ? 0.1f : 1.0f;
 
-        updateEntities(m_entities, deltaTime);
-        updateEntities(m_bonusItems, deltaTime);
-        updateEntities(m_hazards, deltaTime);
+        StateUtils::updateEntities(m_entities, deltaTime);
+        StateUtils::updateEntities(m_bonusItems, deltaTime);
+        StateUtils::updateEntities(m_hazards, deltaTime);
 
         // Apply specific AI updates and effects
-        applyEffectToEntities(m_entities, [this, deltaTime, freezeModifier](Entity& entity) {
+        StateUtils::applyToEntities(m_entities, [this, deltaTime, freezeModifier](Entity& entity) {
             if (auto* fish = dynamic_cast<Fish*>(&entity))
             {
                 if (m_isPlayerFrozen)
@@ -435,7 +435,7 @@ namespace FishGame
             if (m_freezeTimer <= sf::Time::Zero)
             {
                 m_isPlayerFrozen = false;
-                applyEffectToEntities(m_entities, [](Entity& entity) {
+                StateUtils::applyToEntities(m_entities, [](Entity& entity) {
                     if (auto* fish = dynamic_cast<Fish*>(&entity))
                     {
                         fish->setVelocity(fish->getVelocity() * 10.0f);
@@ -475,7 +475,7 @@ namespace FishGame
         }
 
         // Apply currents to all entities
-        applyEffectToEntities(m_entities, [this, deltaTime](Entity& entity) {
+        StateUtils::applyToEntities(m_entities, [this, deltaTime](Entity& entity) {
             sf::Vector2f current = m_environmentSystem->getOceanCurrentForce(entity.getPosition());
             entity.setVelocity(entity.getVelocity() + current * deltaTime.asSeconds() * 0.1f);
             });
@@ -576,7 +576,7 @@ namespace FishGame
             [this](PermanentOyster* oyster) { handleOysterCollision(oyster); });
 
         // Fish vs fish collisions
-        processCollisionsBetween(m_entities, m_entities,
+        StateUtils::processCollisionsBetween(m_entities, m_entities,
             [this](Entity& entity1, Entity& entity2) {
                 auto* fish1 = dynamic_cast<Fish*>(&entity1);
                 auto* fish2 = dynamic_cast<Fish*>(&entity2);
@@ -602,7 +602,7 @@ namespace FishGame
         processBombExplosions(m_entities, m_hazards);
 
         // Check tail-bite opportunities
-        applyEffectToEntities(m_entities, [this](Entity& entity) {
+        StateUtils::applyToEntities(m_entities, [this](Entity& entity) {
             if (m_player->attemptTailBite(entity))
             {
                 createParticleEffect(m_player->getPosition(), Constants::TAILBITE_PARTICLE_COLOR);
@@ -610,7 +610,7 @@ namespace FishGame
             });
 
         // Enemy fish vs oysters
-        applyEffectToEntities(m_entities, [this](Entity& entity) {
+        StateUtils::applyToEntities(m_entities, [this](Entity& entity) {
             if (auto* fish = dynamic_cast<Fish*>(&entity))
             {
                 m_oysterManager->checkCollisions(*fish,
@@ -835,7 +835,7 @@ namespace FishGame
         m_isPlayerFrozen = true;
         m_freezeTimer = sf::seconds(5.0f);
 
-        applyEffectToEntities(m_entities, [](Entity& entity) {
+        StateUtils::applyToEntities(m_entities, [](Entity& entity) {    
             if (auto* fish = dynamic_cast<Fish*>(&entity))
             {
                 fish->setVelocity(fish->getVelocity() * 0.1f);
@@ -872,7 +872,7 @@ namespace FishGame
 
     void PlayState::makeAllEnemiesFlee()
     {
-        applyEffectToEntities(m_entities, [](Entity& entity) {
+        StateUtils::applyToEntities(m_entities, [](Entity& entity) {
             if (auto* fish = dynamic_cast<Fish*>(&entity))
             {
                 fish->startFleeing();
@@ -1182,12 +1182,12 @@ namespace FishGame
 
         window.draw(*m_environmentSystem);
 
-        renderContainer(m_hazards, window);
-        renderContainer(m_entities, window);
+        StateUtils::renderContainer(m_hazards, window);
+        StateUtils::renderContainer(m_entities, window);
 
         m_oysterManager->draw(window);
 
-        renderContainer(m_bonusItems, window);
+        StateUtils::renderContainer(m_bonusItems, window);
 
         window.draw(*m_player);
 

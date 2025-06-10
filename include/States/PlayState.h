@@ -17,6 +17,7 @@
 #include "EnvironmentSystem.h"
 #include "BonusStageState.h"
 #include "GameConstants.h"
+#include "StateUtils.h"
 #include <memory>
 #include <vector>
 #include <random>
@@ -45,117 +46,6 @@ namespace FishGame
         void onActivate() override;
 
     private:
-        // ==================== Template Utilities ====================
-
-        // Generic entity predicate types
-        template<typename Entity>
-        using EntityPredicate = std::function<bool(const Entity&)>;
-
-        template<typename Entity>
-        using EntityAction = std::function<void(Entity&)>;
-
-        template<typename Entity1, typename Entity2>
-        using CollisionAction = std::function<void(Entity1&, Entity2&)>;
-
-        // Generic collision detection between two containers
-        template<typename Container1, typename Container2, typename CollisionFunc>
-        void processCollisionsBetween(Container1& container1, Container2& container2, CollisionFunc onCollision)
-        {
-            for (auto& item1 : container1)
-            {
-                if (!item1 || !item1->isAlive()) continue;
-
-                for (auto& item2 : container2)
-                {
-                    if (!item2 || !item2->isAlive() || item1 == item2) continue;
-
-                    if (CollisionDetector::checkCircleCollision(*item1, *item2))
-                    {
-                        onCollision(*item1, *item2);
-                    }
-                }
-            }
-        }
-
-        // Specialized collision detection for single entity vs container
-        template<typename Entity, typename Container, typename CollisionFunc>
-        void processEntityVsContainer(Entity& entity, Container& container, CollisionFunc onCollision)
-        {
-            if (!entity.isAlive()) return;
-
-            std::for_each(container.begin(), container.end(),
-                [&entity, &onCollision](auto& item) {
-                    if (item && item->isAlive() &&
-                        CollisionDetector::checkCircleCollision(entity, *item))
-                    {
-                        onCollision(*item);
-                    }
-                });
-        }
-
-        // Generic container update with optional filter
-        template<typename Container>
-        void updateEntities(Container& container, sf::Time deltaTime,
-            EntityPredicate<typename Container::value_type::element_type> filter = {})
-        {
-            for (auto& entity : container)
-            {
-                if (entity && entity->isAlive() && (!filter || filter(*entity)))
-                {
-                    entity->update(deltaTime);
-                }
-            }
-        }
-
-        // Generic dead entity removal
-        template<typename Container>
-        void removeDeadEntities(Container& container)
-        {
-            container.erase(
-                std::remove_if(container.begin(), container.end(),
-                    [](const auto& entity) {
-                        return !entity || !entity->isAlive();
-                    }),
-                container.end()
-            );
-        }
-
-        // Generic entity spawning
-        template<typename EntityType, typename... Args>
-        void spawnEntity(std::vector<std::unique_ptr<Entity>>& targetContainer,
-            const sf::Vector2f& position, Args&&... args)
-        {
-            auto entity = std::make_unique<EntityType>(std::forward<Args>(args)...);
-            entity->setPosition(position);
-            targetContainer.push_back(std::move(entity));
-        }
-
-        // Generic container rendering
-        template<typename Container>
-        void renderContainer(const Container& container, sf::RenderWindow& window)
-        {
-            std::for_each(container.begin(), container.end(),
-                [&window](const auto& item) {
-                    if (item && item->isAlive())
-                    {
-                        window.draw(*item);
-                    }
-                });
-        }
-
-        // Template for applying effects to entities
-        template<typename Container, typename EffectFunc>
-        void applyEffectToEntities(Container& container, EffectFunc effect)
-        {
-            std::for_each(container.begin(), container.end(),
-                [&effect](auto& entity) {
-                    if (entity && entity->isAlive())
-                    {
-                        effect(*entity);
-                    }
-                });
-        }
-
         // ==================== Type Definitions ====================
 
         // Particle effect structure

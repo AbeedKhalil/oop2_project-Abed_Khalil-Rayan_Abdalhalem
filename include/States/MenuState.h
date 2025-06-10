@@ -2,6 +2,7 @@
 
 #include "State.h"
 #include "GameConstants.h"
+#include "StateUtils.h"
 #include <array>
 #include <functional>
 #include <optional>
@@ -56,23 +57,8 @@ namespace FishGame
         void handleMouseMove(const sf::Vector2f& mousePos);
         void handleMouseClick(const sf::Vector2f& mousePos);
 
-        // Template utility for finding menu item under cursor
-        template<typename Container>
-        std::optional<size_t> findOptionAt(const Container& items, const sf::Vector2f& position) const
-        {
-            auto it = std::find_if(items.begin(), items.end(),
-                [&position](const auto& item) {
-                    return item.textObject.getGlobalBounds().contains(position);
-                });
-
-            return (it != items.end())
-                ? std::optional<size_t>(std::distance(items.begin(), it))
-                : std::nullopt;
-        }
-
         // Animation utilities
         void updateAnimations(sf::Time deltaTime);
-        void applyPulseEffect(sf::Text& text, float scale);
 
     private:
         // UI elements
