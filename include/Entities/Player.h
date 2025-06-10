@@ -28,6 +28,8 @@ namespace FishGame
         // Player-specific methods
         void handleInput();
         void followMouse(const sf::Vector2f& mousePosition);
+        sf::Vector2f getTargetPosition() const { return m_targetPosition; }
+        bool isUsingMouseControl() const { return m_useMouseControl; }
 
         // Sprite initialization
         void initializeSprite(SpriteManager& spriteManager);
