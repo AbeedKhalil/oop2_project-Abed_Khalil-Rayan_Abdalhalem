@@ -112,6 +112,7 @@ namespace FishGame
         sf::RenderWindow m_window;
         TextureHolder m_textures;
         FontHolder m_fonts;
+        std::unique_ptr<ResourceHolder<sf::Texture, TextureID>> m_spriteTextures;
 
         // State management using STL containers
         using StatePtr = std::unique_ptr<State>;

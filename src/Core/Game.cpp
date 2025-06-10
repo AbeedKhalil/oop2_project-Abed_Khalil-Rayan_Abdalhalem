@@ -18,6 +18,7 @@ namespace FishGame
             sf::Style::Close)
         , m_textures()
         , m_fonts()
+        , m_spriteTextures(nullptr)
         , m_stateStack()
         , m_pendingList()
         , m_stateFactories()
@@ -84,9 +85,9 @@ namespace FishGame
 
     void Game::initializeGraphics()
     {
-        // Create sprite manager with extended texture holder
-        auto extendedTextureHolder = std::make_unique<ResourceHolder<sf::Texture, TextureID>>();
-        m_spriteManager = std::make_unique<SpriteManager>(*extendedTextureHolder);
+        // Create sprite manager with persistent texture holder
+        m_spriteTextures = std::make_unique<ResourceHolder<sf::Texture, TextureID>>();
+        m_spriteManager = std::make_unique<SpriteManager>(*m_spriteTextures);
 
         // Load all sprite textures
         if (!m_spriteManager->loadTextures(""))

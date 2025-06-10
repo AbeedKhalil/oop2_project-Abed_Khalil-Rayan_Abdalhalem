@@ -2,6 +2,7 @@
 
 #include "GameConstants.h"
 #include "Fish.h"
+#include "SpriteManager.h"
 #include "GrowthMeter.h"
 #include "FrenzySystem.h"
 #include "PowerUp.h"
@@ -27,6 +28,11 @@ namespace FishGame
         // Player-specific methods
         void handleInput();
         void followMouse(const sf::Vector2f& mousePosition);
+
+        // Sprite initialization
+        void initializeSprite(SpriteManager& spriteManager);
+
+        TextureID getTextureID() const;
 
         // Growth and size
         void grow(int scoreValue);
@@ -106,6 +112,7 @@ namespace FishGame
         FrenzySystem* m_frenzySystem;
         PowerUpManager* m_powerUpManager;
         ScoreSystem* m_scoreSystem;
+        SpriteManager* m_spriteManager;
 
         // Invulnerability and damage
         sf::Time m_invulnerabilityTimer;

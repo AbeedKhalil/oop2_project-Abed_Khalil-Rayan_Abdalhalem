@@ -63,7 +63,7 @@ namespace FishGame
         m_text.move(m_velocity * deltaTime.asSeconds());
 
         // Update alpha fade
-        float fadeProgress = m_lifetime / m_maxLifetime;
+        float fadeProgress = m_lifetime.asSeconds() / m_maxLifetime.asSeconds();
         m_alpha = std::max(0.0f, 255.0f * (1.0f - fadeProgress));
 
         sf::Color color = m_text.getFillColor();
