@@ -110,6 +110,16 @@ namespace FishGame
             if constexpr (std::is_base_of_v<Entity, OwnerType>)
             {
                 m_sprite.setPosition(m_owner->getPosition());
+
+                // Flip sprite based on horizontal movement
+                float vx = m_owner->getVelocity().x;
+                if (vx != 0.0f)
+                {
+                    sf::Vector2f scale = m_sprite.getScale();
+                    float absX = std::abs(scale.x);
+                    scale.x = (vx < 0.0f) ? -absX : absX;
+                    m_sprite.setScale(scale);
+                }
             }
         }
     }
