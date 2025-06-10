@@ -51,7 +51,7 @@ namespace FishGame
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
     private:
-        void createExplosion(); // Add this declaration
+        void createExplosion();
 
     private:
         sf::CircleShape m_bombShape;

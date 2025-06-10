@@ -115,10 +115,12 @@ namespace FishGame
         // Configure spawners
         m_fishSpawner->setSchoolingSystem(m_schoolingSystem.get());
 
+        // Use full initializer list so school spawn chance is correctly set
         SpecialFishConfig specialConfig{
             Constants::BARRACUDA_SPAWN_RATE,
             Constants::PUFFERFISH_SPAWN_RATE,
             Constants::ANGELFISH_SPAWN_RATE,
+            Constants::POISONFISH_SPAWN_RATE,
             Constants::SCHOOL_SPAWN_CHANCE
         };
         m_fishSpawner->setSpecialFishConfig(specialConfig);
@@ -975,6 +977,7 @@ namespace FishGame
         config.barracudaSpawnRate = Constants::BARRACUDA_SPAWN_RATE * levelMultiplier;
         config.pufferfishSpawnRate = Constants::PUFFERFISH_SPAWN_RATE * levelMultiplier;
         config.angelfishSpawnRate = Constants::ANGELFISH_SPAWN_RATE * levelMultiplier;
+        config.poisonFishSpawnRate = Constants::POISONFISH_SPAWN_RATE * levelMultiplier;
         config.schoolSpawnChance = std::min(Constants::MAX_SCHOOL_SPAWN_CHANCE,
             Constants::SCHOOL_SPAWN_CHANCE * levelMultiplier);
 
