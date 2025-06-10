@@ -1,4 +1,5 @@
 #include "EnhancedFishSpawner.h"
+#include "GameConstants.h"
 #include <cmath>
 #include <algorithm>
 #include <numeric>
@@ -52,8 +53,7 @@ namespace FishGame
 
         case SpawnPattern::CircleFormation:
         {
-            constexpr float PI = 3.14159265359f;
-            float angle = (360.0f / 8.0f) * index * PI / 180.0f;
+            float angle = (360.0f / 8.0f) * index * Constants::DEG_TO_RAD;
             return sf::Vector2f(
                 base.x + std::cos(angle) * spacing,
                 base.y + std::sin(angle) * spacing

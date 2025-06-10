@@ -1,4 +1,6 @@
 #include "PowerUp.h"
+#include "GameConstants.h"
+#include "Utils/DrawHelpers.h"
 #include <cmath>
 
 namespace FishGame
@@ -49,24 +51,15 @@ namespace FishGame
 
     void ScoreDoublerPowerUp::update(sf::Time deltaTime)
     {
-        if (!m_isAlive)
+        if (!updateLifetime(deltaTime))
             return;
-
-        // Update lifetime
-        m_lifetimeElapsed += deltaTime;
-        if (hasExpired())
-        {
-            destroy();
-            return;
-        }
 
         // Pulse animation
         m_pulseAnimation += deltaTime.asSeconds() * 3.0f;
         float pulse = 1.0f + 0.2f * std::sin(m_pulseAnimation);
 
         // Bobbing
-        float bobOffset = std::sin(m_lifetimeElapsed.asSeconds() * m_bobFrequency) * m_bobAmplitude;
-        m_position.y = m_baseY + bobOffset;
+        m_position.y = m_baseY + computeBobbingOffset();
 
         // Update positions
         m_iconBackground.setPosition(m_position);
@@ -118,16 +111,8 @@ namespace FishGame
 
     void FrenzyStarterPowerUp::update(sf::Time deltaTime)
     {
-        if (!m_isAlive)
+        if (!updateLifetime(deltaTime))
             return;
-
-        // Update lifetime
-        m_lifetimeElapsed += deltaTime;
-        if (hasExpired())
-        {
-            destroy();
-            return;
-        }
 
         // Animation updates
         m_pulseAnimation += deltaTime.asSeconds() * 4.0f;
@@ -136,8 +121,7 @@ namespace FishGame
         float pulse = 1.0f + 0.3f * std::sin(m_pulseAnimation);
 
         // Bobbing with faster frequency
-        float bobOffset = std::sin(m_lifetimeElapsed.asSeconds() * m_bobFrequency * 2.0f) * m_bobAmplitude;
-        m_position.y = m_baseY + bobOffset;
+        m_position.y = m_baseY + computeBobbingOffset(2.0f);
 
         // Update positions
         m_iconBackground.setPosition(m_position);
@@ -153,8 +137,8 @@ namespace FishGame
             float radius = 15.0f + 5.0f * std::sin(m_sparkAnimation * 2.0f);
 
             sf::Vector2f boltPos;
-            boltPos.x = m_position.x + std::cos(angle * 3.14159f / 180.0f) * radius;
-            boltPos.y = m_position.y + std::sin(angle * 3.14159f / 180.0f) * radius;
+            boltPos.x = m_position.x + std::cos(angle * Constants::DEG_TO_RAD) * radius;
+            boltPos.y = m_position.y + std::sin(angle * Constants::DEG_TO_RAD) * radius;
 
             m_lightningBolts[i].setPosition(boltPos);
             m_lightningBolts[i].setRotation(angle);
@@ -177,10 +161,7 @@ namespace FishGame
         target.draw(m_iconBackground, states);
 
         // Draw lightning bolts
-        std::for_each(m_lightningBolts.begin(), m_lightningBolts.end(),
-            [&target, &states](const sf::CircleShape& bolt) {
-                target.draw(bolt, states);
-            });
+        DrawUtils::drawContainer(m_lightningBolts, target, states);
     }
 
     // PowerUpManager implementation

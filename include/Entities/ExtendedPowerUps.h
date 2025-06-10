@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PowerUp.h"
+#include "GameConstants.h"
 #include <chrono>
 #include <random>
 
@@ -25,7 +26,7 @@ namespace FishGame
     private:
         sf::Text m_icon;
         std::vector<sf::RectangleShape> m_iceShards;
-        static constexpr float m_freezeDuration = 5.0f;
+        static constexpr float m_freezeDuration = Constants::FREEZE_POWERUP_DURATION;
     };
 
     // Extra Life Power-up - grants an additional life
@@ -45,7 +46,7 @@ namespace FishGame
     private:
         sf::CircleShape m_heart;
         float m_heartbeatAnimation;
-        static constexpr float m_heartbeatSpeed = 3.0f;
+        static constexpr float m_heartbeatSpeed = Constants::EXTRA_LIFE_HEARTBEAT_SPEED;
     };
 
     // Speed Boost Power-up - increases player speed
@@ -65,7 +66,7 @@ namespace FishGame
     private:
         std::vector<sf::ConvexShape> m_speedLines;
         float m_lineAnimation;
-        static constexpr float m_boostDuration = 8.0f;
-        static constexpr float m_speedMultiplier = 1.5f;
+        static constexpr float m_boostDuration = Constants::SPEEDBOOST_POWERUP_DURATION;
+        static constexpr float m_speedMultiplier = Constants::SPEED_BOOST_MULTIPLIER;
     };
 }

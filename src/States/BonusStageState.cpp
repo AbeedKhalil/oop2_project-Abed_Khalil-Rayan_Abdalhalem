@@ -3,6 +3,7 @@
 #include "GenericFish.h"
 #include "SpecialFish.h"
 #include "CollisionDetector.h"
+#include "GameConstants.h"
 #include <algorithm>
 #include <sstream>
 #include <iomanip>
@@ -418,7 +419,7 @@ namespace FishGame
         {
             auto barracuda = std::make_unique<Barracuda>(m_playerLevel);
 
-            float angle = (360.0f / 2.0f) * i * 3.14159f / 180.0f;
+            float angle = (360.0f / 2.0f) * i * Constants::DEG_TO_RAD;
             float x = 960.0f + std::cos(angle) * 500.0f;
             float y = 540.0f + std::sin(angle) * 300.0f;
 

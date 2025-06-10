@@ -25,7 +25,7 @@ namespace FishGame
 
         // Calculate alpha based on sine wave
         float timeRatio = 1.0f - (m_timeRemaining.asSeconds() / m_totalDuration.asSeconds());
-        m_currentAlpha = 128.0f + 127.0f * std::sin(timeRatio * m_flashSpeed * 2.0f * 3.14159f);
+        m_currentAlpha = 128.0f + 127.0f * std::sin(timeRatio * m_flashSpeed * 2.0f * Constants::PI);
 
         sf::Color color = m_text.getFillColor();
         color.a = static_cast<sf::Uint8>(m_currentAlpha);

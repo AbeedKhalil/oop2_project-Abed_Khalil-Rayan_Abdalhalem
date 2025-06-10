@@ -1,5 +1,6 @@
 #include "Hazard.h"
 #include "Player.h"
+#include "GameConstants.h"
 #include <cmath>
 #include <numeric>
 
@@ -134,7 +135,7 @@ namespace FishGame
         {
             sf::CircleShape particle(5.0f);
 
-            float angle = (360.0f / 16.0f) * i * 3.14159f / 180.0f;
+            float angle = (360.0f / 16.0f) * i * Constants::DEG_TO_RAD;
             float radius = 30.0f;
 
             particle.setPosition(
@@ -198,7 +199,7 @@ namespace FishGame
         // Update tentacles with wave motion
         for (size_t i = 0; i < m_tentacles.size(); ++i)
         {
-            float angle = (360.0f / m_tentacleCount) * i * 3.14159f / 180.0f;
+            float angle = (360.0f / m_tentacleCount) * i * Constants::DEG_TO_RAD;
             float wave = std::sin(m_tentacleWave + i * 0.5f) * 10.0f;
 
             sf::Vector2f tentaclePos(
@@ -207,7 +208,7 @@ namespace FishGame
             );
 
             m_tentacles[i].setPosition(tentaclePos);
-            m_tentacles[i].setRotation((angle * 180.0f / 3.14159f) + 90.0f + wave);
+            m_tentacles[i].setRotation((angle * Constants::RAD_TO_DEG) + 90.0f + wave);
         }
 
         // Check boundaries

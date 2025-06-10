@@ -1,4 +1,6 @@
 #include "BonusItem.h"
+#include "GameConstants.h"
+#include "Utils/DrawHelpers.h"
 #include <cmath>
 #include <algorithm>
 
@@ -27,6 +29,26 @@ namespace FishGame
             m_radius * 2.0f, m_radius * 2.0f);
     }
 
+    bool BonusItem::updateLifetime(sf::Time deltaTime)
+    {
+        if (!m_isAlive)
+            return false;
+
+        m_lifetimeElapsed += deltaTime;
+        if (hasExpired())
+        {
+            destroy();
+            return false;
+        }
+        return true;
+    }
+
+    float BonusItem::computeBobbingOffset(float freqMul, float ampMul) const
+    {
+        return std::sin(m_lifetimeElapsed.asSeconds() * m_bobFrequency * freqMul) *
+            m_bobAmplitude * ampMul;
+    }
+
     // Starfish implementation
     Starfish::Starfish()
         : BonusItem(BonusType::Starfish, m_starfishPoints)
@@ -48,7 +70,7 @@ namespace FishGame
         {
             sf::ConvexShape arm(4);
             float angle = (360.0f / m_armCount) * i;
-            float radAngle = angle * 3.14159f / 180.0f;
+            float radAngle = angle * Constants::DEG_TO_RAD;
 
             // Create arm points
             arm.setPoint(0, sf::Vector2f(0, 0));
@@ -69,23 +91,14 @@ namespace FishGame
 
     void Starfish::update(sf::Time deltaTime)
     {
-        if (!m_isAlive)
+        if (!updateLifetime(deltaTime))
             return;
-
-        // Update lifetime
-        m_lifetimeElapsed += deltaTime;
-        if (hasExpired())
-        {
-            destroy();
-            return;
-        }
 
         // Rotation animation
         m_rotation += m_rotationSpeed * deltaTime.asSeconds();
 
         // Bobbing animation
-        float bobOffset = std::sin(m_lifetimeElapsed.asSeconds() * m_bobFrequency) * m_bobAmplitude;
-        m_position.y = m_baseY + bobOffset;
+        m_position.y = m_baseY + computeBobbingOffset();
 
         // Update visual positions
         m_shape.setPosition(m_position);
@@ -108,10 +121,7 @@ namespace FishGame
     void Starfish::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
         // Draw arms first
-        std::for_each(m_arms.begin(), m_arms.end(),
-            [&target, &states](const sf::ConvexShape& arm) {
-                target.draw(arm, states);
-            });
+        DrawUtils::drawContainer(m_arms, target, states);
 
         // Draw center
         target.draw(m_shape, states);
@@ -165,23 +175,14 @@ namespace FishGame
 
     void PearlOyster::update(sf::Time deltaTime)
     {
-        if (!m_isAlive)
+        if (!updateLifetime(deltaTime))
             return;
-
-        // Update lifetime
-        m_lifetimeElapsed += deltaTime;
-        if (hasExpired())
-        {
-            destroy();
-            return;
-        }
 
         // Update open/close state
         updateOpenState(deltaTime);
 
         // Bobbing animation
-        float bobOffset = std::sin(m_lifetimeElapsed.asSeconds() * m_bobFrequency * 0.5f) * m_bobAmplitude * 0.5f;
-        m_position.y = m_baseY + bobOffset;
+        m_position.y = m_baseY + computeBobbingOffset(0.5f, 0.5f);
 
         // Update positions
         m_topShell.setPosition(m_position);
