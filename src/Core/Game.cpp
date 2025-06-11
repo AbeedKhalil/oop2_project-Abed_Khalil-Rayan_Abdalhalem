@@ -92,6 +92,7 @@ namespace FishGame
         // Load all sprite textures
         if (!m_spriteManager->loadTextures(""))
         {
+			//throw std::runtime_error("Failed to load sprite textures");
         }
 
         // Configure sprite scales

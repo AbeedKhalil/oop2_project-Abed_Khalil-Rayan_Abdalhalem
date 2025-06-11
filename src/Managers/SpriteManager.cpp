@@ -24,7 +24,7 @@ namespace FishGame
         {TextureID::Pufferfish, "Pufferfish.png"},
         {TextureID::PufferfishInflated, "Pufferfish.png"},    //inflated fish.
         {TextureID::Angelfish, "Angelfish.png"},
-        {TextureID::PoisonFish, "poison_fish.png"},
+        {TextureID::PoisonFish, "PoisonFish.png"},
 
         // Bonus items
         {TextureID::Starfish, "StarFish.png"},
