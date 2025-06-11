@@ -198,6 +198,11 @@ namespace FishGame
         if (!m_isAlive)
             return;
 
+        if (getRenderMode() == RenderMode::Sprite && getSpriteComponent())
+        {
+            getSpriteComponent()->update(deltaTime);
+        }
+
         // Floating movement
         m_floatAnimation += deltaTime.asSeconds() * 2.0f;
         m_tentacleWave += deltaTime.asSeconds() * 3.0f;

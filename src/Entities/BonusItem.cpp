@@ -110,6 +110,11 @@ namespace FishGame
         if (!updateLifetime(deltaTime))
             return;
 
+        if (getRenderMode() == RenderMode::Sprite && getSpriteComponent())
+        {
+            getSpriteComponent()->update(deltaTime);
+        }
+
         // Rotation animation
         m_rotation += m_rotationSpeed * deltaTime.asSeconds();
 
