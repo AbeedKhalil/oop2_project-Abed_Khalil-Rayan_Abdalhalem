@@ -115,8 +115,8 @@ namespace FishGame
             case HazardType::Jellyfish:
                 if (auto* jellyfish = dynamic_cast<Jellyfish*>(&hazard))
                 {
-                    fish.setStunned(jellyfish->getStunDuration());
                     jellyfish->onContact(fish);
+                    fish.setStunned(jellyfish->getStunDuration());
                 }
                 break;
             }
