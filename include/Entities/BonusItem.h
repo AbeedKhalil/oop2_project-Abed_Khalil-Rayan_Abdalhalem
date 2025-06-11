@@ -6,6 +6,7 @@
 
 namespace FishGame
 {
+    class SpriteManager;
     // Bonus item types
     enum class BonusType
     {
@@ -59,6 +60,9 @@ namespace FishGame
     public:
         Starfish();
         ~Starfish() override = default;
+
+        // Setup sprite using the global SpriteManager
+        void initializeSprite(SpriteManager& spriteManager);
 
         void update(sf::Time deltaTime) override;
         void onCollect() override;

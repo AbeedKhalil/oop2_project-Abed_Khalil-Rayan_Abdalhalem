@@ -1,6 +1,7 @@
 #include "Hazard.h"
 #include "Player.h"
 #include "GameConstants.h"
+#include "SpriteManager.h"
 #include <cmath>
 #include <numeric>
 #include <algorithm>
@@ -179,6 +180,19 @@ namespace FishGame
             });
     }
 
+    void Jellyfish::initializeSprite(SpriteManager& spriteManager)
+    {
+        auto sprite = spriteManager.createSpriteComponent(
+            static_cast<Entity*>(this), TextureID::Jellyfish);
+        if (sprite)
+        {
+            auto config = spriteManager.getSpriteConfig<Entity>(TextureID::Jellyfish);
+            sprite->configure(config);
+            setSpriteComponent(std::move(sprite));
+            setRenderMode(RenderMode::Sprite);
+        }
+    }
+
     void Jellyfish::update(sf::Time deltaTime)
     {
         if (!m_isAlive)
@@ -237,11 +251,18 @@ namespace FishGame
 
     void Jellyfish::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        std::for_each(m_tentacles.begin(), m_tentacles.end(),
-            [&target, &states](const sf::RectangleShape& tentacle) {
-                target.draw(tentacle, states);
-            });
+        if (getRenderMode() == RenderMode::Sprite && getSpriteComponent())
+        {
+            target.draw(*getSpriteComponent(), states);
+        }
+        else
+        {
+            std::for_each(m_tentacles.begin(), m_tentacles.end(),
+                [&target, &states](const sf::RectangleShape& tentacle) {
+                    target.draw(tentacle, states);
+                });
 
-        target.draw(m_bell, states);
+            target.draw(m_bell, states);
+        }
     }
 }

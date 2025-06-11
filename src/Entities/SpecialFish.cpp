@@ -25,35 +25,20 @@ namespace FishGame
         if (!m_isAlive)
             return;
 
-        // Check frozen state before any movement updates
+        // When frozen simply defer to base update so the sprite stays synced
         if (m_isFrozen)
         {
-            // Only update position with reduced velocity, skip pattern updates
-            updateMovement(deltaTime);
-            m_shape.setPosition(m_position);
+            Fish::update(deltaTime);
             return;
         }
 
         m_patternTimer += deltaTime.asSeconds();
 
-        // Update movement based on pattern
+        // Update movement pattern which may modify velocity/position
         updateMovementPattern(deltaTime);
 
-        // Update position
-        updateMovement(deltaTime);
-
-        // Check boundaries
-        if (m_velocity.x > 0 && m_position.x > m_windowBounds.x + m_radius)
-        {
-            destroy();
-        }
-        else if (m_velocity.x < 0 && m_position.x < -m_radius)
-        {
-            destroy();
-        }
-
-        // Update visual
-        m_shape.setPosition(m_position);
+        // Let the base class handle movement, sprite sync and bounds checks
+        Fish::update(deltaTime);
     }
 
     void AdvancedFish::updateMovementPattern(sf::Time deltaTime)
@@ -122,6 +107,11 @@ namespace FishGame
         m_outlineColor = sf::Color(50, 50, 100);
         m_outlineThickness = 3.0f;
         m_pointValue = getPointValue(m_size, m_currentLevel) * 2;  // Double points
+
+        // Make Barracuda larger than default large fish
+        m_radius = 50.0f;
+        m_shape.setRadius(m_radius);
+        m_shape.setOrigin(m_radius, m_radius);
 
         updateVisual();
     }

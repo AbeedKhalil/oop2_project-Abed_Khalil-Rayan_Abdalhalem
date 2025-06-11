@@ -2,6 +2,7 @@
 
 #include "SpriteComponent.h"
 #include "ResourceHolder.h"
+#include "Fish.h"
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -13,7 +14,6 @@ namespace FishGame
     class Entity;
     class Fish;
     class Player;
-    enum class FishSize;
 
     // Texture identifiers extended for sprites
     enum class TextureID

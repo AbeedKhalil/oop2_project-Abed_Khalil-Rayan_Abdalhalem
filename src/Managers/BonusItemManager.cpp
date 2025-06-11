@@ -1,13 +1,16 @@
 #include "BonusItemManager.h"
+#include "SpriteManager.h"
 #include <algorithm>
 #include <numeric>
 #include <ExtendedPowerUps.h>
 
 namespace FishGame
 {
-    BonusItemManager::BonusItemManager(const sf::Vector2u& windowSize, const sf::Font& font)
+    BonusItemManager::BonusItemManager(const sf::Vector2u& windowSize, const sf::Font& font,
+        SpriteManager& spriteManager)
         : m_font(font)
         , m_windowSize(windowSize)
+        , m_spriteManager(&spriteManager)
         , m_currentLevel(1)
         , m_starfishSpawner(std::make_unique<EnhancedBonusSpawner<Starfish>>(m_baseStarfishRate, windowSize))
         , m_oysterSpawner(std::make_unique<EnhancedBonusSpawner<PearlOyster>>(m_baseOysterRate, windowSize))
@@ -49,6 +52,8 @@ namespace FishGame
         // Spawn starfish
         if (auto starfish = m_starfishSpawner->spawn())
         {
+            if (m_spriteManager)
+                static_cast<Starfish*>(starfish.get())->initializeSprite(*m_spriteManager);
             m_spawnedItems.push_back(std::move(starfish));
         }
 
@@ -109,6 +114,8 @@ namespace FishGame
         float x = m_positionDist(m_randomEngine);
         float y = m_positionDist(m_randomEngine);
         starfish->setPosition(x, y);
+        if (m_spriteManager)
+            starfish->initializeSprite(*m_spriteManager);
 
         m_spawnedItems.push_back(std::move(starfish));
     }

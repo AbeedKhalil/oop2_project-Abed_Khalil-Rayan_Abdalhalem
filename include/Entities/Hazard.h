@@ -7,6 +7,7 @@
 
 namespace FishGame
 {
+    class SpriteManager;
     enum class HazardType
     {
         Bomb,
@@ -74,6 +75,8 @@ namespace FishGame
     public:
         Jellyfish();
         ~Jellyfish() override = default;
+
+        void initializeSprite(SpriteManager& spriteManager);
 
         void update(sf::Time deltaTime) override;
         sf::FloatRect getBounds() const override;
