@@ -152,10 +152,10 @@ namespace FishGame
         // Visual effects
         struct VisualEffect
         {
-            float scale;
-            float rotation;
-            sf::Color color;
-            sf::Time duration;
+            float scale = 1.f;
+            float rotation = 0.f;
+            sf::Color color = sf::Color::White;
+            sf::Time duration = sf::Time::Zero;
         };
         std::vector<VisualEffect> m_activeEffects;
 
