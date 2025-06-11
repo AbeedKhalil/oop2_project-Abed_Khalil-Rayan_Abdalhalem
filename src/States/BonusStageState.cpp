@@ -8,6 +8,7 @@
 #include <sstream>
 #include <iomanip>
 #include <chrono>
+#include <iterator>
 
 namespace FishGame
 {
@@ -385,50 +386,42 @@ namespace FishGame
 
     void BonusStageState::spawnTreasureItems()
     {
-        for (int i = 0; i < 3; ++i)
-        {
+        std::generate_n(std::back_inserter(m_bonusItems), 3, [this] {
             auto oyster = std::make_unique<PearlOyster>();
             oyster->setPosition(m_xDist(m_randomEngine), m_yDist(m_randomEngine));
-            m_bonusItems.push_back(std::move(oyster));
-        }
+            return oyster;
+            });
     }
 
     void BonusStageState::spawnBonusFish()
     {
-        for (int i = 0; i < 5; ++i)
-        {
+        std::generate_n(std::back_inserter(m_entities), 5, [this] {
             auto fish = std::make_unique<SmallFish>(m_playerLevel);
-
             bool fromLeft = m_randomEngine() % 2 == 0;
             float x = fromLeft ? -50.0f : 1970.0f;
             float y = m_yDist(m_randomEngine);
-
             fish->setPosition(x, y);
             fish->setDirection(fromLeft ? 1.0f : -1.0f, 0.0f);
             fish->setWindowBounds(getGame().getWindow().getSize());
             fish->initializeSprite(getGame().getSpriteManager());
-
-            m_entities.push_back(std::move(fish));
-        }
+            return fish;
+            });
     }
 
     void BonusStageState::spawnPredatorWave()
     {
         // Spawn barracudas
-        for (int i = 0; i < 2; ++i)
-        {
+        std::generate_n(std::back_inserter(m_entities), 2, [this, i = 0]() mutable {
             auto barracuda = std::make_unique<Barracuda>(m_playerLevel);
-
             float angle = (360.0f / 2.0f) * i * Constants::DEG_TO_RAD;
             float x = 960.0f + std::cos(angle) * 500.0f;
             float y = 540.0f + std::sin(angle) * 300.0f;
-
             barracuda->setPosition(x, y);
             barracuda->setWindowBounds(getGame().getWindow().getSize());
             barracuda->initializeSprite(getGame().getSpriteManager());
-
-            m_entities.push_back(std::move(barracuda));
-        }
+            ++i;
+            return barracuda;
+            });
     }
 
     void BonusStageState::checkCompletion()

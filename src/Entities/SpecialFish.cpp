@@ -5,6 +5,7 @@
 #include <random>
 #include <algorithm>
 #include <cmath>
+#include <iterator>
 
 namespace FishGame
 {
@@ -229,13 +230,12 @@ namespace FishGame
 
         // Create spikes
         m_spikes.reserve(m_spikeCount);
-        for (int i = 0; i < m_spikeCount; ++i)
-        {
+        std::generate_n(std::back_inserter(m_spikes), m_spikeCount, [] {
             sf::CircleShape spike(3.0f, 3);  // Triangle
             spike.setFillColor(sf::Color(150, 100, 50));
             spike.setOrigin(3.0f, 3.0f);
-            m_spikes.push_back(spike);
-        }
+            return spike;
+            });
 
         updateVisual();
     }
@@ -446,13 +446,12 @@ namespace FishGame
 
         // Create poison bubble effects - smaller bubbles for small fish
         m_poisonBubbles.reserve(m_bubbleCount);
-        for (int i = 0; i < m_bubbleCount; ++i)
-        {
+        std::generate_n(std::back_inserter(m_poisonBubbles), m_bubbleCount, [] {
             sf::CircleShape bubble(2.0f);
             bubble.setFillColor(sf::Color(200, 100, 255, 150));
             bubble.setOrigin(2.0f, 2.0f);
-            m_poisonBubbles.push_back(bubble);
-        }
+            return bubble;
+            });
 
         updateVisual();
     }
@@ -542,13 +541,12 @@ namespace FishGame
 
         // Create decorative fins
         m_fins.reserve(3);
-        for (int i = 0; i < 3; ++i)
-        {
+        std::generate_n(std::back_inserter(m_fins), 3, [] {
             sf::CircleShape fin(10.0f, 3);
             fin.setFillColor(sf::Color(255, 200, 100, 150));
             fin.setOrigin(10.0f, 10.0f);
-            m_fins.push_back(fin);
-        }
+            return fin;
+            });
 
         updateVisual();
     }

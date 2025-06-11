@@ -8,6 +8,7 @@
 #include <SFML/Window.hpp>
 #include <cmath>
 #include <algorithm>
+#include <array>
 
 namespace FishGame
 {
@@ -633,7 +634,7 @@ namespace FishGame
         m_shape.setRadius(m_radius);
         m_shape.setOrigin(m_radius, m_radius);
 
-        sf::Color stageColors[] = {
+        const std::array<sf::Color, 3> stageColors{
             sf::Color::Yellow,
             sf::Color(255, 150, 0),
             sf::Color(255, 50, 50)

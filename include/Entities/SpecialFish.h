@@ -52,6 +52,7 @@ namespace FishGame
 
         bool isSpecialFish() const override { return true; }
         bool isBarracuda() const override { return true; }
+        TextureID getTextureID() const override { return TextureID::Barracuda; }
 
         // Enhanced AI for aggressive hunting
         void updateAI(const std::vector<std::unique_ptr<Entity>>& entities,
@@ -81,6 +82,10 @@ namespace FishGame
         EntityType getType() const override { return EntityType::MediumFish; }
 
         bool isSpecialFish() const override { return true; }
+        TextureID getTextureID() const override
+        {
+            return isInflated() ? TextureID::PufferfishInflated : TextureID::Pufferfish;
+        }
 
         void update(sf::Time deltaTime) override;
         bool canEat(const Entity& other) const;
@@ -131,7 +136,8 @@ namespace FishGame
         explicit PoisonFish(int currentLevel = 1);
         ~PoisonFish() override = default;
 
-        bool isSpecialFish() const override { return true; }    
+        bool isSpecialFish() const override { return true; }
+        TextureID getTextureID() const override { return TextureID::PoisonFish; }
 
         EntityType getType() const override { return EntityType::SmallFish; }
         int getPointValue() const override { return m_poisonPoints; }
@@ -170,6 +176,7 @@ namespace FishGame
         bool isSpecialFish() const override { return true; }
         EntityType getType() const override { return EntityType::SmallFish; }
         int getPointValue() const { return m_bonusPoints; }
+        TextureID getTextureID() const override { return TextureID::Angelfish; }
 
         void update(sf::Time deltaTime) override;
 

@@ -3,6 +3,8 @@
 #include "GameConstants.h"
 #include <cmath>
 #include <numeric>
+#include <algorithm>
+#include <iterator>
 
 namespace FishGame
 {
@@ -131,23 +133,23 @@ namespace FishGame
     {
         m_explosionParticles.clear();
 
-        for (int i = 0; i < 16; ++i)
-        {
-            sf::CircleShape particle(5.0f);
+        std::generate_n(std::back_inserter(m_explosionParticles), 16,
+            [this, i = 0]() mutable {
+                sf::CircleShape particle(5.0f);
 
-            float angle = (360.0f / 16.0f) * i * Constants::DEG_TO_RAD;
-            float radius = 30.0f;
+                float angle = (360.0f / 16.0f) * i * Constants::DEG_TO_RAD;
+                float radius = 30.0f;
 
-            particle.setPosition(
-                m_position.x + std::cos(angle) * radius,
-                m_position.y + std::sin(angle) * radius
-            );
+                particle.setPosition(
+                    m_position.x + std::cos(angle) * radius,
+                    m_position.y + std::sin(angle) * radius);
 
-            particle.setFillColor(sf::Color(255, 200, 0));
-            particle.setOrigin(5.0f, 5.0f);
+                particle.setFillColor(sf::Color(255, 200, 0));
+                particle.setOrigin(5.0f, 5.0f);
 
-            m_explosionParticles.push_back(particle);
-        }
+                ++i;
+                return particle;
+            });
     }
 
     // Jellyfish implementation
@@ -169,13 +171,12 @@ namespace FishGame
 
         // Create tentacles
         m_tentacles.reserve(m_tentacleCount);
-        for (int i = 0; i < m_tentacleCount; ++i)
-        {
+        std::generate_n(std::back_inserter(m_tentacles), m_tentacleCount, [] {
             sf::RectangleShape tentacle(sf::Vector2f(2.0f, 40.0f));
             tentacle.setFillColor(sf::Color(255, 150, 255, 100));
             tentacle.setOrigin(1.0f, 0.0f);
-            m_tentacles.push_back(tentacle);
-        }
+            return tentacle;
+            });
     }
 
     void Jellyfish::update(sf::Time deltaTime)
