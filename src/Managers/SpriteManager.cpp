@@ -125,7 +125,7 @@ namespace FishGame
             break;
 
         case TextureID::Jellyfish:
-            config.baseSize = sf::Vector2f(50.0f, 80.0f);
+            config.baseSize = sf::Vector2f(30.0f, 60.0f);
             break;
 
         case TextureID::Barracuda:
@@ -133,8 +133,9 @@ namespace FishGame
             break;
 
         case TextureID::Starfish:
-            config.baseSize = sf::Vector2f(30.0f, 30.0f);
+            config.baseSize = sf::Vector2f(50.0f, 50.0f);
             config.rotationOffset = 0.0f; // Will be animated
+            config.maintainAspectRatio = false;
             break;
 
         default:
@@ -142,7 +143,7 @@ namespace FishGame
             break;
         }
 
-        config.maintainAspectRatio = true;
+        config.maintainAspectRatio = textureId != TextureID::Starfish;
         return config;
     }
 
