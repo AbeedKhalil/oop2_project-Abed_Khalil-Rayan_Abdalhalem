@@ -77,6 +77,10 @@ namespace FishGame
         {
             typeName = "angelfish";
         }
+        else if constexpr (std::is_same_v<SpecialFishType, PoisonFish>)
+        {
+            typeName = "poisonfish";
+        }
 
         // Check spawn timer
         if (m_specialSpawnTimers[typeName].asSeconds() >= 1.0f / spawnRate)

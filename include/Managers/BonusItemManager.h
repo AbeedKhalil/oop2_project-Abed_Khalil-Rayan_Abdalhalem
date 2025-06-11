@@ -7,6 +7,7 @@
 
 namespace FishGame
 {
+    class SpriteManager;
     // Enhanced spawner that can handle font requirements
     template<typename T>
     class EnhancedBonusSpawner
@@ -137,7 +138,8 @@ namespace FishGame
     class BonusItemManager
     {
     public:
-        BonusItemManager(const sf::Vector2u& windowSize, const sf::Font& font);
+        BonusItemManager(const sf::Vector2u& windowSize, const sf::Font& font,
+            SpriteManager& spriteManager);
         ~BonusItemManager() = default;
 
         // Delete copy operations
@@ -174,6 +176,7 @@ namespace FishGame
     private:
         const sf::Font& m_font;
         sf::Vector2u m_windowSize;
+        SpriteManager* m_spriteManager;
         int m_currentLevel;
 
         // Spawners for different item types

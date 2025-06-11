@@ -1,14 +1,13 @@
 #pragma once
 
 #include "Entity.h"
-#include "SpriteManager.h" 
 #include <vector>
 #include <memory>
 
 namespace FishGame
 {
     // Forward declarations
-    //class SpriteManager;
+    class SpriteManager;
     enum class TextureID;
     template<typename T> class SpriteComponent;
 

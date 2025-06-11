@@ -1,6 +1,7 @@
 #include "BonusItem.h"
 #include "GameConstants.h"
-#include "Utils/DrawHelpers.h"
+#include "DrawHelpers.h"
+#include "SpriteManager.h"
 #include <cmath>
 #include <algorithm>
 #include <iterator>
@@ -75,12 +76,12 @@ namespace FishGame
 
                 // Create arm points
                 arm.setPoint(0, sf::Vector2f(0, 0));
-                arm.setPoint(1, sf::Vector2f(std::cos(radAngle - 0.2f) * 15.0f,
-                    std::sin(radAngle - 0.2f) * 15.0f));
-                arm.setPoint(2, sf::Vector2f(std::cos(radAngle) * 25.0f,
-                    std::sin(radAngle) * 25.0f));
-                arm.setPoint(3, sf::Vector2f(std::cos(radAngle + 0.2f) * 15.0f,
-                    std::sin(radAngle + 0.2f) * 15.0f));
+                arm.setPoint(1, sf::Vector2f(std::cos(radAngle - 0.2f) * 10.0f,
+                    std::sin(radAngle - 0.2f) * 10.0f));
+                arm.setPoint(2, sf::Vector2f(std::cos(radAngle) * 18.0f,
+                    std::sin(radAngle) * 18.0f));
+                arm.setPoint(3, sf::Vector2f(std::cos(radAngle + 0.2f) * 10.0f,
+                    std::sin(radAngle + 0.2f) * 10.0f));
 
                 arm.setFillColor(sf::Color(255, 182, 193));
                 arm.setOutlineColor(sf::Color(220, 150, 170));
@@ -89,6 +90,19 @@ namespace FishGame
                 ++i;
                 return arm;
             });
+    }
+
+    void Starfish::initializeSprite(SpriteManager& spriteManager)
+    {
+        auto sprite = spriteManager.createSpriteComponent(
+            static_cast<Entity*>(this), TextureID::Starfish);
+        if (sprite)
+        {
+            auto config = spriteManager.getSpriteConfig<Entity>(TextureID::Starfish);
+            sprite->configure(config);
+            setSpriteComponent(std::move(sprite));
+            setRenderMode(RenderMode::Sprite);
+        }
     }
 
     void Starfish::update(sf::Time deltaTime)
@@ -122,11 +136,18 @@ namespace FishGame
 
     void Starfish::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        // Draw arms first
-        DrawUtils::drawContainer(m_arms, target, states);
+        if (getRenderMode() == RenderMode::Sprite && getSpriteComponent())
+        {
+            target.draw(*getSpriteComponent(), states);
+        }
+        else
+        {
+            // Draw arms first
+            DrawUtils::drawContainer(m_arms, target, states);
 
-        // Draw center
-        target.draw(m_shape, states);
+            // Draw center
+            target.draw(m_shape, states);
+        }
     }
 
     // PearlOyster implementation

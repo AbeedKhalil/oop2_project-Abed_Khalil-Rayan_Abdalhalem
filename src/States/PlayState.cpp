@@ -92,7 +92,8 @@ namespace FishGame
             [](void* p) { delete static_cast<PowerUpManager*>(p); }
         );
 
-        auto bonusManager = std::make_unique<BonusItemManager>(window.getSize(), font);
+        auto bonusManager = std::make_unique<BonusItemManager>(window.getSize(), font,
+            getGame().getSpriteManager());
         m_bonusItemManager = bonusManager.get();
         m_systems["bonus"] = std::unique_ptr<void, std::function<void(void*)>>(
             bonusManager.release(),
@@ -521,6 +522,7 @@ namespace FishGame
             break;
         case 1:
             hazard = std::make_unique<Jellyfish>();
+            static_cast<Jellyfish*>(hazard.get())->initializeSprite(getGame().getSpriteManager());
             hazard->setVelocity(0.0f, 20.0f);
             break;
         }

@@ -128,8 +128,12 @@ namespace FishGame
             config.baseSize = sf::Vector2f(50.0f, 80.0f);
             break;
 
+        case TextureID::Barracuda:
+            config.scaleMultiplier = getScaleForSize(size) * 1.5f;
+            break;
+
         case TextureID::Starfish:
-            config.baseSize = sf::Vector2f(40.0f, 40.0f);
+            config.baseSize = sf::Vector2f(30.0f, 30.0f);
             config.rotationOffset = 0.0f; // Will be animated
             break;
 
