@@ -84,6 +84,9 @@ namespace FishGame
 
         sf::Time getStunDuration() const { return m_stunDuration; }
 
+        // Push collided entity slightly forward
+        void pushEntity(Entity& entity) const;
+
     protected:
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
@@ -96,5 +99,8 @@ namespace FishGame
 
         static constexpr float m_stunEffectDuration = 1.0f;
         static constexpr int m_tentacleCount = 8;
+
+        static constexpr float m_pushDistance = 15.0f;
+        static constexpr float m_pushForce = 300.0f;
     };
 }

@@ -248,16 +248,15 @@ namespace FishGame
 
     void Jellyfish::onContact(Entity& entity)
     {
-        if (entity.getType() == EntityType::Player)
-        {
-            // Stun effect handled by PlayState
-        }
+        // Push any colliding entity away from the jellyfish
+        pushEntity(entity);
+        // Actual stun application is handled externally
     }
 
     void Jellyfish::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
         if (getRenderMode() == RenderMode::Sprite && getSpriteComponent())
-        {
+    {
             target.draw(*getSpriteComponent(), states);
         }
         else
@@ -269,5 +268,21 @@ namespace FishGame
 
             target.draw(m_bell, states);
         }
+    }
+
+    void Jellyfish::pushEntity(Entity& entity) const
+    {
+        sf::Vector2f dir = entity.getPosition() - m_position;
+        float length = std::sqrt(dir.x * dir.x + dir.y * dir.y);
+        if (length == 0.0f)
+        {
+            dir = { 0.0f, 1.0f };
+            length = 1.0f;
+        }
+
+        dir /= length;
+
+        entity.setVelocity(dir * m_pushForce);
+        entity.setPosition(entity.getPosition() + dir * m_pushDistance);
     }
 }
