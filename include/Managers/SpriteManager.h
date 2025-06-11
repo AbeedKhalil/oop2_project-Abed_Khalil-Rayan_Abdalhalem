@@ -64,8 +64,8 @@ namespace FishGame
     struct SpriteScaleConfig
     {
         float small = 1.0f;
-        float medium = 1.5f;
-        float large = 2.0f;
+        float medium = 4.0f;
+        float large = 8.0f;
     };
 
     class SpriteManager

@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <optional>
 #include <functional>
-#include "Systems/CollisionDetector.h"
+#include "CollisionDetector.h"
 
 namespace FishGame::StateUtils
 {

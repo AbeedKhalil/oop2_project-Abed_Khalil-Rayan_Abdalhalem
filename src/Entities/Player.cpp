@@ -75,8 +75,18 @@ namespace FishGame
         auto sprite = spriteManager.createSpriteComponent(static_cast<Entity*>(this), getTextureID());
         if (sprite)
         {
-            auto config = spriteManager.getSpriteConfig<Entity>(getTextureID(), getCurrentFishSize());
-            sprite->configure(config);
+            auto playerConfig = spriteManager.getSpriteConfig<Player>(getTextureID(), getCurrentFishSize());
+
+            SpriteConfig<Entity> entityConfig;
+            entityConfig.textureName = std::move(playerConfig.textureName);
+            entityConfig.baseSize = playerConfig.baseSize;
+            entityConfig.origin = playerConfig.origin;
+            entityConfig.scaleMultiplier = playerConfig.scaleMultiplier;
+            entityConfig.maintainAspectRatio = playerConfig.maintainAspectRatio;
+            entityConfig.textureRect = playerConfig.textureRect;
+            entityConfig.rotationOffset = playerConfig.rotationOffset;
+
+            sprite->configure(entityConfig);
             setSpriteComponent(std::move(sprite));
             setRenderMode(RenderMode::Sprite);
         }
@@ -172,7 +182,29 @@ namespace FishGame
 
             // Preserve horizontal orientation when applying scale animation
             float sign = (m_sprite->getSprite().getScale().x < 0.0f) ? -1.0f : 1.0f;
-            m_sprite->setScale(sf::Vector2f(sign * m_eatAnimationScale, m_eatAnimationScale));
+            float stageScale = 1.0f;
+            if (m_spriteManager)
+            {
+                const auto& cfg = m_spriteManager->getScaleConfig();
+                switch (getCurrentFishSize())
+                {
+                case FishSize::Small:
+                    stageScale = cfg.small;
+                    break;
+                case FishSize::Medium:
+                    stageScale = (cfg.medium) + 0.18f;
+                    break;
+                case FishSize::Large:
+                    stageScale = (cfg.large) + 0.4f;
+                    break;
+                default:
+                    stageScale = 1.0f;
+                    break;
+                }
+            }
+
+            m_sprite->setScale(sf::Vector2f(sign * stageScale * m_eatAnimationScale,
+                stageScale * m_eatAnimationScale));
         }
     }
 
@@ -619,8 +651,18 @@ namespace FishGame
 
         if (m_sprite && m_renderMode == RenderMode::Sprite && m_spriteManager)
         {
-            auto config = m_spriteManager->getSpriteConfig<Entity>(getTextureID(), getCurrentFishSize());
-            m_sprite->configure(config);
+            auto playerConfig = m_spriteManager->getSpriteConfig<Player>(getTextureID(), getCurrentFishSize());
+
+            SpriteConfig<Entity> entityConfig;
+            entityConfig.textureName = std::move(playerConfig.textureName);
+            entityConfig.baseSize = playerConfig.baseSize;
+            entityConfig.origin = playerConfig.origin;
+            entityConfig.scaleMultiplier = playerConfig.scaleMultiplier;
+            entityConfig.maintainAspectRatio = playerConfig.maintainAspectRatio;
+            entityConfig.textureRect = playerConfig.textureRect;
+            entityConfig.rotationOffset = playerConfig.rotationOffset;
+
+            m_sprite->configure(entityConfig);
         }
 
         m_activeEffects.push_back({
