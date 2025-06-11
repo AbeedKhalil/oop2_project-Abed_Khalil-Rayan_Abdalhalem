@@ -3,6 +3,7 @@
 #include "CollisionDetector.h"
 #include "Fish.h"
 #include "ExtendedPowerUps.h"
+#include "GameOverState.h"
 #include <algorithm>
 #include <sstream>
 #include <iomanip>
@@ -962,9 +963,16 @@ namespace FishGame
 
     void PlayState::gameOver()
     {
-        m_gameState.playerLives = Constants::INITIAL_LIVES;
-        resetLevel();
-        showMessage("Game Over! Press ESC for menu");
+        GameStats& stats = GameStats::getInstance();
+        stats.finalScore = m_gameState.totalScore;
+        stats.levelReached = m_gameState.currentLevel;
+        stats.survivalTime = m_gameState.levelTime.asSeconds();
+        stats.newHighScore = stats.finalScore > stats.highScore;
+        if (stats.newHighScore)
+            stats.highScore = stats.finalScore;
+
+        requestStackClear();
+        requestStackPush(StateID::GameOver);
     }
 
     void PlayState::updateLevelDifficulty()
