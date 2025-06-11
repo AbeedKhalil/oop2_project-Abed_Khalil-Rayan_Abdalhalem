@@ -21,11 +21,11 @@ namespace FishGame
 
     struct ScoreEvent
     {
-        ScoreEventType type;
-        int basePoints;
-        int totalPoints;
-        sf::Vector2f position;
-        sf::Time timestamp;
+        ScoreEventType type = ScoreEventType::FishEaten;
+        int basePoints = 0;
+        int totalPoints = 0;
+        sf::Vector2f position{};
+        sf::Time timestamp = sf::Time::Zero;
     };
 
     // Floating score text that appears when points are earned

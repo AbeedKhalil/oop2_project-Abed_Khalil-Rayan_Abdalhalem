@@ -74,8 +74,8 @@ namespace FishGame
         {
             sf::CircleShape shape;
             sf::Vector2f velocity;
-            float lifetime;
-            float maxLifetime;
+            float lifetime = 0.f;
+            float maxLifetime = 0.f;
         };
 
         // Core methods

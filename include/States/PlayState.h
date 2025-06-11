@@ -55,19 +55,19 @@ namespace FishGame
             sf::CircleShape shape;
             sf::Vector2f velocity;
             sf::Time lifetime;
-            float alpha;
+            float alpha = 0.f;
         };
 
         // Level statistics
         struct LevelStats
         {
-            sf::Time completionTime;
-            bool reachedMaxSize;
-            bool tookNoDamage;
-            int timeBonus;
-            int growthBonus;
-            int untouchableBonus;
-            int totalBonus;
+            sf::Time completionTime = sf::Time::Zero;
+            bool reachedMaxSize = false;
+            bool tookNoDamage = false;
+            int timeBonus = 0;
+            int growthBonus = 0;
+            int untouchableBonus = 0;
+            int totalBonus = 0;
 
             int calculateTotalBonus() const
             {

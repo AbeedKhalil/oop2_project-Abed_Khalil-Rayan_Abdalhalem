@@ -160,8 +160,8 @@ namespace FishGame
     private:
         struct ActivePowerUp
         {
-            PowerUpType type;
-            sf::Time remainingTime;
+            PowerUpType type = PowerUpType::ScoreDoubler;
+            sf::Time remainingTime = sf::Time::Zero;
         };
 
         std::vector<ActivePowerUp> m_activePowerUps;

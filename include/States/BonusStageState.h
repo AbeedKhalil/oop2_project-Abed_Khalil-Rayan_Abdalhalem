@@ -38,10 +38,10 @@ namespace FishGame
     private:
         struct BonusObjective
         {
-            std::string description;
-            int targetCount;
-            int currentCount;
-            int pointsPerItem;
+            std::string description{};
+            int targetCount = 0;
+            int currentCount = 0;
+            int pointsPerItem = 0;
         };
 
         // Stage-specific update methods
@@ -80,11 +80,11 @@ namespace FishGame
         std::unique_ptr<EnvironmentSystem> m_environment;
 
         // Stage state
-        sf::Time m_timeLimit;
-        sf::Time m_timeElapsed;
-        BonusObjective m_objective;
-        bool m_stageComplete;
-        int m_bonusScore;
+        sf::Time m_timeLimit = sf::Time::Zero;
+        sf::Time m_timeElapsed = sf::Time::Zero;
+        BonusObjective m_objective{};
+        bool m_stageComplete = false;
+        int m_bonusScore = 0;
 
         // UI elements
         sf::Text m_objectiveText;

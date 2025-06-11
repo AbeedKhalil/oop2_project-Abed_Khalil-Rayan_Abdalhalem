@@ -29,8 +29,8 @@ namespace FishGame
     {
         sf::CircleShape shape;
         sf::Vector2f velocity;
-        float lifetime;
-        float alpha;
+        float lifetime = 0.f;
+        float alpha = 0.f;
     };
 
     // Background layer for parallax effect

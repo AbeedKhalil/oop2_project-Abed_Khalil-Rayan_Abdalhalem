@@ -53,7 +53,7 @@ namespace FishGame
     private:
         struct EatEvent
         {
-            sf::Time timestamp;
+            sf::Time timestamp = sf::Time::Zero;
         };
 
         void updateFrenzyState();
