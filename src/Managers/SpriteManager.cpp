@@ -126,6 +126,7 @@ namespace FishGame
 
         case TextureID::Jellyfish:
             config.baseSize = sf::Vector2f(10.0f, 30.0f);
+            config.scaleMultiplier = 0.7f;
             break;
 
         case TextureID::Barracuda:

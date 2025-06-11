@@ -156,13 +156,13 @@ namespace FishGame
     // Jellyfish implementation
     Jellyfish::Jellyfish()
         : Hazard(HazardType::Jellyfish, 0.5f)
-        , m_bell(25.0f)
+        , m_bell(15.0f)
         , m_tentacles()
         , m_floatAnimation(0.0f)
         , m_tentacleWave(0.0f)
         , m_stunDuration(sf::seconds(m_stunEffectDuration))
     {
-        m_radius = 25.0f;
+        m_radius = 15.0f;
 
         // Translucent bell
         m_bell.setFillColor(sf::Color(255, 200, 255, 150));
@@ -173,7 +173,7 @@ namespace FishGame
         // Create tentacles
         m_tentacles.reserve(m_tentacleCount);
         std::generate_n(std::back_inserter(m_tentacles), m_tentacleCount, [] {
-            sf::RectangleShape tentacle(sf::Vector2f(2.0f, 40.0f));
+            sf::RectangleShape tentacle(sf::Vector2f(2.0f, 30.0f));
             tentacle.setFillColor(sf::Color(255, 150, 255, 100));
             tentacle.setOrigin(1.0f, 0.0f);
             return tentacle;
@@ -223,8 +223,8 @@ namespace FishGame
             float wave = std::sin(m_tentacleWave + i * 0.5f) * 10.0f;
 
             sf::Vector2f tentaclePos(
-                m_position.x + std::cos(angle) * 20.0f,
-                m_position.y + std::sin(angle) * 20.0f
+                m_position.x + std::cos(angle) * 15.0f,
+                m_position.y + std::sin(angle) * 15.0f
             );
 
             m_tentacles[i].setPosition(tentaclePos);
@@ -241,7 +241,7 @@ namespace FishGame
     sf::FloatRect Jellyfish::getBounds() const
     {
         // Include tentacle reach
-        float effectiveRadius = m_radius + 20.0f;
+        float effectiveRadius = m_radius + 15.0f;
         return sf::FloatRect(m_position.x - effectiveRadius, m_position.y - effectiveRadius,
             effectiveRadius * 2.0f, effectiveRadius * 2.0f);
     }
