@@ -3,6 +3,7 @@
 #include "Utils/DrawHelpers.h"
 #include <cmath>
 #include <algorithm>
+#include <iterator>
 
 namespace FishGame
 {
@@ -66,27 +67,28 @@ namespace FishGame
 
         // Create star arms using convex shapes
         m_arms.reserve(m_armCount);
-        for (int i = 0; i < m_armCount; ++i)
-        {
-            sf::ConvexShape arm(4);
-            float angle = (360.0f / m_armCount) * i;
-            float radAngle = angle * Constants::DEG_TO_RAD;
+        std::generate_n(std::back_inserter(m_arms), m_armCount,
+            [this, i = 0]() mutable {
+                sf::ConvexShape arm(4);
+                float angle = (360.0f / m_armCount) * i;
+                float radAngle = angle * Constants::DEG_TO_RAD;
 
-            // Create arm points
-            arm.setPoint(0, sf::Vector2f(0, 0));
-            arm.setPoint(1, sf::Vector2f(std::cos(radAngle - 0.2f) * 15.0f,
-                std::sin(radAngle - 0.2f) * 15.0f));
-            arm.setPoint(2, sf::Vector2f(std::cos(radAngle) * 25.0f,
-                std::sin(radAngle) * 25.0f));
-            arm.setPoint(3, sf::Vector2f(std::cos(radAngle + 0.2f) * 15.0f,
-                std::sin(radAngle + 0.2f) * 15.0f));
+                // Create arm points
+                arm.setPoint(0, sf::Vector2f(0, 0));
+                arm.setPoint(1, sf::Vector2f(std::cos(radAngle - 0.2f) * 15.0f,
+                    std::sin(radAngle - 0.2f) * 15.0f));
+                arm.setPoint(2, sf::Vector2f(std::cos(radAngle) * 25.0f,
+                    std::sin(radAngle) * 25.0f));
+                arm.setPoint(3, sf::Vector2f(std::cos(radAngle + 0.2f) * 15.0f,
+                    std::sin(radAngle + 0.2f) * 15.0f));
 
-            arm.setFillColor(sf::Color(255, 182, 193));
-            arm.setOutlineColor(sf::Color(220, 150, 170));
-            arm.setOutlineThickness(1.0f);
+                arm.setFillColor(sf::Color(255, 182, 193));
+                arm.setOutlineColor(sf::Color(220, 150, 170));
+                arm.setOutlineThickness(1.0f);
 
-            m_arms.push_back(std::move(arm));
-        }
+                ++i;
+                return arm;
+            });
     }
 
     void Starfish::update(sf::Time deltaTime)

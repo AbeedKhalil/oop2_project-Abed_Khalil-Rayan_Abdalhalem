@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <sstream>
 #include <iomanip>
+#include <array>
 
 namespace FishGame
 {
@@ -125,7 +126,7 @@ namespace FishGame
         stageStream << "Stage " << m_currentStage;
         m_stageText.setString(stageStream.str());
 
-        sf::Color stageColors[] = {
+        const std::array<sf::Color, 3> stageColors{
             sf::Color(0, 255, 100),
             sf::Color(0, 150, 255),
             sf::Color(255, 100, 0)

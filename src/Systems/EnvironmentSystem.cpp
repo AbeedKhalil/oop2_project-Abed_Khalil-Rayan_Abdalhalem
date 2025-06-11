@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <numeric>
 #include <chrono>
+#include <iterator>
 
 namespace FishGame
 {
@@ -69,24 +70,21 @@ namespace FishGame
         {
         case EnvironmentType::CoralReef:
             // Generate coral shapes
-            for (int i = 0; i < 15; ++i)
-            {
+            std::generate_n(std::back_inserter(m_elements), 15, [&]() {
                 sf::RectangleShape coral(sf::Vector2f(sizeDist(rng), sizeDist(rng) * 1.5f));
                 coral.setPosition(xDist(rng), yDist(rng));
                 coral.setFillColor(sf::Color(
                     m_baseColor.r + (rng() % 50),
                     m_baseColor.g - (rng() % 30),
                     m_baseColor.b + (rng() % 40),
-                    m_baseColor.a
-                ));
-                m_elements.push_back(coral);
-            }
+                    m_baseColor.a));
+                return coral;
+                });
             break;
 
         case EnvironmentType::KelpForest:
             // Generate kelp strands
-            for (int i = 0; i < 20; ++i)
-            {
+            std::generate_n(std::back_inserter(m_elements), 20, [&]() {
                 sf::RectangleShape kelp(sf::Vector2f(10.0f, sizeDist(rng) * 3.0f));
                 kelp.setPosition(xDist(rng), 1080.0f);
                 kelp.setOrigin(5.0f, sizeDist(rng) * 3.0f);
@@ -94,27 +92,24 @@ namespace FishGame
                     0,
                     m_baseColor.g + (rng() % 50),
                     0,
-                    m_baseColor.a
-                ));
-                m_elements.push_back(kelp);
-            }
+                    m_baseColor.a));
+                return kelp;
+                });
             break;
 
         case EnvironmentType::OpenOcean:
         default:
             // Generate subtle wave patterns
-            for (int i = 0; i < 10; ++i)
-            {
+            std::generate_n(std::back_inserter(m_elements), 10, [&]() {
                 sf::RectangleShape wave(sf::Vector2f(sizeDist(rng) * 2.0f, 5.0f));
                 wave.setPosition(xDist(rng), yDist(rng));
                 wave.setFillColor(sf::Color(
                     m_baseColor.r,
                     m_baseColor.g,
                     m_baseColor.b + (rng() % 30),
-                    m_baseColor.a / 2
-                ));
-                m_elements.push_back(wave);
-            }
+                    m_baseColor.a / 2));
+                return wave;
+                });
             break;
         }
     }
@@ -133,8 +128,7 @@ namespace FishGame
         std::uniform_real_distribution<float> xDist(0.0f, 1920.0f);
         std::uniform_real_distribution<float> yDist(0.0f, 1080.0f);
 
-        for (int i = 0; i < 50; ++i)
-        {
+        std::generate_n(std::back_inserter(m_particles), 50, [&]() {
             CurrentParticle particle;
             particle.shape = sf::CircleShape(2.0f);
             particle.shape.setPosition(xDist(rng), yDist(rng));
@@ -142,8 +136,8 @@ namespace FishGame
             particle.velocity = m_currentDirection * m_currentStrength;
             particle.lifetime = 5.0f;
             particle.alpha = 100.0f;
-            m_particles.push_back(particle);
-        }
+            return particle;
+            });
     }
 
     void OceanCurrentSystem::update(sf::Time deltaTime)

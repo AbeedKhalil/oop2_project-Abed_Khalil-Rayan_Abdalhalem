@@ -2,6 +2,8 @@
 #include "GameConstants.h"
 #include "Utils/DrawHelpers.h"
 #include <cmath>
+#include <algorithm>
+#include <iterator>
 
 namespace FishGame
 {
@@ -97,13 +99,12 @@ namespace FishGame
     {
         // Create lightning bolt shapes
         m_lightningBolts.reserve(4);
-        for (int i = 0; i < 4; ++i)
-        {
+        std::generate_n(std::back_inserter(m_lightningBolts), 4, [] {
             sf::CircleShape bolt(3.0f, 3);
             bolt.setFillColor(sf::Color::Magenta);
             bolt.setOrigin(3.0f, 3.0f);
-            m_lightningBolts.push_back(std::move(bolt));
-        }
+            return bolt;
+            });
 
         // Set aura color
         m_aura.setOutlineColor(getAuraColor());
