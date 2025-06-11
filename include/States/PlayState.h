@@ -18,6 +18,7 @@
 #include "BonusStageState.h"
 #include "GameConstants.h"
 #include "StateUtils.h"
+#include "PauseState.h"
 #include <memory>
 #include <vector>
 #include <random>
@@ -99,6 +100,7 @@ namespace FishGame
             sf::Text powerUpText;
             sf::Text environmentText;
             sf::Text effectsText;
+            sf::Text pauseButton;
         };
 
         // Performance metrics
@@ -245,6 +247,8 @@ namespace FishGame
         std::uniform_real_distribution<float> m_positionDist;
         std::uniform_int_distribution<int> m_hazardTypeDist;
         std::uniform_int_distribution<int> m_powerUpTypeDist;
+
+        bool m_initialized;
 
         // Constants
         static constexpr float m_hazardSpawnInterval = 8.0f;
