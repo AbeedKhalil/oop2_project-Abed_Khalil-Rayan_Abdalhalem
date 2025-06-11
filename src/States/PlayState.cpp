@@ -4,6 +4,7 @@
 #include "Fish.h"
 #include "ExtendedPowerUps.h"
 #include "GameOverState.h"
+#include "PauseState.h"
 #include <algorithm>
 #include <sstream>
 #include <iomanip>
@@ -50,6 +51,7 @@ namespace FishGame
         , m_positionDist(100.0f, 1820.0f)
         , m_hazardTypeDist(0, 1)
         , m_powerUpTypeDist(0, 2)
+        , m_initialized(false)
     {
         initializeSystems();
 
@@ -171,6 +173,9 @@ namespace FishGame
             sf::Vector2f(window.getSize().x - 300.0f, 100.0f));
         initText(m_hud.effectsText, 18,
             sf::Vector2f(50.0f, window.getSize().y - 100.0f), sf::Color::Yellow);
+        initText(m_hud.pauseButton, Constants::HUD_FONT_SIZE,
+            sf::Vector2f(window.getSize().x - 150.0f, Constants::HUD_MARGIN));
+        m_hud.pauseButton.setString("Pause");
 
         // Special handling for message text
         m_hud.messageText.setFont(font);
@@ -182,7 +187,7 @@ namespace FishGame
 
     void PlayState::handleEvent(const sf::Event& event)
     {
-        if (m_isPlayerStunned)
+        if (m_isPlayerStunned || getGame().getCurrentState<PauseState>())
             return;
 
         // Handle controls reversal using STL transform
@@ -229,6 +234,18 @@ namespace FishGame
 
             default:
                 break;
+            }
+            break;
+
+        case sf::Event::MouseButtonPressed:
+            if (processedEvent.mouseButton.button == sf::Mouse::Left)
+            {
+                sf::Vector2f mousePos(static_cast<float>(processedEvent.mouseButton.x),
+                    static_cast<float>(processedEvent.mouseButton.y));
+                if (m_hud.pauseButton.getGlobalBounds().contains(mousePos))
+                {
+                    deferAction([this]() { requestStackPush(StateID::Pause); });
+                }
             }
             break;
 
@@ -1214,9 +1231,10 @@ namespace FishGame
         window.draw(m_hud.levelText);
         window.draw(m_hud.chainText);
         window.draw(m_hud.powerUpText);
-        window.draw(m_hud.fpsText);
+        //window.draw(m_hud.fpsText);
         window.draw(m_hud.environmentText);
         window.draw(m_hud.effectsText);
+        window.draw(m_hud.pauseButton);
 
         if (m_gameState.gameWon || m_gameState.levelComplete)
         {
@@ -1244,8 +1262,9 @@ namespace FishGame
             updateLevelDifficulty();
 
             m_hud.messageText.setString("");
+            m_initialized = true;
         }
-        else
+        else if (!m_initialized)
         {
             resetLevel();
             m_gameState.currentLevel = 1;
@@ -1255,6 +1274,7 @@ namespace FishGame
             m_bonusStageTriggered = false;
             m_returningFromBonusStage = false;
             m_savedLevel = 1;
+            m_initialized = true;
         }
     }
 }
