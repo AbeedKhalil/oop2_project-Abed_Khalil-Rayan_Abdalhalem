@@ -12,3 +12,6 @@ configure_file ("PoisonFish.png" ${CMAKE_BINARY_DIR} COPYONLY)
 configure_file ("Pufferfish.png" ${CMAKE_BINARY_DIR} COPYONLY)
 configure_file ("SmallFish.png" ${CMAKE_BINARY_DIR} COPYONLY)
 configure_file ("StarFish.png" ${CMAKE_BINARY_DIR} COPYONLY)
+
+configure_file ("Background1.png" ${CMAKE_BINARY_DIR} COPYONLY)
+configure_file ("Grass.png" ${CMAKE_BINARY_DIR} COPYONLY)
