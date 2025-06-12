@@ -60,6 +60,25 @@ namespace FishGame
         m_bonusItems.reserve(Constants::MAX_BONUS_ITEMS);
         m_hazards.reserve(20);
         m_particles.reserve(Constants::MAX_PARTICLES);
+
+        // Setup background and camera
+        auto& window = getGame().getWindow();
+        m_backgroundSprite.setTexture(
+            getGame().getSpriteManager().getTexture(TextureID::Background));
+
+        const sf::Vector2f windowSize(window.getSize());
+
+        // Scale background to always fill the window
+        const sf::Vector2f textureSize(m_backgroundSprite.getTexture()->getSize());
+        m_backgroundSprite.setScale(
+            windowSize.x / textureSize.x,
+            windowSize.y / textureSize.y);
+
+        m_worldSize = windowSize;
+
+        m_view = window.getDefaultView();
+        m_view.zoom(0.8f);
+        m_view.setCenter(m_worldSize * 0.5f);
     }
 
     template<typename SystemType>
@@ -386,6 +405,9 @@ namespace FishGame
 
         // Update HUD
         updateHUD();
+
+        // Update camera to follow player
+        updateCamera();
     }
 
     void PlayState::updateSystems(sf::Time deltaTime)
@@ -953,6 +975,10 @@ namespace FishGame
     {
         m_player->fullReset();
 
+        // Start player in the middle of the world
+        m_player->setPosition(m_worldSize * 0.5f);
+        m_view.setCenter(m_player->getPosition());
+
         m_gameState.levelComplete = false;
         m_gameState.gameWon = false;
         m_gameState.enemiesFleeing = false;
@@ -1189,6 +1215,39 @@ namespace FishGame
         }
     }
 
+    void PlayState::updateCamera()
+    {
+        if (!m_player)
+            return;
+
+        sf::Vector2f target = m_player->getPosition();
+        sf::Vector2f halfSize = m_view.getSize() * 0.5f;
+
+        // Clamp horizontally
+        if (m_worldSize.x > m_view.getSize().x)
+        {
+            target.x = std::clamp(target.x, halfSize.x, m_worldSize.x - halfSize.x);
+        }
+        else
+        {
+            target.x = m_worldSize.x * 0.5f;
+        }
+
+        // Clamp vertically
+        if (m_worldSize.y > m_view.getSize().y)
+        {
+            target.y = std::clamp(target.y, halfSize.y, m_worldSize.y - halfSize.y);
+        }
+        else
+        {
+            target.y = m_worldSize.y * 0.5f;
+        }
+
+        sf::Vector2f current = m_view.getCenter();
+        sf::Vector2f newCenter = current + (target - current) * m_cameraSmoothing;
+        m_view.setCenter(newCenter);
+    }
+
     void PlayState::showMessage(const std::string& message)
     {
         m_hud.messageText.setString(message);
@@ -1206,7 +1265,10 @@ namespace FishGame
     void PlayState::render()
     {
         auto& window = getGame().getWindow();
+        auto defaultView = window.getView();
+        window.setView(m_view);
 
+        window.draw(m_backgroundSprite);
         window.draw(*m_environmentSystem);
 
         StateUtils::renderContainer(m_hazards, window);
@@ -1226,6 +1288,8 @@ namespace FishGame
         m_scoreSystem->drawFloatingScores(window);
         window.draw(*m_growthMeter);
         window.draw(*m_frenzySystem);
+
+        window.setView(defaultView);
 
         // Render HUD texts
         window.draw(m_hud.scoreText);
@@ -1278,5 +1342,8 @@ namespace FishGame
             m_savedLevel = 1;
             m_initialized = true;
         }
+
+        // Ensure camera starts centered on the player
+        updateCamera();
     }
 }

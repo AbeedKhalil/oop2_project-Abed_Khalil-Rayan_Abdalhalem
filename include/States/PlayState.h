@@ -164,6 +164,7 @@ namespace FishGame
         void updateAllEntities(sf::Time deltaTime);
         void updateHUD();
         void updatePerformanceMetrics(sf::Time deltaTime);
+        void updateCamera();
 
         // Collision handling
         void checkCollisions();
@@ -240,6 +241,11 @@ namespace FishGame
         // Visual effects
         std::vector<ParticleEffect> m_particles;
 
+        // Camera and background
+        sf::Sprite m_backgroundSprite;
+        sf::View m_view;
+        sf::Vector2f m_worldSize;
+
         // Random number generation
         std::mt19937 m_randomEngine;
         std::uniform_real_distribution<float> m_angleDist;
@@ -253,5 +259,6 @@ namespace FishGame
         // Constants
         static constexpr float m_hazardSpawnInterval = 8.0f;
         static constexpr float m_extendedPowerUpInterval = 15.0f;
+        static constexpr float m_cameraSmoothing = 0.1f;
     };
 }
