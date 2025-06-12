@@ -57,7 +57,8 @@ namespace FishGame
         // Environment
         Background,
         CoralReef,
-        KelpForest
+        KelpForest,
+        GameTitle
     };
 
     // Sprite scale configurations

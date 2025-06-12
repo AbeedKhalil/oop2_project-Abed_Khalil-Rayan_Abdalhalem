@@ -46,7 +46,8 @@ namespace FishGame
         // Environment
         {TextureID::Background, "Background1.png"},
         {TextureID::CoralReef, "Grass.png"},
-        {TextureID::KelpForest, "kelp_forest.png"}
+        {TextureID::KelpForest, "kelp_forest.png"},
+        {TextureID::GameTitle, "GameTitle.png"}
     };
 
     SpriteManager::SpriteManager(ResourceHolder<sf::Texture, TextureID>& textureHolder)

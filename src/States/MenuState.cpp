@@ -9,7 +9,7 @@ namespace FishGame
 {
     MenuState::MenuState(Game& game)
         : State(game)
-        , m_titleText()
+        , m_titleSprite()
         , m_menuItems()
         , m_selectedOption(MenuOption::Play)
         , m_previousOption(MenuOption::Play)
@@ -29,18 +29,16 @@ namespace FishGame
         auto& window = getGame().getWindow();
         auto& font = getGame().getFonts().get(Fonts::Main);
 
-        // Setup title using constants
-        m_titleText.setFont(font);
-        m_titleText.setString(Constants::GAME_TITLE);
-        m_titleText.setCharacterSize(Constants::TITLE_FONT_SIZE);
-        m_titleText.setFillColor(Constants::TITLE_COLOR);
-        m_titleText.setOutlineColor(Constants::TITLE_OUTLINE_COLOR);
-        m_titleText.setOutlineThickness(Constants::TITLE_OUTLINE_THICKNESS);
+        // Setup title sprite
+        m_titleSprite.setTexture(
+            getGame().getSpriteManager().getTexture(TextureID::GameTitle));
+        float scaleFactor = 4.0f; // scale image to reasonable size
+        m_titleSprite.setScale(scaleFactor, scaleFactor);
 
-        // Center title
-        sf::FloatRect titleBounds = m_titleText.getLocalBounds();
-        m_titleText.setOrigin(titleBounds.width / 2.0f, titleBounds.height / 2.0f);
-        m_titleText.setPosition(window.getSize().x / 2.0f, Constants::TITLE_Y_POSITION);
+        // Center title sprite
+        sf::FloatRect titleBounds = m_titleSprite.getLocalBounds();
+        m_titleSprite.setOrigin(titleBounds.width / 2.0f, titleBounds.height / 2.0f);
+        m_titleSprite.setPosition(window.getSize().x / 2.0f, Constants::TITLE_Y_POSITION);
 
         // Initialize menu items
         const std::array<std::pair<std::string, MenuAction>, static_cast<size_t>(MenuOption::Count)> menuData = { {
@@ -239,16 +237,22 @@ namespace FishGame
         {
             m_transitionAlpha = std::max(0.0f, m_transitionAlpha - m_fadeSpeed * deltaTime.asSeconds());
 
-            // Apply fade to all text elements
-            auto applyAlpha = [this](sf::Text& text) {
+            // Apply fade to text and sprite elements
+            auto applyAlphaText = [this](sf::Text& text) {
                 sf::Color color = text.getFillColor();
                 color.a = static_cast<sf::Uint8>(m_transitionAlpha);
                 text.setFillColor(color);
                 };
 
-            applyAlpha(m_titleText);
+            auto applyAlphaSprite = [this](sf::Sprite& sprite) {
+                sf::Color color = sprite.getColor();
+                color.a = static_cast<sf::Uint8>(m_transitionAlpha);
+                sprite.setColor(color);
+                };
+
+            applyAlphaSprite(m_titleSprite);
             std::for_each(m_menuItems.begin(), m_menuItems.end(),
-                [&applyAlpha](auto& item) { applyAlpha(item.textObject); });
+                [&applyAlphaText](auto& item) { applyAlphaText(item.textObject); });
         }
 
         // Animate selected option with pulsing effect
@@ -265,7 +269,7 @@ namespace FishGame
         for (const auto& fish : m_backgroundFish)
             window.draw(fish.shape);
 
-        window.draw(m_titleText);
+        window.draw(m_titleSprite);
 
         // Render all menu items
         std::for_each(m_menuItems.begin(), m_menuItems.end(),
