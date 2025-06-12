@@ -7,6 +7,8 @@
 #include <functional>
 #include <optional>
 #include <algorithm>
+#include <vector>
+#include <random>
 
 namespace FishGame
 {
@@ -60,7 +62,16 @@ namespace FishGame
         // Animation utilities
         void updateAnimations(sf::Time deltaTime);
 
+        // Background helpers
+        void initializeBackground();
+        void updateBackground(sf::Time deltaTime);
+
     private:
+        struct BackgroundFish
+        {
+            sf::CircleShape shape;
+            sf::Vector2f velocity;
+        };
         // UI elements
         sf::Text m_titleText;
         std::array<MenuItemType, static_cast<size_t>(MenuOption::Count)> m_menuItems;
@@ -74,6 +85,10 @@ namespace FishGame
         float m_transitionAlpha;
         bool m_isTransitioning;
 
+        // Background
+        sf::Sprite m_backgroundSprite;
+        std::vector<BackgroundFish> m_backgroundFish;
+        std::mt19937 m_randomEngine;
         // Animation parameters from constants
         static constexpr float m_pulseSpeed = Constants::MENU_PULSE_SPEED;
         static constexpr float m_pulseAmplitude = Constants::MENU_PULSE_AMPLITUDE;
