@@ -148,8 +148,15 @@ namespace FishGame
             }
             else
             {
-                // Decelerate when near target
+                // Decelerate when near target and stop completely when slow enough
                 m_velocity *= (1.0f - m_deceleration * deltaTime.asSeconds());
+
+                // Snap to target to avoid jitter once velocity is very small
+                if (std::abs(m_velocity.x) < 1.0f && std::abs(m_velocity.y) < 1.0f)
+                {
+                    m_velocity = sf::Vector2f(0.0f, 0.0f);
+                    m_position = m_targetPosition;
+                }
             }
         }
 
