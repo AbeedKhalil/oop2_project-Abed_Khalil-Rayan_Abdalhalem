@@ -73,7 +73,7 @@ namespace FishGame
             sf::Vector2f velocity;
         };
         // UI elements
-        sf::Text m_titleText;
+        sf::Sprite m_titleSprite;
         std::array<MenuItemType, static_cast<size_t>(MenuOption::Count)> m_menuItems;
 
         // State
