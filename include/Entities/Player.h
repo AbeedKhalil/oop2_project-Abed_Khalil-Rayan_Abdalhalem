@@ -129,8 +129,8 @@ namespace FishGame
 
         // Movement parameters
         static constexpr float m_baseSpeed = 400.0f;
-        static constexpr float m_acceleration = 10.0f;
-        static constexpr float m_deceleration = 8.0f;
+        static constexpr float m_acceleration = 5.0f;
+        static constexpr float m_deceleration = 6.0f;
         static constexpr float m_maxSpeed = 600.0f;
 
         // Size parameters

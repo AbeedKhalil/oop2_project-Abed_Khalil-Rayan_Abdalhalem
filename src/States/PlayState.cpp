@@ -39,7 +39,6 @@ namespace FishGame
         , m_stunTimer(sf::Time::Zero)
         , m_hazardSpawnTimer(sf::Time::Zero)
         , m_extendedPowerUpSpawnTimer(sf::Time::Zero)
-        , m_levelsUntilBonus(3)
         , m_bonusStageTriggered(false)
         , m_returningFromBonusStage(false)
         , m_savedLevel(1)
@@ -149,7 +148,9 @@ namespace FishGame
         m_fishSpawner->setSpecialFishConfig(specialConfig);
 
         // Position UI elements
-        m_growthMeter->setPosition(Constants::GROWTH_METER_X, window.getSize().y - Constants::GROWTH_METER_Y_OFFSET);
+        float growthMeterX = window.getSize().x - Constants::HUD_MARGIN - 300.0f;
+        float growthMeterY = Constants::HUD_MARGIN + 20.0f;
+        m_growthMeter->setPosition(growthMeterX, growthMeterY);
         m_frenzySystem->setPosition(window.getSize().x / 2.0f, Constants::FRENZY_Y_POSITION);
 
         // Initialize HUD
@@ -189,13 +190,8 @@ namespace FishGame
             sf::Vector2f(window.getSize().x - Constants::POWERUP_TEXT_X_OFFSET, Constants::HUD_MARGIN + Constants::HUD_LINE_SPACING));
         initText(m_hud.fpsText, Constants::HUD_FONT_SIZE,
             sf::Vector2f(window.getSize().x - Constants::FPS_TEXT_X_OFFSET, Constants::HUD_MARGIN));
-        initText(m_hud.environmentText, 20,
-            sf::Vector2f(window.getSize().x - 300.0f, 100.0f));
         initText(m_hud.effectsText, 18,
             sf::Vector2f(50.0f, window.getSize().y - 100.0f), sf::Color::Yellow);
-        initText(m_hud.pauseButton, Constants::HUD_FONT_SIZE,
-            sf::Vector2f(window.getSize().x - 150.0f, Constants::HUD_MARGIN));
-        m_hud.pauseButton.setString("Pause");
 
         // Special handling for message text
         m_hud.messageText.setFont(font);
@@ -260,12 +256,7 @@ namespace FishGame
         case sf::Event::MouseButtonPressed:
             if (processedEvent.mouseButton.button == sf::Mouse::Left)
             {
-                sf::Vector2f mousePos(static_cast<float>(processedEvent.mouseButton.x),
-                    static_cast<float>(processedEvent.mouseButton.y));
-                if (m_hud.pauseButton.getGlobalBounds().contains(mousePos))
-                {
-                    deferAction([this]() { requestStackPush(StateID::Pause); });
-                }
+                // No clickable HUD elements currently
             }
             break;
 
@@ -1094,15 +1085,9 @@ namespace FishGame
 
         formatText(m_hud.livesText, "Lives: ", m_gameState.playerLives);
 
-        int levelsUntilBonus = 3 - (m_gameState.currentLevel % 3);
-        if (levelsUntilBonus == 3) levelsUntilBonus = 0;
-
         formatText(m_hud.levelText,
             "Level: ", m_gameState.currentLevel,
-            " | Stage: ", m_player->getCurrentStage(), "/", Constants::MAX_STAGES,
-            m_gameState.gameWon ? " | COMPLETE!" : "",
-            levelsUntilBonus > 0 ? " | Bonus in: " : " | Bonus after this level!",
-            levelsUntilBonus > 0 ? std::to_string(levelsUntilBonus) + " levels" : "");
+            m_gameState.gameWon ? " | COMPLETE!" : "");
 
         if (m_scoreSystem->getChainBonus() > 0)
         {
@@ -1149,40 +1134,6 @@ namespace FishGame
         {
             m_hud.powerUpText.setString("");
         }
-
-        std::ostringstream envStream;
-        envStream << "Environment: ";
-        switch (m_environmentSystem->getCurrentEnvironment())
-        {
-        case EnvironmentType::CoralReef:
-            envStream << "Coral Reef";
-            break;
-        case EnvironmentType::OpenOcean:
-            envStream << "Open Ocean";
-            break;
-        case EnvironmentType::KelpForest:
-            envStream << "Kelp Forest";
-            break;
-        }
-
-        envStream << "\nTime: ";
-        switch (m_environmentSystem->getCurrentTimeOfDay())
-        {
-        case TimeOfDay::Day:
-            envStream << "Day";
-            break;
-        case TimeOfDay::Dusk:
-            envStream << "Dusk";
-            break;
-        case TimeOfDay::Night:
-            envStream << "Night";
-            break;
-        case TimeOfDay::Dawn:
-            envStream << "Dawn";
-            break;
-        }
-
-        m_hud.environmentText.setString(envStream.str());
 
         std::ostringstream effectStream;
         if (m_isPlayerFrozen)
@@ -1286,10 +1237,10 @@ namespace FishGame
             });
 
         m_scoreSystem->drawFloatingScores(window);
+        
+        window.setView(defaultView);
         window.draw(*m_growthMeter);
         window.draw(*m_frenzySystem);
-
-        window.setView(defaultView);
 
         // Render HUD texts
         window.draw(m_hud.scoreText);
@@ -1297,10 +1248,6 @@ namespace FishGame
         window.draw(m_hud.levelText);
         window.draw(m_hud.chainText);
         window.draw(m_hud.powerUpText);
-        //window.draw(m_hud.fpsText);
-        window.draw(m_hud.environmentText);
-        window.draw(m_hud.effectsText);
-        window.draw(m_hud.pauseButton);
 
         if (m_gameState.gameWon || m_gameState.levelComplete)
         {
@@ -1336,7 +1283,6 @@ namespace FishGame
             m_gameState.currentLevel = 1;
             m_gameState.playerLives = Constants::INITIAL_LIVES;
             m_gameState.totalScore = 0;
-            m_levelsUntilBonus = 3;
             m_bonusStageTriggered = false;
             m_returningFromBonusStage = false;
             m_savedLevel = 1;

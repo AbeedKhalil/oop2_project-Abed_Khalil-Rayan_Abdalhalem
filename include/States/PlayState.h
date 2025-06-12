@@ -98,9 +98,7 @@ namespace FishGame
             sf::Text messageText;
             sf::Text chainText;
             sf::Text powerUpText;
-            sf::Text environmentText;
             sf::Text effectsText;
-            sf::Text pauseButton;
         };
 
         // Performance metrics
@@ -230,7 +228,6 @@ namespace FishGame
         sf::Time m_extendedPowerUpSpawnTimer;
 
         // Bonus stage tracking
-        int m_levelsUntilBonus;
         bool m_bonusStageTriggered;
         bool m_returningFromBonusStage;
         int m_savedLevel;
