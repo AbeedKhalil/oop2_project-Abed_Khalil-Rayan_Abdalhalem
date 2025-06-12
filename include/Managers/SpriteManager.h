@@ -59,6 +59,12 @@ namespace FishGame
         CoralReef,
         KelpForest,
         GameTitle
+        , NewGame
+        , NewGameHover
+        , GameOptions
+        , GameOptionsHover
+        , Exit
+        , ExitHover
     };
 
     // Sprite scale configurations
