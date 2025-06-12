@@ -44,8 +44,8 @@ namespace FishGame
         {TextureID::PowerUpShield, "powerup_shield.png"},
 
         // Environment
-        {TextureID::Background, "background_ocean.png"},
-        {TextureID::CoralReef, "coral_reef.png"},
+        {TextureID::Background, "Background1.png"},
+        {TextureID::CoralReef, "Grass.png"},
         {TextureID::KelpForest, "kelp_forest.png"}
     };
 

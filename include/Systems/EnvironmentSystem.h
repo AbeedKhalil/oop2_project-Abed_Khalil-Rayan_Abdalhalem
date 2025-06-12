@@ -121,12 +121,20 @@ namespace FishGame
         void transitionEnvironment(EnvironmentType newType);
 
     private:
+        struct BackgroundFish
+        {
+            sf::CircleShape shape;
+            sf::Vector2f velocity;
+        };
+
         EnvironmentType m_currentEnvironment;
         TimeOfDay m_currentTimeOfDay;
 
         std::unique_ptr<BackgroundLayer> m_farLayer;
         std::unique_ptr<BackgroundLayer> m_midLayer;
         std::unique_ptr<BackgroundLayer> m_nearLayer;
+
+        std::vector<BackgroundFish> m_backgroundFish;
 
         std::unique_ptr<OceanCurrentSystem> m_oceanCurrents;
 

@@ -220,6 +220,25 @@ namespace FishGame
         , m_timeDist(0, 3)
     {
         m_lightingOverlay.setFillColor(sf::Color(0, 0, 0, 0));
+        // Initialize simple background fish
+        std::uniform_real_distribution<float> xDist(0.0f, 1920.0f);
+        std::uniform_real_distribution<float> yDist(100.0f, 1000.0f);
+        std::uniform_real_distribution<float> speedDist(20.0f, 60.0f);
+        std::uniform_real_distribution<float> radiusDist(5.0f, 15.0f);
+        std::uniform_int_distribution<int> dirDist(0, 1);
+
+        m_backgroundFish.resize(10);
+        for (auto& fish : m_backgroundFish)
+        {
+            float radius = radiusDist(m_randomEngine);
+            fish.shape.setRadius(radius);
+            fish.shape.setOrigin(radius, radius);
+            fish.shape.setFillColor(sf::Color(255, 255, 255, 100));
+            fish.shape.setPosition(xDist(m_randomEngine), yDist(m_randomEngine));
+
+            float dir = dirDist(m_randomEngine) ? 1.f : -1.f;
+            fish.velocity = sf::Vector2f(dir * speedDist(m_randomEngine), 0.f);
+        }
     }
 
     void EnvironmentSystem::update(sf::Time deltaTime)
@@ -231,6 +250,19 @@ namespace FishGame
 
         // Update ocean currents
         m_oceanCurrents->update(deltaTime);
+
+        // Update background fish
+        for (auto& fish : m_backgroundFish)
+        {
+            fish.shape.move(fish.velocity * deltaTime.asSeconds());
+            sf::Vector2f pos = fish.shape.getPosition();
+            float radius = fish.shape.getRadius();
+            if (fish.velocity.x > 0.f && pos.x - radius > 1920.f)
+                pos.x = -radius;
+            else if (fish.velocity.x < 0.f && pos.x + radius < 0.f)
+                pos.x = 1920.f + radius;
+            fish.shape.setPosition(pos);
+        }
 
         // Update day/night cycle only if not paused
         if (!m_dayNightCyclePaused)
@@ -328,6 +360,13 @@ namespace FishGame
     {
         // Draw background layers (far to near)
         m_farLayer->draw(target);
+
+        // Draw background fish behind near layer
+        for (const auto& fish : m_backgroundFish)
+        {
+            target.draw(fish.shape, states);
+        }
+
         m_midLayer->draw(target);
         m_nearLayer->draw(target);
 
