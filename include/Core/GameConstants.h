@@ -91,8 +91,10 @@ namespace FishGame
         constexpr unsigned int TITLE_FONT_SIZE = 72;
         constexpr float TITLE_OUTLINE_THICKNESS = 3.0f;
 
-        constexpr float MENU_START_Y = 400.0f;
-        constexpr float MENU_ITEM_SPACING = 80.0f;
+        constexpr float MENU_START_Y = 500.0f;
+        constexpr float MENU_ITEM_SPACING = 180.0f;
+        // Scale factor applied to menu button sprites
+        constexpr float MENU_BUTTON_SCALE = 1.75f;
         constexpr unsigned int MENU_FONT_SIZE = 48;
 
         // ==================== Animation Constants ====================

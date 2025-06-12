@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <numeric>
 #include <random>
+#include <tuple>
 
 namespace FishGame
 {
@@ -11,8 +12,8 @@ namespace FishGame
         : State(game)
         , m_titleSprite()
         , m_menuItems()
-        , m_selectedOption(MenuOption::Play)
-        , m_previousOption(MenuOption::Play)
+        , m_selectedOption(MenuOption::NewGame)
+        , m_previousOption(MenuOption::NewGame)
         , m_animationTime(0.0f)
         , m_transitionAlpha(255.0f)
         , m_isTransitioning(false)
@@ -27,8 +28,6 @@ namespace FishGame
     void MenuState::initializeMenu()
     {
         auto& window = getGame().getWindow();
-        auto& font = getGame().getFonts().get(Fonts::Main);
-
         // Setup title sprite
         m_titleSprite.setTexture(
             getGame().getSpriteManager().getTexture(TextureID::GameTitle));
@@ -41,24 +40,19 @@ namespace FishGame
         m_titleSprite.setPosition(window.getSize().x / 2.0f, Constants::TITLE_Y_POSITION);
 
         // Initialize menu items
-        const std::array<std::pair<std::string, MenuAction>, static_cast<size_t>(MenuOption::Count)> menuData = { {
-            {"Play Game", [this]() {
+        const std::array<std::tuple<TextureID, TextureID, MenuAction>, static_cast<size_t>(MenuOption::Count)> menuData = { {
+            {TextureID::NewGame, TextureID::NewGameHover, [this]() {
                 deferAction([this]() {
                     requestStackPop();
                     requestStackPush(StateID::Play);
                 });
             }},
-            {"Settings", [this]() {
+            {TextureID::GameOptions, TextureID::GameOptionsHover, [this]() {
                 deferAction([this]() {
                     requestStackPush(StateID::Settings);
                 });
             }},
-            {"Credits", [this]() {
-                deferAction([this]() {
-                    requestStackPush(StateID::Credits);
-                });
-            }},
-            {"Exit", [this]() {
+            {TextureID::Exit, TextureID::ExitHover, [this]() {
                 deferAction([this]() {
                     requestStackClear();
                 });
@@ -69,20 +63,17 @@ namespace FishGame
         float yPosition = Constants::MENU_START_Y;
 
         std::transform(menuData.begin(), menuData.end(), m_menuItems.begin(),
-            [&font, &window, &yPosition](const auto& data) -> MenuItemType {
+            [this, &window, &yPosition](const auto& data) -> MenuItemType {
                 MenuItemType item;
-                item.text = data.first;
-                item.action = data.second;
+                item.normalTexture = std::get<0>(data);
+                item.hoverTexture = std::get<1>(data);
+                item.action = std::get<2>(data);
 
-                item.textObject.setFont(font);
-                item.textObject.setString(item.text);
-                item.textObject.setCharacterSize(Constants::MENU_FONT_SIZE);
-                item.textObject.setFillColor(Constants::MENU_NORMAL_COLOR);
-
-                // Center each option
-                sf::FloatRect bounds = item.textObject.getLocalBounds();
-                item.textObject.setOrigin(bounds.width / 2.0f, bounds.height / 2.0f);
-                item.textObject.setPosition(window.getSize().x / 2.0f, yPosition);
+                item.sprite.setTexture(getGame().getSpriteManager().getTexture(item.normalTexture));
+                sf::FloatRect bounds = item.sprite.getLocalBounds();
+                item.sprite.setOrigin(bounds.width / 2.0f, bounds.height / 2.0f);
+                item.sprite.setPosition(window.getSize().x / 2.0f, yPosition);
+                item.sprite.setScale(Constants::MENU_BUTTON_SCALE, Constants::MENU_BUTTON_SCALE);
 
                 yPosition += Constants::MENU_ITEM_SPACING;
 
@@ -194,7 +185,7 @@ namespace FishGame
 
         auto hoveredOption = StateUtils::findItemAt(
             m_menuItems, mousePos,
-            [](const auto& item) { return item.textObject.getGlobalBounds(); });
+            [](const auto& item) { return item.sprite.getGlobalBounds(); });
         if (hoveredOption.has_value())
         {
             m_selectedOption = static_cast<MenuOption>(hoveredOption.value());
@@ -209,7 +200,7 @@ namespace FishGame
 
         auto clickedOption = StateUtils::findItemAt(
             m_menuItems, mousePos,
-            [](const auto& item) { return item.textObject.getGlobalBounds(); });
+            [](const auto& item) { return item.sprite.getGlobalBounds(); });
         if (clickedOption.has_value())
         {
             m_selectedOption = static_cast<MenuOption>(clickedOption.value());
@@ -237,13 +228,7 @@ namespace FishGame
         {
             m_transitionAlpha = std::max(0.0f, m_transitionAlpha - m_fadeSpeed * deltaTime.asSeconds());
 
-            // Apply fade to text and sprite elements
-            auto applyAlphaText = [this](sf::Text& text) {
-                sf::Color color = text.getFillColor();
-                color.a = static_cast<sf::Uint8>(m_transitionAlpha);
-                text.setFillColor(color);
-                };
-
+            // Apply fade to sprite elements
             auto applyAlphaSprite = [this](sf::Sprite& sprite) {
                 sf::Color color = sprite.getColor();
                 color.a = static_cast<sf::Uint8>(m_transitionAlpha);
@@ -252,13 +237,14 @@ namespace FishGame
 
             applyAlphaSprite(m_titleSprite);
             std::for_each(m_menuItems.begin(), m_menuItems.end(),
-                [&applyAlphaText](auto& item) { applyAlphaText(item.textObject); });
+                [&applyAlphaSprite](auto& item) { applyAlphaSprite(item.sprite); });
         }
 
         // Animate selected option with pulsing effect
         size_t selectedIndex = static_cast<size_t>(m_selectedOption);
         float scale = 1.0f + m_pulseAmplitude * std::sin(m_animationTime * m_pulseSpeed * 2.0f * Constants::PI);
-        StateUtils::applyPulseEffect(m_menuItems[selectedIndex].textObject, scale);
+        StateUtils::applyPulseEffect(m_menuItems[selectedIndex].sprite,
+            scale * Constants::MENU_BUTTON_SCALE);
     }
 
     void MenuState::render()
@@ -274,7 +260,7 @@ namespace FishGame
         // Render all menu items
         std::for_each(m_menuItems.begin(), m_menuItems.end(),
             [&window](const auto& item) {
-                window.draw(item.textObject);
+                window.draw(item.sprite);
             });
     }
 
@@ -299,14 +285,15 @@ namespace FishGame
     {
         // Reset all options to default appearance
         std::for_each(m_menuItems.begin(), m_menuItems.end(),
-            [](auto& item) {
-                item.textObject.setFillColor(Constants::MENU_NORMAL_COLOR);
-                item.textObject.setScale(1.0f, 1.0f);
+            [this](auto& item) {
+                item.sprite.setTexture(getGame().getSpriteManager().getTexture(item.normalTexture));
+                item.sprite.setScale(Constants::MENU_BUTTON_SCALE, Constants::MENU_BUTTON_SCALE);
             });
 
         // Highlight selected option
         size_t selectedIndex = static_cast<size_t>(m_selectedOption);
-        m_menuItems[selectedIndex].textObject.setFillColor(Constants::MENU_SELECTED_COLOR);
+        m_menuItems[selectedIndex].sprite.setTexture(
+            getGame().getSpriteManager().getTexture(m_menuItems[selectedIndex].hoverTexture));
 
         // Track previous selection for smooth transitions
         m_previousOption = m_selectedOption;

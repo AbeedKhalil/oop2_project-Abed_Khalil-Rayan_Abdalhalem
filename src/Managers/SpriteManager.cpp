@@ -47,7 +47,15 @@ namespace FishGame
         {TextureID::Background, "Background1.png"},
         {TextureID::CoralReef, "Grass.png"},
         {TextureID::KelpForest, "kelp_forest.png"},
-        {TextureID::GameTitle, "GameTitle.png"}
+        {TextureID::GameTitle, "GameTitle.png"},
+
+        // Menu sprites
+        {TextureID::NewGame, "NewGame.png"},
+        {TextureID::NewGameHover, "NewGameHover.png"},
+        {TextureID::GameOptions, "GameOptions.png"},
+        {TextureID::GameOptionsHover, "GameOptionsHover.png"},
+        {TextureID::Exit, "Exit.png"},
+        {TextureID::ExitHover, "ExitHover.png"}
     };
 
     SpriteManager::SpriteManager(ResourceHolder<sf::Texture, TextureID>& textureHolder)

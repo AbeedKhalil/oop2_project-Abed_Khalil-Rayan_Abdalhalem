@@ -16,6 +16,8 @@ namespace FishGame
     class MenuState;
     template<> struct is_state<MenuState> : std::true_type {};
 
+    enum class TextureID;
+
     class MenuState : public State
     {
     public:
@@ -30,9 +32,8 @@ namespace FishGame
     private:
         enum class MenuOption : size_t
         {
-            Play = 0,
-            Settings,
-            Credits,
+            NewGame = 0,
+            GameOptions,
             Exit,
             Count
         };
@@ -41,9 +42,10 @@ namespace FishGame
         template<typename Action>
         struct MenuItem
         {
-            std::string text;
             Action action;
-            sf::Text textObject;
+            sf::Sprite sprite;
+            TextureID normalTexture;
+            TextureID hoverTexture;
         };
 
         using MenuAction = std::function<void()>;
