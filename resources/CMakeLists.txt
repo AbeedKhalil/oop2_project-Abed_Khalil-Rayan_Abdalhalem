@@ -15,3 +15,4 @@ configure_file ("StarFish.png" ${CMAKE_BINARY_DIR} COPYONLY)
 
 configure_file ("Background1.png" ${CMAKE_BINARY_DIR} COPYONLY)
 configure_file ("Grass.png" ${CMAKE_BINARY_DIR} COPYONLY)
+configure_file ("GameTitle.png" ${CMAKE_BINARY_DIR} COPYONLY)
