@@ -81,6 +81,7 @@ namespace FishGame
         // State
         MenuOption m_selectedOption;
         MenuOption m_previousOption;
+        std::optional<MenuOption> m_hoveredOption;
 
         // Animation data
         float m_animationTime;

@@ -14,6 +14,7 @@ namespace FishGame
         , m_menuItems()
         , m_selectedOption(MenuOption::NewGame)
         , m_previousOption(MenuOption::NewGame)
+        , m_hoveredOption(std::nullopt)
         , m_animationTime(0.0f)
         , m_transitionAlpha(255.0f)
         , m_isTransitioning(false)
@@ -153,6 +154,7 @@ namespace FishGame
                 (static_cast<size_t>(m_selectedOption) + static_cast<size_t>(MenuOption::Count) - 1)
                 % static_cast<size_t>(MenuOption::Count)
                 );
+            m_hoveredOption.reset();
             updateOptionText();
             break;
 
@@ -161,6 +163,7 @@ namespace FishGame
             m_selectedOption = static_cast<MenuOption>(
                 (static_cast<size_t>(m_selectedOption) + 1) % static_cast<size_t>(MenuOption::Count)
                 );
+            m_hoveredOption.reset();
             updateOptionText();
             break;
 
@@ -186,11 +189,18 @@ namespace FishGame
         auto hoveredOption = StateUtils::findItemAt(
             m_menuItems, mousePos,
             [](const auto& item) { return item.sprite.getGlobalBounds(); });
+
         if (hoveredOption.has_value())
         {
+            m_hoveredOption = static_cast<MenuOption>(hoveredOption.value());
             m_selectedOption = static_cast<MenuOption>(hoveredOption.value());
-            updateOptionText();
         }
+        else
+        {
+            m_hoveredOption.reset();
+        }
+
+        updateOptionText();
     }
 
     void MenuState::handleMouseClick(const sf::Vector2f& mousePos)
@@ -240,11 +250,17 @@ namespace FishGame
                 [&applyAlphaSprite](auto& item) { applyAlphaSprite(item.sprite); });
         }
 
-        // Animate selected option with pulsing effect
-        size_t selectedIndex = static_cast<size_t>(m_selectedOption);
-        float scale = 1.0f + m_pulseAmplitude * std::sin(m_animationTime * m_pulseSpeed * 2.0f * Constants::PI);
-        StateUtils::applyPulseEffect(m_menuItems[selectedIndex].sprite,
-            scale * Constants::MENU_BUTTON_SCALE);
+        // Animate currently hovered option with pulsing effect
+        if (m_hoveredOption.has_value())
+        {
+            size_t hoveredIndex = static_cast<size_t>(*m_hoveredOption);
+            float scale = 1.0f +
+                m_pulseAmplitude *
+                std::sin(m_animationTime * m_pulseSpeed * 2.0f * Constants::PI);
+            StateUtils::applyPulseEffect(
+                m_menuItems[hoveredIndex].sprite,
+                scale * Constants::MENU_BUTTON_SCALE);
+        }
     }
 
     void MenuState::render()
@@ -290,10 +306,12 @@ namespace FishGame
                 item.sprite.setScale(Constants::MENU_BUTTON_SCALE, Constants::MENU_BUTTON_SCALE);
             });
 
-        // Highlight selected option
-        size_t selectedIndex = static_cast<size_t>(m_selectedOption);
-        m_menuItems[selectedIndex].sprite.setTexture(
-            getGame().getSpriteManager().getTexture(m_menuItems[selectedIndex].hoverTexture));
+        if (m_hoveredOption.has_value())
+        {
+            size_t hoveredIndex = static_cast<size_t>(*m_hoveredOption);
+            m_menuItems[hoveredIndex].sprite.setTexture(
+                getGame().getSpriteManager().getTexture(m_menuItems[hoveredIndex].hoverTexture));
+        }
 
         // Track previous selection for smooth transitions
         m_previousOption = m_selectedOption;
@@ -312,6 +330,7 @@ namespace FishGame
         m_isTransitioning = false;
         m_transitionAlpha = 255.0f;
         m_animationTime = 0.0f;
+        m_hoveredOption.reset();
         updateOptionText();
     }
 }
