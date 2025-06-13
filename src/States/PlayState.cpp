@@ -206,7 +206,7 @@ namespace FishGame
         if (m_isPlayerStunned || getGame().getCurrentState<PauseState>())
             return;
 
-        // Handle controls reversal using STL transform
+        // Handle controls reversal
         sf::Event processedEvent = event;
         if (m_hasControlsReversed && event.type == sf::Event::KeyPressed)
         {
@@ -248,33 +248,59 @@ namespace FishGame
                     });
                 break;
 
+                // Movement keys will be handled in Player::handleInput()
+            case sf::Keyboard::W:
+            case sf::Keyboard::S:
+            case sf::Keyboard::A:
+            case sf::Keyboard::D:
+            case sf::Keyboard::Up:
+            case sf::Keyboard::Down:
+            case sf::Keyboard::Left:
+            case sf::Keyboard::Right:
+                // Re-enable mouse control automatically happens in Player
+                break;
+
             default:
                 break;
             }
             break;
 
-        case sf::Event::MouseButtonPressed:
-            if (processedEvent.mouseButton.button == sf::Mouse::Left)
-            {
-                // No clickable HUD elements currently
-            }
-            break;
-
         case sf::Event::MouseMoved:
         {
-            auto windowSize = getGame().getWindow().getSize();
-            float mouseX = static_cast<float>(event.mouseMove.x);
-            float mouseY = static_cast<float>(event.mouseMove.y);
+            // Get mouse position relative to window
+            sf::Vector2f mousePos(static_cast<float>(event.mouseMove.x),
+                static_cast<float>(event.mouseMove.y));
 
+            // Apply control reversal if active
             if (m_hasControlsReversed)
             {
-                mouseX = windowSize.x - mouseX;
-                mouseY = windowSize.y - mouseY;
+                auto windowSize = getGame().getWindow().getSize();
+                mousePos.x = windowSize.x - mousePos.x;
+                mousePos.y = windowSize.y - mousePos.y;
             }
 
-            m_player->followMouse(sf::Vector2f(mouseX, mouseY));
+            // Convert window coordinates to world coordinates if using camera
+            sf::Vector2f worldPos = getGame().getWindow().mapPixelToCoords(
+                sf::Vector2i(static_cast<int>(mousePos.x), static_cast<int>(mousePos.y)),
+                m_view
+            );
+
+            // Update player target position
+            m_player->setMousePosition(worldPos);
+
+            // Re-enable mouse control when mouse moves
+            m_player->enableMouseControl(true);
         }
         break;
+
+        case sf::Event::MouseButtonPressed:
+            // Re-enable mouse control on click
+            if (processedEvent.mouseButton.button == sf::Mouse::Left ||
+                processedEvent.mouseButton.button == sf::Mouse::Right)
+            {
+                m_player->enableMouseControl(true);
+            }
+            break;
 
         default:
             break;
@@ -1242,6 +1268,16 @@ namespace FishGame
         window.draw(*m_growthMeter);
         window.draw(*m_frenzySystem);
 
+        // If paused, temporarily show cursor
+        if (getGame().getCurrentState<PauseState>())
+        {
+            getGame().getWindow().setMouseCursorVisible(true);
+        }
+        else
+        {
+            getGame().getWindow().setMouseCursorVisible(false);
+        }
+
         // Render HUD texts
         window.draw(m_hud.scoreText);
         window.draw(m_hud.livesText);
@@ -1274,6 +1310,13 @@ namespace FishGame
             resetLevel();
             updateLevelDifficulty();
 
+            // Hide mouse cursor for Feeding Frenzy-style control
+            getGame().getWindow().setMouseCursorVisible(false);
+
+            // Enable mouse control on the player
+            m_player->enableMouseControl(true);
+            m_player->setAutoOrient(true);
+
             m_hud.messageText.setString("");
             m_initialized = true;
         }
@@ -1291,5 +1334,11 @@ namespace FishGame
 
         // Ensure camera starts centered on the player
         updateCamera();
+    }
+
+    void PlayState::onDeactivate()
+    {
+        // Show mouse cursor again when leaving play state
+        getGame().getWindow().setMouseCursorVisible(true);
     }
 }

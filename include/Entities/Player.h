@@ -46,6 +46,11 @@ namespace FishGame
         int getScore() const { return m_score; }
         float getGrowthProgress() const { return m_growthProgress; }
 
+        void enableMouseControl(bool enable);
+        void setMousePosition(const sf::Vector2f& screenPos);
+        bool isMouseControlActive() const { return m_mouseControlActive; }
+        void setAutoOrient(bool enable) { m_autoOrient = enable; }
+
         // Points tracking
         int getPoints() const { return m_points; }
 
@@ -101,6 +106,17 @@ namespace FishGame
         int m_score;
         int m_currentStage;
         float m_growthProgress;
+
+        // Mouse control enhancements
+        bool m_mouseControlActive;
+        sf::Vector2f m_lastMousePosition;
+        sf::Vector2f m_mouseVelocity;
+        static constexpr float m_mouseDeadzone = 2.0f;
+        static constexpr float m_mouseSmoothingFactor = 0.15f;
+
+        // Auto-orientation
+        bool m_autoOrient;
+        static constexpr float m_orientationThreshold = 5.0f;
 
         // Points system
         int m_points;

@@ -17,10 +17,10 @@ namespace FishGame
         constexpr float RAD_TO_DEG = 180.0f / PI;
 
         // ==================== Player Settings ====================
-        constexpr float PLAYER_BASE_SPEED = 600.0f;
+        constexpr float PLAYER_BASE_SPEED = 1200.0f;
         constexpr float PLAYER_ACCELERATION = 10.0f;
         constexpr float PLAYER_DECELERATION = 8.0f;
-        constexpr float PLAYER_MAX_SPEED = 800.0f;
+        constexpr float PLAYER_MAX_SPEED = 1500.0f;
         constexpr float PLAYER_BASE_RADIUS = 20.0f;
         constexpr float PLAYER_GROWTH_FACTOR = 1.5f;
         constexpr float SPEED_BOOST_MULTIPLIER = 1.5f;

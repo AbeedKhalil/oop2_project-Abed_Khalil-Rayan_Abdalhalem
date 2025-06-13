@@ -45,6 +45,7 @@ namespace FishGame
         bool update(sf::Time deltaTime) override;
         void render() override;
         void onActivate() override;
+        void onDeactivate() override;
 
     private:
         // ==================== Type Definitions ====================
