@@ -25,6 +25,10 @@ namespace FishGame
         , m_points(0)
         , m_useMouseControl(false)
         , m_targetPosition(0.0f, 0.0f)
+        , m_mouseControlActive(true)
+        , m_lastMousePosition(m_position)
+        , m_mouseVelocity(0.0f, 0.0f)
+        , m_autoOrient(true)
         , m_growthMeter(nullptr)
         , m_frenzySystem(nullptr)
         , m_powerUpManager(nullptr)
@@ -125,37 +129,39 @@ namespace FishGame
         // Handle input
         handleInput();
 
-        // Calculate effective speed
-        float effectiveSpeed = m_baseSpeed;
-        if (m_speedBoostTimer > sf::Time::Zero)
-            effectiveSpeed *= m_speedMultiplier;
-
-        // Update movement
-        if (m_useMouseControl)
+        // Mouse control movement
+        if (m_mouseControlActive)
         {
-            // Smooth movement towards mouse position
+            // Calculate direction to mouse
             sf::Vector2f direction = m_targetPosition - m_position;
             float distance = std::sqrt(direction.x * direction.x + direction.y * direction.y);
 
-            if (distance > 5.0f)
+            if (distance > m_mouseDeadzone)
             {
-                direction /= distance; // Normalize
+                // Normalize direction
+                direction /= distance;
+
+                // Calculate speed based on power-ups
+                float effectiveSpeed = m_baseSpeed;
+                if (m_speedBoostTimer > sf::Time::Zero)
+                    effectiveSpeed *= m_speedMultiplier;
+
+                // Target velocity
                 sf::Vector2f targetVelocity = direction * effectiveSpeed;
 
-                // Smooth acceleration
-                m_velocity.x += (targetVelocity.x - m_velocity.x) * m_acceleration * deltaTime.asSeconds();
-                m_velocity.y += (targetVelocity.y - m_velocity.y) * m_acceleration * deltaTime.asSeconds();
+                // Smooth velocity transition
+                m_velocity.x = m_velocity.x + (targetVelocity.x - m_velocity.x) * m_mouseSmoothingFactor;
+                m_velocity.y = m_velocity.y + (targetVelocity.y - m_velocity.y) * m_mouseSmoothingFactor;
             }
             else
             {
-                // Decelerate when near target and stop completely when slow enough
+                // Close to target - decelerate smoothly
                 m_velocity *= (1.0f - m_deceleration * deltaTime.asSeconds());
 
-                // Snap to target to avoid jitter once velocity is very small
+                // Stop completely when very slow
                 if (std::abs(m_velocity.x) < 1.0f && std::abs(m_velocity.y) < 1.0f)
                 {
                     m_velocity = sf::Vector2f(0.0f, 0.0f);
-                    m_position = m_targetPosition;
                 }
             }
         }
@@ -174,10 +180,28 @@ namespace FishGame
         // Keep player within window bounds
         constrainToWindow();
 
-        // Check for stage advancement
-        checkStageAdvancement();
+        // Auto-orient sprite based on velocity
+        if (m_autoOrient && m_sprite && m_renderMode == RenderMode::Sprite)
+        {
+            if (std::abs(m_velocity.x) > m_orientationThreshold)
+            {
+                // Face right when moving right, face left when moving left
+                float scaleX = std::abs(m_sprite->getSprite().getScale().x);
+                float scaleY = m_sprite->getSprite().getScale().y;
 
-        // Update visual effects
+                if (m_velocity.x > 0)  // Moving right
+                {
+                    m_sprite->setScale(sf::Vector2f(-scaleX, scaleY));  // Negative to face right
+                }
+                else  // Moving left
+                {
+                    m_sprite->setScale(sf::Vector2f(scaleX, scaleY));   // Positive to face left
+                }
+            }
+        }
+
+        // Rest of the update logic remains the same...
+        checkStageAdvancement();
         updateVisualEffects(deltaTime);
 
         // Update visual representation
@@ -188,7 +212,7 @@ namespace FishGame
         {
             m_sprite->update(deltaTime);
 
-            // Preserve horizontal orientation when applying scale animation
+            // Apply scale animation while preserving orientation
             float sign = (m_sprite->getSprite().getScale().x < 0.0f) ? -1.0f : 1.0f;
             float stageScale = 1.0f;
             if (m_spriteManager)
@@ -218,39 +242,36 @@ namespace FishGame
 
     void Player::handleInput()
     {
-        // Check for mouse control toggle
-        if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
-        {
-            m_useMouseControl = true;
-        }
-
-        // Keyboard controls
+        // Check for keyboard input - this will override mouse control
         sf::Vector2f inputDirection(0.0f, 0.0f);
+        bool keyboardUsed = false;
 
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
         {
             inputDirection.y -= 1.0f;
-            m_useMouseControl = false;
+            keyboardUsed = true;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) || sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
         {
             inputDirection.y += 1.0f;
-            m_useMouseControl = false;
+            keyboardUsed = true;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
         {
             inputDirection.x -= 1.0f;
-            m_useMouseControl = false;
+            keyboardUsed = true;
         }
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
         {
             inputDirection.x += 1.0f;
-            m_useMouseControl = false;
+            keyboardUsed = true;
         }
 
-        // Apply keyboard input if not using mouse
-        if (!m_useMouseControl && (inputDirection.x != 0.0f || inputDirection.y != 0.0f))
+        // Switch to keyboard control if keys are pressed
+        if (keyboardUsed)
         {
+            m_mouseControlActive = false;
+
             // Normalize diagonal movement
             float length = std::sqrt(inputDirection.x * inputDirection.x + inputDirection.y * inputDirection.y);
             if (length > 0.0f)
@@ -260,9 +281,9 @@ namespace FishGame
                 m_velocity = inputDirection * speed;
             }
         }
-        else if (!m_useMouseControl)
+        else if (!m_mouseControlActive)
         {
-            // Apply deceleration when no input
+            // Apply deceleration when no keyboard input
             m_velocity *= 0.9f;
         }
     }
@@ -353,6 +374,24 @@ namespace FishGame
         m_points = 0;
         m_totalFishEaten = 0;
         m_damageTaken = 0;
+    }
+
+    void Player::enableMouseControl(bool enable)
+    {
+        m_mouseControlActive = enable;
+        if (enable)
+        {
+            m_lastMousePosition = m_position;
+            m_mouseVelocity = sf::Vector2f(0.0f, 0.0f);
+        }
+    }
+
+    void Player::setMousePosition(const sf::Vector2f& screenPos)
+    {
+        if (!m_mouseControlActive)
+            return;
+
+        m_targetPosition = screenPos;
     }
 
     bool Player::canEat(const Entity& other) const
