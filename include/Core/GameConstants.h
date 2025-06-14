@@ -17,21 +17,21 @@ namespace FishGame
         constexpr float RAD_TO_DEG = 180.0f / PI;
 
         // ==================== Player Settings ====================
-        constexpr float PLAYER_BASE_SPEED = 1200.0f;
+        constexpr float PLAYER_BASE_SPEED = 600.0f;
         constexpr float PLAYER_ACCELERATION = 10.0f;
         constexpr float PLAYER_DECELERATION = 8.0f;
-        constexpr float PLAYER_MAX_SPEED = 1500.0f;
+        constexpr float PLAYER_MAX_SPEED = 800.0f;
         constexpr float PLAYER_BASE_RADIUS = 20.0f;
         constexpr float PLAYER_GROWTH_FACTOR = 1.5f;
         constexpr float SPEED_BOOST_MULTIPLIER = 1.5f;
 
         // ==================== Points System Values ====================
-        constexpr int SMALL_FISH_POINTS = 2;
-        constexpr int MEDIUM_FISH_POINTS = 5;
-        constexpr int LARGE_FISH_POINTS = 10;
-        constexpr int WHITE_OYSTER_POINTS = 7;
-        constexpr int BLACK_OYSTER_POINTS = 15;
-        constexpr int BARRACUDA_POINTS = 13;
+        constexpr int SMALL_FISH_POINTS = 4;
+        constexpr int MEDIUM_FISH_POINTS = 10;
+        constexpr int LARGE_FISH_POINTS = 20;
+        constexpr int WHITE_OYSTER_POINTS = 14;
+        constexpr int BLACK_OYSTER_POINTS = 30;
+        constexpr int BARRACUDA_POINTS = 26;
         constexpr int ANGELFISH_POINTS = 100;
         constexpr int PUFFERFISH_POINTS = 7;
         constexpr int PUFFERFISH_SCORE_PENALTY = 20;
