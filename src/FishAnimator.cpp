@@ -1,248 +1,106 @@
-//#include "FishAnimator.h"
-//#include <algorithm>
-//#include <stdexcept>
-//
-//namespace FishGame
-//{
-//    // Static animation definitions
-//    const std::unordered_map<std::string, FishAnimator::AnimationData> FishAnimator::m_animationDefinitions = {
-//        // Left-facing animations (original sprites)
-//        {"eatLeft", {0, 0, 6, std::chrono::milliseconds(100), AnimationClip::PlayMode::Loop}},
-//        {"idleLeft", {1, 0, 6, std::chrono::milliseconds(120), AnimationClip::PlayMode::Loop}},
-//        {"swimLeft", {2, 0, 15, std::chrono::milliseconds(80), AnimationClip::PlayMode::Loop}},
-//        {"turnLeft?Right", {3, 0, 5, std::chrono::milliseconds(90), AnimationClip::PlayMode::Once}},
-//        {"turnRight?Left", {3, 4, 5, std::chrono::milliseconds(90), AnimationClip::PlayMode::Once}}, // Reversed
-//    };
-//
-//    FishAnimator::FishAnimator()
-//        : m_texture(nullptr)
-//        , m_currentAnimation(nullptr)
-//        , m_currentAnimationName("")
-//        , m_isPlaying(false)
-//        , m_isPaused(false)
-//        , m_currentFrameIndex(0)
-//        , m_elapsedTime(0)
-//        , m_frameElapsedTime(0)
-//        , m_onAnimationFinished(nullptr)
-//    {
-//    }
-//
-//    bool FishAnimator::initialize(const sf::Texture& spriteSheet)
-//    {
-//        m_texture = &spriteSheet;
-//        m_sprite.setTexture(spriteSheet);
-//
-//        // Build all animations from the sprite sheet
-//        buildAnimations();
-//
-//        // Start with idle animation
-//        play("idleLeft");
-//
-//        return true;
-//    }
-//
-//    void FishAnimator::buildAnimations()
-//    {
-//        // Build left-facing animations from definitions
-//        for (const auto& [name, data] : m_animationDefinitions)
-//        {
-//            auto clip = std::make_unique<AnimationClip>(name, data.playMode);
-//
-//            if (name == "turnRight?Left")
-//            {
-//                // Special case: reverse frames for right-to-left turn
-//                for (int i = data.frameCount - 1; i >= 0; --i)
-//                {
-//                    int col = i;
-//                    int x = col * m_cellWidth + m_gridLineWidth;
-//                    int y = data.row * m_cellHeight + m_gridLineWidth;
-//
-//                    sf::IntRect frameRect(x, y, m_spriteWidth, m_spriteHeight);
-//                    clip->addFrame(frameRect, data.frameDuration);
-//                }
-//            }
-//            else
-//            {
-//                // Normal left-to-right frame order
-//                for (int i = 0; i < data.frameCount; ++i)
-//                {
-//                    int col = data.startFrame + i;
-//                    int x = col * m_cellWidth + m_gridLineWidth;
-//                    int y = data.row * m_cellHeight + m_gridLineWidth;
-//
-//                    sf::IntRect frameRect(x, y, m_spriteWidth, m_spriteHeight);
-//                    clip->addFrame(frameRect, data.frameDuration);
-//                }
-//            }
-//
-//            m_animations[name] = std::move(clip);
-//        }
-//
-//        // Create right-facing animations (horizontally flipped)
-//        m_animations["eatRight"] = createFlippedAnimation(*m_animations["eatLeft"], "eatRight");
-//        m_animations["idleRight"] = createFlippedAnimation(*m_animations["idleLeft"], "idleRight");
-//        m_animations["swimRight"] = createFlippedAnimation(*m_animations["swimLeft"], "swimRight");
-//    }
-//
-//    std::unique_ptr<AnimationClip> FishAnimator::createFlippedAnimation(const AnimationClip& source, const std::string& newName)
-//    {
-//        auto flipped = std::make_unique<AnimationClip>(newName, source.getPlayMode());
-//
-//        for (size_t i = 0; i < source.getFrameCount(); ++i)
-//        {
-//            sf::IntRect rect = source.getFrame(i);
-//            // For flipped animations, we keep the same rect but will flip the sprite
-//            flipped->addFrame(rect, source.getFrameDuration(i));
-//        }
-//
-//        return flipped;
-//    }
-//
-//    void FishAnimator::play(const std::string& animationName)
-//    {
-//        auto it = m_animations.find(animationName);
-//        if (it == m_animations.end())
-//        {
-//            throw std::runtime_error("Animation not found: " + animationName);
-//        }
-//
-//        // Reset if switching animations
-//        if (m_currentAnimationName != animationName)
-//        {
-//            m_currentAnimation = it->second.get();
-//            m_currentAnimationName = animationName;
-//            m_currentFrameIndex = 0;
-//            m_frameElapsedTime = std::chrono::milliseconds(0);
-//            m_elapsedTime = std::chrono::milliseconds(0);
-//
-//            // Apply horizontal flip for right-facing animations
-//            bool shouldFlip = animationName.find("Right") != std::string::npos;
-//            float absScaleX = std::abs(m_sprite.getScale().x);
-//            float scaleY = m_sprite.getScale().y;
-//
-//            if (shouldFlip)
-//            {
-//                m_sprite.setScale(-absScaleX, scaleY);
-//                // Adjust origin for flipped sprite
-//                m_sprite.setOrigin(m_spriteWidth, 0);
-//            }
-//            else
-//            {
-//                m_sprite.setScale(absScaleX, scaleY);
-//                m_sprite.setOrigin(0, 0);
-//            }
-//
-//            updateFrame();
-//        }
-//
-//        m_isPlaying = true;
-//        m_isPaused = false;
-//    }
-//
-//    void FishAnimator::stop()
-//    {
-//        m_isPlaying = false;
-//        m_isPaused = false;
-//        m_currentFrameIndex = 0;
-//        m_frameElapsedTime = std::chrono::milliseconds(0);
-//        m_elapsedTime = std::chrono::milliseconds(0);
-//        updateFrame();
-//    }
-//
-//    void FishAnimator::pause()
-//    {
-//        m_isPaused = true;
-//    }
-//
-//    void FishAnimator::resume()
-//    {
-//        m_isPaused = false;
-//    }
-//
-//    void FishAnimator::update(sf::Time deltaTime)
-//    {
-//        if (!m_isPlaying || m_isPaused || !m_currentAnimation)
-//            return;
-//
-//        auto deltaMs = std::chrono::milliseconds(deltaTime.asMilliseconds());
-//        m_frameElapsedTime += deltaMs;
-//        m_elapsedTime += deltaMs;
-//
-//        // Check if we need to advance to next frame
-//        if (m_frameElapsedTime >= m_currentAnimation->getFrameDuration(m_currentFrameIndex))
-//        {
-//            m_frameElapsedTime = std::chrono::milliseconds(0);
-//            m_currentFrameIndex++;
-//
-//            // Handle animation completion
-//            if (m_currentFrameIndex >= m_currentAnimation->getFrameCount())
-//            {
-//                if (m_currentAnimation->getPlayMode() == AnimationClip::PlayMode::Once)
-//                {
-//                    m_isPlaying = false;
-//                    m_currentFrameIndex = m_currentAnimation->getFrameCount() - 1; // Stay on last frame
-//
-//                    if (m_onAnimationFinished)
-//                    {
-//                        m_onAnimationFinished();
-//                    }
-//                }
-//                else // Loop
-//                {
-//                    m_currentFrameIndex = 0;
-//                    m_elapsedTime = std::chrono::milliseconds(0);
-//                }
-//            }
-//
-//            updateFrame();
-//        }
-//    }
-//
-//    void FishAnimator::updateFrame()
-//    {
-//        if (!m_currentAnimation || m_currentAnimation->getFrameCount() == 0)
-//            return;
-//
-//        m_sprite.setTextureRect(m_currentAnimation->getFrame(m_currentFrameIndex));
-//    }
-//
-//    void FishAnimator::setPosition(float x, float y)
-//    {
-//        m_sprite.setPosition(x, y);
-//    }
-//
-//    void FishAnimator::setPosition(const sf::Vector2f& position)
-//    {
-//        m_sprite.setPosition(position);
-//    }
-//
-//    void FishAnimator::setScale(float scaleX, float scaleY)
-//    {
-//        // Preserve flip state when setting scale
-//        bool isFlipped = m_sprite.getScale().x < 0;
-//        float finalScaleX = isFlipped ? -std::abs(scaleX) : std::abs(scaleX);
-//        m_sprite.setScale(finalScaleX, scaleY);
-//    }
-//
-//    void FishAnimator::setScale(const sf::Vector2f& scale)
-//    {
-//        setScale(scale.x, scale.y);
-//    }
-//
-//    void FishAnimator::setOrigin(float x, float y)
-//    {
-//        // Note: Origin is handled automatically for flipped sprites in play()
-//        // This method is for custom origin adjustments
-//        m_sprite.setOrigin(x, y);
-//    }
-//
-//    void FishAnimator::setColor(const sf::Color& color)
-//    {
-//        m_sprite.setColor(color);
-//    }
-//
-//    void FishAnimator::draw(sf::RenderTarget& target, sf::RenderStates states) const
-//    {
-//        target.draw(m_sprite, states);
-//    }
-//}
+#include "FishAnimator.h"
+
+using namespace sf;
+
+namespace              // FishAnimator.cpp
+{
+    // sprite size inside the grid
+    constexpr int CELL_W = 122;   // width  of one frame
+    constexpr int CELL_H = 102;   // height of one frame
+    // thickness of the separating grid lines
+    constexpr int GRID = 2;
+}
+
+FishAnimator::FishAnimator(const Texture& texture) : m_texture(texture)
+{
+    m_sprite.setTexture(m_texture);
+    buildAnimations();
+}
+
+void FishAnimator::buildAnimations()
+{
+    auto makeClip = [&](int row, int start, int count, Time dur,
+        bool loop = true, bool reverse = false) -> Clip
+        {
+            Clip c;
+            c.frameTime = dur;
+            c.loop = loop;
+            for (int i = 0; i < count; ++i)
+            {
+                int col = reverse ? start + count - 1 - i : start + i;
+                IntRect rect(GRID + col * (CELL_W + GRID),
+                    GRID + row * (CELL_H + GRID),
+                    CELL_W, CELL_H);
+                c.frames.push_back(rect);
+            }
+            return c;
+        };
+
+    m_clips["eatLeft"] = makeClip(0, 0, 6, milliseconds(100));
+    m_clips["idleLeft"] = makeClip(1, 0, 6, milliseconds(120));
+    m_clips["swimLeft"] = makeClip(2, 0, 15, milliseconds(80));
+    m_clips["turnLeftToRight"] = makeClip(3, 0, 5, milliseconds(90), /*loop*/ false);
+    m_clips["turnRightToLeft"] = makeClip(3, 0, 5, milliseconds(90), /*loop*/ false, /*reverse*/ true);
+
+
+    // Create right-facing versions
+    auto copyFlip = [&](const std::string& left, const std::string& right)
+        {
+            Clip c = m_clips[left];
+            c.flipped = true;
+            m_clips[right] = std::move(c);
+        };
+
+    copyFlip("eatLeft", "eatRight");
+    copyFlip("idleLeft", "idleRight");
+    copyFlip("swimLeft", "swimRight");
+}
+
+void FishAnimator::play(const std::string& name)
+{
+    auto it = m_clips.find(name);
+    if (it == m_clips.end())
+        return;
+
+    m_current = &it->second;
+    m_index = 0;
+    m_elapsed = Time::Zero;
+
+    m_sprite.setTextureRect(m_current->frames[0]);
+    if (m_current->flipped)
+    {
+        m_sprite.setOrigin(static_cast<float>(CELL_W), 0.f);
+        m_sprite.setScale(-1.f, 1.f);
+    }
+    else
+    {
+        m_sprite.setOrigin(0.f, 0.f);
+        m_sprite.setScale(1.f, 1.f);
+    }
+}
+
+void FishAnimator::update(Time dt)
+{
+    if (!m_current)
+        return;
+
+    m_elapsed += dt;
+    if (m_elapsed >= m_current->frameTime)
+    {
+        m_elapsed -= m_current->frameTime;
+        ++m_index;
+        if (m_index >= m_current->frames.size())
+        {
+            if (m_current->loop)
+                m_index = 0;
+            else
+                m_index = m_current->frames.size() - 1;
+        }
+        m_sprite.setTextureRect(m_current->frames[m_index]);
+    }
+}
+
+void FishAnimator::draw(RenderTarget& target, RenderStates states) const
+{
+    target.draw(m_sprite, states);
+}
