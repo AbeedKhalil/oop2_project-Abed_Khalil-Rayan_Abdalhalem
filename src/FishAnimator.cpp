@@ -5,14 +5,11 @@ using namespace sf;
 namespace
 {
     // Sprite sheet layout constants
-    // Frames are laid out on a single horizontal line starting at (1,1)
     constexpr int START_X = 1;
     constexpr int START_Y = 1;
 
     // Size of each frame in the sheet
     constexpr int FRAME_W = 126;
-    // The previous sheet used a cell height of 102px.  The updated sprites have
-    // the same vertical size so we keep that value here.
     constexpr int FRAME_H = 102;
 }
 

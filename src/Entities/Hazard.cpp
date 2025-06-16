@@ -161,6 +161,9 @@ namespace FishGame
         , m_floatAnimation(0.0f)
         , m_tentacleWave(0.0f)
         , m_stunDuration(sf::seconds(m_stunEffectDuration))
+        , m_frame(0)
+        , m_frameTimer(sf::Time::Zero)
+        , m_frameWidth(0)
     {
         m_radius = 15.0f;
 
@@ -190,6 +193,12 @@ namespace FishGame
             sprite->configure(config);
             setSpriteComponent(std::move(sprite));
             setRenderMode(RenderMode::Sprite);
+
+            // Set initial frame
+            m_texture = &spriteManager.getTexture(TextureID::Jellyfish);
+            m_frameWidth = static_cast<int>(m_texture->getSize().x) - 2;
+            sf::IntRect rect(1, 1, m_frameWidth, m_frameHeight);
+            getSpriteComponent()->setTextureRect(rect);
         }
     }
 
@@ -201,6 +210,20 @@ namespace FishGame
         if (getRenderMode() == RenderMode::Sprite && getSpriteComponent())
         {
             getSpriteComponent()->update(deltaTime);
+
+            // Advance sprite animation
+            m_frameTimer += deltaTime;
+            if (m_frameTimer.asSeconds() >= m_frameTime)
+            {
+                m_frameTimer -= sf::seconds(m_frameTime);
+                m_frame = (m_frame + 1) % m_frameCount;
+                if (m_texture)
+                {
+                    int y = 1 + m_frame * m_frameHeight;
+                    sf::IntRect rect(1, y, m_frameWidth, m_frameHeight);
+                    getSpriteComponent()->setTextureRect(rect);
+                }
+            }
         }
 
         // Floating movement
