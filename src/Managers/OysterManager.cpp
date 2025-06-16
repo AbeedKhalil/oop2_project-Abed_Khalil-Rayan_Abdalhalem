@@ -124,6 +124,7 @@ namespace FishGame
             }
             break;
         }
+        m_isOpen = (m_state == State::Open);
     }
 
     void PermanentOyster::updateSprite()

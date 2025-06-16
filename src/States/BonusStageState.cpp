@@ -294,7 +294,7 @@ namespace FishGame
         // Check collisions with oysters
         std::for_each(m_bonusItems.begin(), m_bonusItems.end(),
             [this](auto& item) {
-                if (PearlOyster* oyster = dynamic_cast<PearlOyster*>(item.get()))
+                if (auto* oyster = dynamic_cast<PearlOyster*>(item.get()))
                 {
                     if (oyster->isOpen() && CollisionDetector::checkCircleCollision(*m_player, *oyster))
                     {
@@ -307,6 +307,16 @@ namespace FishGame
                         objStream << m_objective.description << " (" << m_objective.currentCount
                             << "/" << m_objective.targetCount << ")";
                         m_objectiveText.setString(objStream.str());
+                    }
+                    else if (auto* perm = dynamic_cast<PermanentOyster*>(oyster))
+                    {
+                        if (perm->canDamagePlayer() &&
+                            CollisionDetector::checkCircleCollision(*m_player, *perm))
+                        {
+                            // Player caught by closing oyster - stage failed
+                            m_objective.currentCount = 0;
+                            completeStage();
+                        }
                     }
                 }
             });
