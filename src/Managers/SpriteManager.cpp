@@ -10,9 +10,9 @@ namespace FishGame
     // Static texture file mappings
     const SpriteManager::TextureMap SpriteManager::s_textureFiles = {
         // Player textures
-        {TextureID::PlayerSmall, "PlayerFish.png"},
-        {TextureID::PlayerMedium, "PlayerFish.png"},
-        {TextureID::PlayerLarge, "PlayerFish.png"},
+        {TextureID::PlayerSmall, "PlayerFishSheet.png"},
+        {TextureID::PlayerMedium, "PlayerFishSheet.png"},
+        {TextureID::PlayerLarge, "PlayerFishSheet.png"},
 
         // Enemy fish
         {TextureID::SmallFish, "SmallFish.png"},

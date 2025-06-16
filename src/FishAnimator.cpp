@@ -22,6 +22,20 @@ FishAnimator::FishAnimator(const Texture& texture) : m_texture(texture)
     buildAnimations();
 }
 
+void FishAnimator::setScale(const Vector2f& scale)
+{
+    m_scale = scale;
+    applyScale();
+}
+
+void FishAnimator::applyScale()
+{
+    if (m_current && m_current->flipped)
+        m_sprite.setScale(-m_scale.x, m_scale.y);
+    else
+        m_sprite.setScale(m_scale);
+}
+
 void FishAnimator::buildAnimations()
 {
     auto makeClip = [&](int startFrame, int count, Time dur,
@@ -69,6 +83,7 @@ void FishAnimator::play(const std::string& name)
         return;
 
     m_current = &it->second;
+    m_currentName = name;
     m_index = 0;
     m_elapsed = Time::Zero;
 
@@ -76,12 +91,12 @@ void FishAnimator::play(const std::string& name)
     if (m_current->flipped)
     {
         m_sprite.setOrigin(static_cast<float>(FRAME_W), 0.f);
-        m_sprite.setScale(-1.f, 1.f);
+        applyScale();
     }
     else
     {
         m_sprite.setOrigin(0.f, 0.f);
-        m_sprite.setScale(1.f, 1.f);
+        applyScale();
     }
 }
 
