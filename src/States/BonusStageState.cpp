@@ -4,6 +4,7 @@
 #include "SpecialFish.h"
 #include "CollisionDetector.h"
 #include "GameConstants.h"
+#include "OysterManager.h"
 #include <algorithm>
 #include <sstream>
 #include <iomanip>
@@ -387,8 +388,12 @@ namespace FishGame
     void BonusStageState::spawnTreasureItems()
     {
         std::generate_n(std::back_inserter(m_bonusItems), 3, [this] {
-            auto oyster = std::make_unique<PearlOyster>();
-            oyster->setPosition(m_xDist(m_randomEngine), m_yDist(m_randomEngine));
+            auto oyster = std::make_unique<PermanentOyster>();
+            float x = m_xDist(m_randomEngine);
+            float y = static_cast<float>(getGame().getWindow().getSize().y) - 80.0f;
+            oyster->setPosition(x, y);
+            oyster->m_baseY = y;
+            oyster->initializeSprites(getGame().getSpriteManager());
             return oyster;
             });
     }
