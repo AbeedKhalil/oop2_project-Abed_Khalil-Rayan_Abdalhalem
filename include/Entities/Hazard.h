@@ -102,5 +102,14 @@ namespace FishGame
 
         static constexpr float m_pushDistance = 15.0f;
         static constexpr float m_pushForce = 300.0f;
+
+        // Sprite animation
+        int m_frame;
+        sf::Time m_frameTimer;
+        static constexpr int m_frameCount = 17;
+        static constexpr float m_frameTime = 0.1f; // seconds per frame
+        static constexpr int m_frameHeight = 197;
+        int m_frameWidth{ 0 };
+        const sf::Texture* m_texture{ nullptr };
     };
 }

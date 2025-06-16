@@ -44,6 +44,7 @@ namespace FishGame
         void setScale(const sf::Vector2f& scale);
         void setColor(const sf::Color& color);
         void setRotation(float angle);
+        void setTextureRect(const sf::IntRect& rect);
 
         // Getters
         const sf::Sprite& getSprite() const { return m_sprite; }

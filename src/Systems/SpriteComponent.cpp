@@ -160,6 +160,20 @@ namespace FishGame
     }
 
     template<typename OwnerType>
+    void SpriteComponent<OwnerType>::setTextureRect(const sf::IntRect& rect)
+    {
+        m_sprite.setTextureRect(rect);
+
+        // Re-center origin since local bounds changed. If a custom origin is
+        // configured use that, otherwise default to the center of the sprite.
+        sf::FloatRect bounds = m_sprite.getLocalBounds();
+        if (m_config.origin.x != 0 || m_config.origin.y != 0)
+            m_sprite.setOrigin(m_config.origin);
+        else
+            m_sprite.setOrigin(bounds.width / 2.f, bounds.height / 2.f);
+    }
+
+    template<typename OwnerType>
     void SpriteComponent<OwnerType>::applyFlashEffect(const sf::Color& color, float intensity)
     {
         m_flashColor = color;
