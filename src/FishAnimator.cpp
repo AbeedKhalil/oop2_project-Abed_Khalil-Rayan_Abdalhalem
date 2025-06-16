@@ -88,16 +88,12 @@ void FishAnimator::play(const std::string& name)
     m_elapsed = Time::Zero;
 
     m_sprite.setTextureRect(m_current->frames[0]);
-    if (m_current->flipped)
-    {
-        m_sprite.setOrigin(static_cast<float>(FRAME_W), 0.f);
-        applyScale();
-    }
-    else
-    {
-        m_sprite.setOrigin(0.f, 0.f);
-        applyScale();
-    }
+    // Always center the origin so the animator position matches the
+   // logical entity center.  Flipping is handled via scale in
+   // applyScale().
+    m_sprite.setOrigin(static_cast<float>(FRAME_W) / 2.f,
+        static_cast<float>(FRAME_H) / 2.f);
+    applyScale();
 }
 
 void FishAnimator::update(Time dt)
