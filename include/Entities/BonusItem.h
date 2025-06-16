@@ -114,7 +114,7 @@ namespace FishGame
         static constexpr int m_whitePearlPoints = 100;
         static constexpr int m_blackPearlPoints = 500;
         static constexpr float m_maxOpenAngle = 45.0f;
-        static constexpr float m_blackPearlChance = 0.2f;
+        static constexpr float m_blackPearlChance = 0.05f;
 
         // Random number generation
         static std::mt19937 s_randomEngine;
