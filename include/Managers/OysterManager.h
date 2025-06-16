@@ -7,7 +7,7 @@
 
 namespace FishGame
 {
-    // Enhanced PearlOyster that can damage player when closed
+    // Enhanced PearlOyster that can damage entities while closing
     class PermanentOyster : public PearlOyster
     {
     public:
@@ -22,7 +22,8 @@ namespace FishGame
 
         // New methods for permanent oysters
         void reset();
-        bool canDamagePlayer() const { return m_state == State::Closing && !m_recentlyCollected; }
+        // Damage any entity that remains when the oyster is closing
+        bool canDamagePlayer() const { return m_state == State::Closing; }
         bool canBeEaten() const { return m_state == State::Open && !m_recentlyCollected; }
 
         // Growth points when eaten
