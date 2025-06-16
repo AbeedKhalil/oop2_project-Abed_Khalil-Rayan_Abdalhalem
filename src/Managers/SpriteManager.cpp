@@ -28,8 +28,10 @@ namespace FishGame
 
         // Bonus items
         {TextureID::Starfish, "StarFish.png"},
-        {TextureID::PearlOysterClosed, "oyster_closed.png"},
-        {TextureID::PearlOysterOpen, "oyster_open.png"},
+        {TextureID::PearlOysterClosed, "Oyster.png"},
+        {TextureID::PearlOysterOpen, "Oyster.png"},
+        {TextureID::WhitePearl, "WhitePearl.png"},
+        {TextureID::BlackPearl, "BlackPearl.png"},
 
         // Hazards
         {TextureID::Bomb, "Bomb.png"},
