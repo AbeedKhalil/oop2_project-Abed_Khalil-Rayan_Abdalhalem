@@ -2,13 +2,18 @@
 
 using namespace sf;
 
-namespace              // FishAnimator.cpp
+namespace
 {
-    // sprite size inside the grid
-    constexpr int CELL_W = 122;   // width  of one frame
-    constexpr int CELL_H = 102;   // height of one frame
-    // thickness of the separating grid lines
-    constexpr int GRID = 2;
+    // Sprite sheet layout constants
+    // Frames are laid out on a single horizontal line starting at (1,1)
+    constexpr int START_X = 1;
+    constexpr int START_Y = 1;
+
+    // Size of each frame in the sheet
+    constexpr int FRAME_W = 126;
+    // The previous sheet used a cell height of 102px.  The updated sprites have
+    // the same vertical size so we keep that value here.
+    constexpr int FRAME_H = 102;
 }
 
 FishAnimator::FishAnimator(const Texture& texture) : m_texture(texture)
@@ -19,7 +24,7 @@ FishAnimator::FishAnimator(const Texture& texture) : m_texture(texture)
 
 void FishAnimator::buildAnimations()
 {
-    auto makeClip = [&](int row, int start, int count, Time dur,
+    auto makeClip = [&](int startFrame, int count, Time dur,
         bool loop = true, bool reverse = false) -> Clip
         {
             Clip c;
@@ -27,20 +32,21 @@ void FishAnimator::buildAnimations()
             c.loop = loop;
             for (int i = 0; i < count; ++i)
             {
-                int col = reverse ? start + count - 1 - i : start + i;
-                IntRect rect(GRID + col * (CELL_W + GRID),
-                    GRID + row * (CELL_H + GRID),
-                    CELL_W, CELL_H);
+                int index = reverse ? startFrame + count - 1 - i : startFrame + i;
+                IntRect rect(START_X + index * FRAME_W,
+                    START_Y,
+                    FRAME_W, FRAME_H);
                 c.frames.push_back(rect);
             }
             return c;
         };
 
-    m_clips["eatLeft"] = makeClip(0, 0, 6, milliseconds(100));
-    m_clips["idleLeft"] = makeClip(1, 0, 6, milliseconds(120));
-    m_clips["swimLeft"] = makeClip(2, 0, 15, milliseconds(80));
-    m_clips["turnLeftToRight"] = makeClip(3, 0, 5, milliseconds(90), /*loop*/ false);
-    m_clips["turnRightToLeft"] = makeClip(3, 0, 5, milliseconds(90), /*loop*/ false, /*reverse*/ true);
+    // Frame ranges follow the updated sprite sheet layout
+    m_clips["eatLeft"] = makeClip(0, 6, milliseconds(100));
+    m_clips["idleLeft"] = makeClip(6, 1, milliseconds(120));
+    m_clips["swimLeft"] = makeClip(7, 15, milliseconds(80));
+    m_clips["turnLeftToRight"] = makeClip(22, 5, milliseconds(90), /*loop*/ false);
+    m_clips["turnRightToLeft"] = makeClip(22, 5, milliseconds(90), /*loop*/ false, /*reverse*/ true);
 
 
     // Create right-facing versions
@@ -69,7 +75,7 @@ void FishAnimator::play(const std::string& name)
     m_sprite.setTextureRect(m_current->frames[0]);
     if (m_current->flipped)
     {
-        m_sprite.setOrigin(static_cast<float>(CELL_W), 0.f);
+        m_sprite.setOrigin(static_cast<float>(FRAME_W), 0.f);
         m_sprite.setScale(-1.f, 1.f);
     }
     else

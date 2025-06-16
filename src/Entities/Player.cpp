@@ -223,7 +223,7 @@ namespace FishGame
                 case FishSize::Small:
                     stageScale = cfg.small;
                     break;
-                case FishSize::Medium:
+                case FishSize::Medium: 
                     stageScale = (cfg.medium) + 0.18f;
                     break;
                 case FishSize::Large:
