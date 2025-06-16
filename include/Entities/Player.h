@@ -3,6 +3,9 @@
 #include "GameConstants.h"
 #include "Fish.h"
 #include "SpriteManager.h"
+#include "FishAnimator.h"
+#include <memory>
+#include <string>
 #include "GrowthMeter.h"
 #include "FrenzySystem.h"
 #include "PowerUp.h"
@@ -182,5 +185,10 @@ namespace FishGame
         // Damage flash
         sf::Color m_damageFlashColor;
         float m_damageFlashIntensity;
+
+        // Animation
+        std::unique_ptr<FishAnimator> m_animator;
+        std::string m_currentAnimation;
+        bool m_facingRight{ false };
     };
 }

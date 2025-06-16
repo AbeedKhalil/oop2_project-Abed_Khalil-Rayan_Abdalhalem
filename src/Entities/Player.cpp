@@ -3,6 +3,7 @@
 #include "BonusItem.h"
 #include "PowerUp.h"
 #include "SpecialFish.h"
+#include "FishAnimator.h"
 #include "CollisionDetector.h"
 #include "GenericFish.h"
 #include <SFML/Window.hpp>
@@ -46,6 +47,9 @@ namespace FishGame
         , m_eatAnimationScale(1.0f)
         , m_damageFlashColor(sf::Color::White)
         , m_damageFlashIntensity(0.0f)
+        , m_animator(nullptr)
+        , m_currentAnimation()
+        , m_facingRight(false)
     {
         m_radius = m_baseRadius;
         m_shape.setFillColor(sf::Color::Yellow);
@@ -77,24 +81,12 @@ namespace FishGame
     {
         m_spriteManager = &spriteManager;
 
-        auto sprite = spriteManager.createSpriteComponent(static_cast<Entity*>(this), getTextureID());
-        if (sprite)
-        {
-            auto playerConfig = spriteManager.getSpriteConfig<Player>(getTextureID(), getCurrentFishSize());
-
-            SpriteConfig<Entity> entityConfig;
-            entityConfig.textureName = std::move(playerConfig.textureName);
-            entityConfig.baseSize = playerConfig.baseSize;
-            entityConfig.origin = playerConfig.origin;
-            entityConfig.scaleMultiplier = playerConfig.scaleMultiplier;
-            entityConfig.maintainAspectRatio = playerConfig.maintainAspectRatio;
-            entityConfig.textureRect = playerConfig.textureRect;
-            entityConfig.rotationOffset = playerConfig.rotationOffset;
-
-            sprite->configure(entityConfig);
-            setSpriteComponent(std::move(sprite));
-            setRenderMode(RenderMode::Sprite);
-        }
+        const sf::Texture& tex = spriteManager.getTexture(getTextureID());
+        m_animator = std::make_unique<FishAnimator>(tex);
+        m_animator->setPosition(m_position);
+        setRenderMode(RenderMode::Sprite);
+        m_currentAnimation = "idleLeft";
+        m_animator->play(m_currentAnimation);
     }
 
     TextureID Player::getTextureID() const
@@ -181,21 +173,14 @@ namespace FishGame
         constrainToWindow();
 
         // Auto-orient sprite based on velocity
-        if (m_autoOrient && m_sprite && m_renderMode == RenderMode::Sprite)
+        if (m_autoOrient && m_animator && m_renderMode == RenderMode::Sprite)
         {
             if (std::abs(m_velocity.x) > m_orientationThreshold)
             {
-                // Face right when moving right, face left when moving left
-                float scaleX = std::abs(m_sprite->getSprite().getScale().x);
-                float scaleY = m_sprite->getSprite().getScale().y;
-
-                if (m_velocity.x > 0)  // Moving right
+                bool newFacingRight = m_velocity.x > 0;
+                if (newFacingRight != m_facingRight)
                 {
-                    m_sprite->setScale(sf::Vector2f(-scaleX, scaleY));  // Negative to face right
-                }
-                else  // Moving left
-                {
-                    m_sprite->setScale(sf::Vector2f(scaleX, scaleY));   // Positive to face left
+                    m_facingRight = newFacingRight;
                 }
             }
         }
@@ -208,12 +193,10 @@ namespace FishGame
         m_shape.setPosition(m_position);
         m_shape.setScale(m_eatAnimationScale, m_eatAnimationScale);
 
-        if (m_renderMode == RenderMode::Sprite && m_sprite)
+        if (m_renderMode == RenderMode::Sprite && m_animator)
         {
-            m_sprite->update(deltaTime);
+            m_animator->update(deltaTime);
 
-            // Apply scale animation while preserving orientation
-            float sign = (m_sprite->getSprite().getScale().x < 0.0f) ? -1.0f : 1.0f;
             float stageScale = 1.0f;
             if (m_spriteManager)
             {
@@ -223,7 +206,7 @@ namespace FishGame
                 case FishSize::Small:
                     stageScale = cfg.small;
                     break;
-                case FishSize::Medium: 
+                case FishSize::Medium:
                     stageScale = (cfg.medium) + 0.18f;
                     break;
                 case FishSize::Large:
@@ -235,8 +218,23 @@ namespace FishGame
                 }
             }
 
-            m_sprite->setScale(sf::Vector2f(sign * stageScale * m_eatAnimationScale,
+            m_animator->setScale(sf::Vector2f(stageScale * m_eatAnimationScale,
                 stageScale * m_eatAnimationScale));
+
+            std::string desired;
+            float speed = std::sqrt(m_velocity.x * m_velocity.x + m_velocity.y * m_velocity.y);
+            if (speed > 10.f)
+                desired = m_facingRight ? "swimRight" : "swimLeft";
+            else
+                desired = m_facingRight ? "idleRight" : "idleLeft";
+
+            if (desired != m_currentAnimation)
+            {
+                m_animator->play(desired);
+                m_currentAnimation = desired;
+            }
+
+            m_animator->setPosition(m_position);
         }
     }
 
@@ -424,16 +422,7 @@ namespace FishGame
 
         // Only eat if the target intersects with the player's mouth area
         sf::Vector2f mouthOffset(m_radius, 0.0f);
-        bool facingRight = true;
-        if (m_sprite)
-        {
-            facingRight = m_sprite->getSprite().getScale().x < 0.0f;
-        }
-        else if (m_velocity.x != 0.0f)
-        {
-            facingRight = m_velocity.x > 0.0f;
-        }
-        mouthOffset.x = facingRight ? mouthOffset.x : -mouthOffset.x;
+        mouthOffset.x = m_facingRight ? mouthOffset.x : -mouthOffset.x;
 
         sf::Vector2f mouthPos = m_position + mouthOffset * 0.8f;
         float mouthRadius = m_radius * 0.5f;
@@ -495,6 +484,13 @@ namespace FishGame
             if (m_frenzySystem)
             {
                 m_frenzySystem->registerFishEaten();
+            }
+
+            if (m_animator)
+            {
+                std::string eatAnim = m_facingRight ? "eatRight" : "eatLeft";
+                m_animator->play(eatAnim);
+                m_currentAnimation = eatAnim;
             }
 
             return true;
@@ -622,6 +618,13 @@ namespace FishGame
     {
         m_eatAnimationScale = 1.3f;
 
+        if (m_animator)
+        {
+            std::string eatAnim = m_facingRight ? "eatRight" : "eatLeft";
+            m_animator->play(eatAnim);
+            m_currentAnimation = eatAnim;
+        }
+
         m_activeEffects.push_back({
             1.2f,
             0.0f,
@@ -664,9 +667,9 @@ namespace FishGame
             }
         }
 
-        if (m_renderMode == RenderMode::Sprite && m_sprite)
+        if (m_renderMode == RenderMode::Sprite && m_animator)
         {
-            target.draw(*m_sprite, states);
+            target.draw(*m_animator, states);
         }
         else
         {
@@ -696,20 +699,26 @@ namespace FishGame
             m_growthMeter->setStage(m_currentStage);
         }
 
-        if (m_sprite && m_renderMode == RenderMode::Sprite && m_spriteManager)
+        if (m_animator && m_renderMode == RenderMode::Sprite && m_spriteManager)
         {
-            auto playerConfig = m_spriteManager->getSpriteConfig<Player>(getTextureID(), getCurrentFishSize());
-
-            SpriteConfig<Entity> entityConfig;
-            entityConfig.textureName = std::move(playerConfig.textureName);
-            entityConfig.baseSize = playerConfig.baseSize;
-            entityConfig.origin = playerConfig.origin;
-            entityConfig.scaleMultiplier = playerConfig.scaleMultiplier;
-            entityConfig.maintainAspectRatio = playerConfig.maintainAspectRatio;
-            entityConfig.textureRect = playerConfig.textureRect;
-            entityConfig.rotationOffset = playerConfig.rotationOffset;
-
-            m_sprite->configure(entityConfig);
+            float stageScale = 1.0f;
+            const auto& cfg = m_spriteManager->getScaleConfig();
+            switch (getCurrentFishSize())
+            {
+            case FishSize::Small:
+                stageScale = cfg.small;
+                break;
+            case FishSize::Medium:
+                stageScale = (cfg.medium) + 0.18f;
+                break;
+            case FishSize::Large:
+                stageScale = (cfg.large) + 0.4f;
+                break;
+            default:
+                stageScale = 1.0f;
+                break;
+            }
+            m_animator->setScale(sf::Vector2f(stageScale, stageScale));
         }
 
         m_activeEffects.push_back({
