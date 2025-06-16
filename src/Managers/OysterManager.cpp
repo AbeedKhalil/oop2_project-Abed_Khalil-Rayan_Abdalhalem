@@ -42,10 +42,7 @@ namespace FishGame
             // Hide pearl
             m_hasPearlSprite = false;
 
-            // Begin closing
-            m_state = State::Closing;
-            m_frameTimer = sf::Time::Zero;
-            m_stateTimer = sf::Time::Zero;
+            // Keep oyster open; it will close automatically when the timer expires
         }
     }
 
@@ -75,7 +72,8 @@ namespace FishGame
 
     void PermanentOyster::updateAnimation(sf::Time dt)
     {
-        const sf::Time frameDur = sf::seconds(m_frameTime);
+        const sf::Time openFrameDur = sf::seconds(m_frameTime);
+        const sf::Time closeFrameDur = sf::seconds(m_closingFrameTime);
 
         switch (m_state)
         {
@@ -90,9 +88,9 @@ namespace FishGame
             break;
         case State::Opening:
             m_frameTimer += dt;
-            if (m_frameTimer >= frameDur)
+            if (m_frameTimer >= openFrameDur)
             {
-                m_frameTimer -= frameDur;
+                m_frameTimer -= openFrameDur;
                 if (++m_frame >= m_frameCount - 1)
                 {
                     m_frame = m_frameCount - 1;
@@ -113,9 +111,9 @@ namespace FishGame
             break;
         case State::Closing:
             m_frameTimer += dt;
-            if (m_frameTimer >= frameDur)
+            if (m_frameTimer >= closeFrameDur)
             {
-                m_frameTimer -= frameDur;
+                m_frameTimer -= closeFrameDur;
                 if (--m_frame <= 0)
                 {
                     m_frame = 0;
@@ -148,24 +146,21 @@ namespace FishGame
     void PermanentOyster::spawnPearl()
     {
         float r = s_pearlChance(s_randomEngine);
-        if (r < 0.60f)
+        if (r < 0.80f)
         {
+            // White pearl
             m_hasBlackPearl = false;
             m_points = m_whitePearlPoints;
             m_pearlSprite.setTexture(*m_whitePearlTex);
-            m_hasPearlSprite = true;
-        }
-        else if (r < 0.75f)
-        {
-            m_hasBlackPearl = true;
-            m_points = m_blackPearlPoints;
-            m_pearlSprite.setTexture(*m_blackPearlTex);
-            m_hasPearlSprite = true;
         }
         else
         {
-            m_hasPearlSprite = false;
+            // Black pearl
+            m_hasBlackPearl = true;
+            m_points = m_blackPearlPoints;
+            m_pearlSprite.setTexture(*m_blackPearlTex);
         }
+        m_hasPearlSprite = true;
     }
 
     void PermanentOyster::draw(sf::RenderTarget& target, sf::RenderStates states) const

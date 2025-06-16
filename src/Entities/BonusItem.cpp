@@ -171,24 +171,20 @@ namespace FishGame
         m_radius = 30.0f;
         m_lifetime = sf::seconds(30.0f); // Longer lifetime for oysters
 
-        // Determine pearl type or absence of a pearl
+        // Randomly determine pearl color - always spawn a pearl
         float r = s_pearlChance(s_randomEngine);
-        if (r < 0.60f)
+        if (r < 0.8f)
         {
+            // White pearl
             m_hasBlackPearl = false;
             m_points = m_whitePearlPoints;
         }
-        else if (r < 0.65f)
+        else
         {
+            // Black pearl
             m_hasBlackPearl = true;
             m_points = m_blackPearlPoints;
         }
-        else
-        {
-            m_hasBlackPearl = false;
-            m_points = 0;
-        }
-
         // Setup shells
         // Top shell (trapezoid shape)
         m_topShell.setPoint(0, sf::Vector2f(-20, 0));
@@ -281,7 +277,7 @@ namespace FishGame
             // Closing animation
             if (m_openAngle > 0.0f)
             {
-                m_openAngle = std::max(m_openAngle - 180.0f * deltaTime.asSeconds(), 0.0f);
+                m_openAngle = std::max(m_openAngle - 300.0f * deltaTime.asSeconds(), 0.0f);
             }
 
             // Check if should open

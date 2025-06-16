@@ -43,6 +43,7 @@ namespace FishGame
         sf::Time m_frameTimer{ sf::Time::Zero };
         static constexpr int m_frameCount = 5;
         static constexpr float m_frameTime = 0.15f; // seconds per frame
+        static constexpr float m_closingFrameTime = 0.08f;
 
         // Sprites
         sf::Sprite m_sprite;
