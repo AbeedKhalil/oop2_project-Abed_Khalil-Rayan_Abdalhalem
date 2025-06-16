@@ -118,7 +118,8 @@ namespace FishGame
             [](void* p) { delete static_cast<BonusItemManager*>(p); }
         );
 
-        auto oysterManager = std::make_unique<FixedOysterManager>(window.getSize());
+        auto oysterManager = std::make_unique<FixedOysterManager>(window.getSize(),
+            getGame().getSpriteManager());
         m_oysterManager = oysterManager.get();
         m_systems["oyster"] = std::unique_ptr<void, std::function<void(void*)>>(
             oysterManager.release(),

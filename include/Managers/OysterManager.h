@@ -1,6 +1,7 @@
 #pragma once
 
 #include "BonusItem.h"
+#include "SpriteManager.h"
 #include <array>
 #include <algorithm>
 
@@ -16,19 +17,46 @@ namespace FishGame
         void update(sf::Time deltaTime) override;
         void onCollect() override;
 
+        // Sprite setup
+        void initializeSprites(SpriteManager& spriteManager);
+
         // New methods for permanent oysters
         void reset();
-        bool canDamagePlayer() const { return !m_isOpen && !m_recentlyCollected; }
-        bool canBeEaten() const { return m_isOpen && !m_recentlyCollected; }
+        bool canDamagePlayer() const { return m_state == State::Closing && !m_recentlyCollected; }
+        bool canBeEaten() const { return m_state == State::Open && !m_recentlyCollected; }
 
         // Growth points when eaten
         int getGrowthPoints() const { return m_hasBlackPearl ? 30 : 15; }
         bool hasBlackPearl() const { return m_hasBlackPearl; }
 
     private:
+        enum class State { Closed, Opening, Open, Closing };
+
         bool m_recentlyCollected;
         sf::Time m_collectionCooldown;
         static constexpr float m_cooldownDuration = 5.0f;
+
+        // Animation
+        State m_state{ State::Closed };
+        int m_frame{ 0 };
+        sf::Time m_frameTimer{ sf::Time::Zero };
+        static constexpr int m_frameCount = 5;
+        static constexpr float m_frameTime = 0.15f; // seconds per frame
+
+        // Sprites
+        sf::Sprite m_sprite;
+        sf::Sprite m_pearlSprite;
+        const sf::Texture* m_oysterTexture{ nullptr };
+        const sf::Texture* m_whitePearlTex{ nullptr };
+        const sf::Texture* m_blackPearlTex{ nullptr };
+        bool m_hasPearlSprite{ false };
+
+        void updateAnimation(sf::Time dt);
+        void updateSprite();
+        void spawnPearl();
+
+    protected:
+        void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
     };
 
     // Template-based oyster management system
@@ -36,8 +64,8 @@ namespace FishGame
     class OysterManager
     {
     public:
-        explicit OysterManager(const sf::Vector2u& windowSize)
-            : m_windowSize(windowSize)
+        OysterManager(const sf::Vector2u& windowSize, SpriteManager& spriteMgr)
+            : m_windowSize(windowSize), m_spriteManager(&spriteMgr)
         {
             initializeOysters();
         }
@@ -98,6 +126,8 @@ namespace FishGame
                     auto oyster = std::make_unique<PermanentOyster>();
                     oyster->setPosition(x, m_windowSize.y - 80.0f);
                     oyster->m_baseY = m_windowSize.y - 80.0f;
+                    if (m_spriteManager)
+                        oyster->initializeSprites(*m_spriteManager);
                     return oyster;
                 });
         }
@@ -113,6 +143,7 @@ namespace FishGame
     private:
         sf::Vector2u m_windowSize;
         std::array<std::unique_ptr<PermanentOyster>, OysterCount> m_oysters;
+        SpriteManager* m_spriteManager;
     };
 
     // Type alias for convenience
