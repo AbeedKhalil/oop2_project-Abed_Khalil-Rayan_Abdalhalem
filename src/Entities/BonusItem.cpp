@@ -160,20 +160,34 @@ namespace FishGame
         : BonusItem(BonusType::PearlOyster, 0)
         , m_topShell(4)
         , m_bottomShell(4)
-        , m_pearl(8.0f)
+        , m_pearl(5.0f)
         , m_isOpen(false)
         , m_hasBlackPearl(false)
         , m_openAngle(0.0f)
         , m_stateTimer(sf::Time::Zero)
-        , m_openDuration(sf::seconds(3.0f))
-        , m_closedDuration(sf::seconds(5.0f))
+        , m_openDuration(sf::seconds(2.0f))
+        , m_closedDuration(sf::seconds(3.0f))
     {
         m_radius = 30.0f;
         m_lifetime = sf::seconds(30.0f); // Longer lifetime for oysters
 
-        // Determine pearl type
-        m_hasBlackPearl = s_pearlChance(s_randomEngine) < m_blackPearlChance;
-        m_points = m_hasBlackPearl ? m_blackPearlPoints : m_whitePearlPoints;
+        // Determine pearl type or absence of a pearl
+        float r = s_pearlChance(s_randomEngine);
+        if (r < 0.60f)
+        {
+            m_hasBlackPearl = false;
+            m_points = m_whitePearlPoints;
+        }
+        else if (r < 0.65f)
+        {
+            m_hasBlackPearl = true;
+            m_points = m_blackPearlPoints;
+        }
+        else
+        {
+            m_hasBlackPearl = false;
+            m_points = 0;
+        }
 
         // Setup shells
         // Top shell (trapezoid shape)
@@ -198,7 +212,7 @@ namespace FishGame
         m_pearl.setFillColor(m_hasBlackPearl ? sf::Color(50, 50, 50) : sf::Color(250, 250, 250));
         m_pearl.setOutlineColor(m_hasBlackPearl ? sf::Color::Black : sf::Color(200, 200, 200));
         m_pearl.setOutlineThickness(1.0f);
-        m_pearl.setOrigin(8.0f, 8.0f);
+        m_pearl.setOrigin(5.0f, 5.0f);
     }
 
     void PearlOyster::update(sf::Time deltaTime)
@@ -235,7 +249,7 @@ namespace FishGame
     {
         target.draw(m_bottomShell, states);
 
-        if (m_isOpen)
+        if (m_isOpen && m_points > 0)
         {
             target.draw(m_pearl, states);
         }
@@ -252,7 +266,7 @@ namespace FishGame
             // Opening animation
             if (m_openAngle < m_maxOpenAngle)
             {
-                m_openAngle = std::min(m_openAngle + 90.0f * deltaTime.asSeconds(), m_maxOpenAngle);
+                m_openAngle = std::min(m_openAngle + 180.0f * deltaTime.asSeconds(), m_maxOpenAngle);
             }
 
             // Check if should close
@@ -267,7 +281,7 @@ namespace FishGame
             // Closing animation
             if (m_openAngle > 0.0f)
             {
-                m_openAngle = std::max(m_openAngle - 90.0f * deltaTime.asSeconds(), 0.0f);
+                m_openAngle = std::max(m_openAngle - 180.0f * deltaTime.asSeconds(), 0.0f);
             }
 
             // Check if should open

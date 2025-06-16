@@ -28,6 +28,7 @@ namespace FishGame
         // Growth points when eaten
         int getGrowthPoints() const { return m_hasBlackPearl ? 30 : 15; }
         bool hasBlackPearl() const { return m_hasBlackPearl; }
+        bool hasPearl() const { return m_hasPearlSprite; }
 
     private:
         enum class State { Closed, Opening, Open, Closing };
