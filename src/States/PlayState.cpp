@@ -872,26 +872,21 @@ namespace FishGame
         {
             oyster->onCollect();
 
-            int points = 0;
-            if (oyster->hasPearl())
-            {
-                points = oyster->hasBlackPearl()
-                    ? Constants::BLACK_OYSTER_POINTS
-                    : Constants::WHITE_OYSTER_POINTS;
+            int points = oyster->hasBlackPearl()
+                ? Constants::BLACK_OYSTER_POINTS
+                : Constants::WHITE_OYSTER_POINTS;
 
-                m_player->addPoints(points);
-
-                createParticleEffect(oyster->getPosition(),
-                    oyster->hasBlackPearl() ? Constants::BLACK_PEARL_COLOR : Constants::WHITE_PEARL_COLOR);
-            }
-
+            m_player->addPoints(points);
             m_player->grow(oyster->getGrowthPoints());
 
             int frenzyMultiplier = m_frenzySystem->getMultiplier();
             float powerUpMultiplier = m_powerUpManager->getScoreMultiplier();
 
-            m_scoreSystem->addScore(ScoreEventType::BonusCollected, points,
+            m_scoreSystem->addScore(ScoreEventType::BonusCollected, oyster->getPoints(),
                 oyster->getPosition(), frenzyMultiplier, powerUpMultiplier);
+
+            createParticleEffect(oyster->getPosition(),
+                oyster->hasBlackPearl() ? Constants::BLACK_PEARL_COLOR : Constants::WHITE_PEARL_COLOR);
         }
     }
 

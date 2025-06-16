@@ -41,7 +41,6 @@ namespace FishGame
 
             // Hide pearl
             m_hasPearlSprite = false;
-            m_points = 0;
 
             // Begin closing
             m_state = State::Closing;
@@ -70,7 +69,7 @@ namespace FishGame
         m_sprite.setTexture(*m_oysterTexture);
         m_sprite.setOrigin(50.f, 50.f);
         m_pearlSprite.setOrigin(16.f, 16.f);
-        m_pearlSprite.setScale(0.85f, 0.85f); // smaller pearl sprite
+        m_pearlSprite.setScale(0.78f, 0.78f);
         updateSprite();
     }
 
@@ -152,11 +151,11 @@ namespace FishGame
         if (r < 0.60f)
         {
             m_hasBlackPearl = false;
-            m_points = m_whitePearlPoints;  
+            m_points = m_whitePearlPoints;
             m_pearlSprite.setTexture(*m_whitePearlTex);
             m_hasPearlSprite = true;
         }
-        else if (r < 0.65f)
+        else if (r < 0.75f)
         {
             m_hasBlackPearl = true;
             m_points = m_blackPearlPoints;
@@ -166,8 +165,6 @@ namespace FishGame
         else
         {
             m_hasPearlSprite = false;
-            m_points = 0;
-            m_hasBlackPearl = false;
         }
     }
 
