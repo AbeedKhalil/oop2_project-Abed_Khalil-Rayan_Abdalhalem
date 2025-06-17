@@ -45,6 +45,8 @@ namespace FishGame
         , m_animator(nullptr)
         , m_currentAnimation()
         , m_facingRight(false)
+        , m_controlsReversed(false)
+        , m_poisonColorTimer(sf::Time::Zero)
     {
         m_radius = m_baseRadius;
 
@@ -250,6 +252,11 @@ namespace FishGame
             keyboardUsed = true;
         }
 
+        if (m_controlsReversed)
+        {
+            inputDirection = -inputDirection;
+        }
+
         // Switch to keyboard control if keys are pressed
         if (keyboardUsed)
         {
@@ -350,6 +357,8 @@ namespace FishGame
         m_points = 0;
         m_totalFishEaten = 0;
         m_damageTaken = 0;
+        m_controlsReversed = false;
+        m_poisonColorTimer = sf::Time::Zero;
     }
 
     void Player::enableMouseControl(bool enable)
@@ -565,6 +574,8 @@ namespace FishGame
 
         m_eatAnimationScale = 1.0f;
         m_damageFlashIntensity = 0.0f;
+        m_controlsReversed = false;
+        m_poisonColorTimer = sf::Time::Zero;
     }
 
     void Player::respawn()
@@ -574,12 +585,20 @@ namespace FishGame
         m_velocity = sf::Vector2f(0.0f, 0.0f);
         m_targetPosition = m_position;
         m_invulnerabilityTimer = m_invulnerabilityDuration;
+        m_controlsReversed = false;
+        m_poisonColorTimer = sf::Time::Zero;
     }
 
     void Player::applySpeedBoost(float multiplier, sf::Time duration)
     {
         m_speedMultiplier = multiplier;
         m_speedBoostTimer = duration;
+    }
+
+    void Player::applyPoisonEffect(sf::Time duration)
+    {
+        m_poisonColorTimer = duration;
+        m_controlsReversed = true;
     }
 
     void Player::triggerEatEffect()
@@ -714,6 +733,16 @@ namespace FishGame
             m_damageFlashIntensity = std::max(0.0f, m_damageFlashIntensity);
         }
 
+        if (m_poisonColorTimer > sf::Time::Zero)
+        {
+            m_poisonColorTimer -= deltaTime;
+            if (m_poisonColorTimer <= sf::Time::Zero)
+            {
+                m_poisonColorTimer = sf::Time::Zero;
+                m_controlsReversed = false;
+            }
+        }
+
         std::for_each(m_activeEffects.begin(), m_activeEffects.end(),
             [deltaTime](VisualEffect& effect) {
                 effect.duration -= deltaTime;
@@ -737,6 +766,10 @@ namespace FishGame
             currentColor.r = static_cast<sf::Uint8>(currentColor.r + (m_damageFlashColor.r - currentColor.r) * m_damageFlashIntensity);
             currentColor.g = static_cast<sf::Uint8>(currentColor.g + (m_damageFlashColor.g - currentColor.g) * m_damageFlashIntensity);
             currentColor.b = static_cast<sf::Uint8>(currentColor.b + (m_damageFlashColor.b - currentColor.b) * m_damageFlashIntensity);
+        }
+        else if (m_poisonColorTimer > sf::Time::Zero)
+        {
+            currentColor = sf::Color::Green;
         }
         else
         {
