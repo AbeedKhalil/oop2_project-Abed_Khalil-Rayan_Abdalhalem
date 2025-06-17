@@ -769,7 +769,7 @@ namespace FishGame
         }
         else if (m_poisonColorTimer > sf::Time::Zero)
         {
-            currentColor = sf::Color::Green;
+            currentColor = sf::Color(50, 255, 50);
         }
         else
         {

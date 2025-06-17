@@ -737,6 +737,7 @@ namespace FishGame
             {
                 state->reverseControls();
                 state->m_controlReverseTimer = poison->getPoisonDuration();
+                state->m_player->applyPoisonEffect(poison->getPoisonDuration());
                 state->createParticleEffect(fish.getPosition(), sf::Color::Magenta, 15);
                 state->createParticleEffect(state->m_player->getPosition(), sf::Color::Magenta, 10);
                 fish.destroy();
