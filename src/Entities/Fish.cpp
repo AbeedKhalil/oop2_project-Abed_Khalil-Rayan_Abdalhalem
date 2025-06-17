@@ -111,7 +111,7 @@ namespace FishGame
 
             if (m_isPoisoned)
             {
-                spriteColor = sf::Color(200, 100, 255); // Purple tint
+                spriteColor = sf::Color(50, 255, 50); // Green tint for poison
             }
             else if (m_isStunned)
             {
@@ -218,6 +218,7 @@ namespace FishGame
                 m_isPoisoned = false;
                 // Reverse velocity back to normal
                 m_velocity = -m_velocity;
+                updateVisualState();
             }
         }
 
@@ -276,6 +277,7 @@ namespace FishGame
             m_poisonTimer = duration;
             // Reverse movement direction
             m_velocity = -m_velocity;
+            updateVisualState();
         }
     }
 

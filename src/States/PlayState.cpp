@@ -646,11 +646,21 @@ namespace FishGame
 
                 if (fish1->canEat(*fish2))
                 {
+                    if (auto* poison = dynamic_cast<PoisonFish*>(fish2))
+                    {
+                        fish1->setPoisoned(poison->getPoisonDuration());
+                        createParticleEffect(fish1->getPosition(), sf::Color::Magenta, 10);
+                    }
                     fish2->destroy();
                     createParticleEffect(fish2->getPosition(), Constants::DEATH_PARTICLE_COLOR);
                 }
                 else if (fish2->canEat(*fish1))
                 {
+                    if (auto* poison = dynamic_cast<PoisonFish*>(fish1))
+                    {
+                        fish2->setPoisoned(poison->getPoisonDuration());
+                        createParticleEffect(fish2->getPosition(), sf::Color::Magenta, 10);
+                    }
                     fish1->destroy();
                     createParticleEffect(fish1->getPosition(), Constants::DEATH_PARTICLE_COLOR);
                 }
