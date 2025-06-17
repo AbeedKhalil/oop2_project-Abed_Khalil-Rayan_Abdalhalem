@@ -510,6 +510,7 @@ namespace FishGame
             if (m_controlReverseTimer <= sf::Time::Zero)
             {
                 m_hasControlsReversed = false;
+                m_player->setControlsReversed(false);
             }
         }
 
@@ -895,6 +896,7 @@ namespace FishGame
     void PlayState::reverseControls()
     {
         m_hasControlsReversed = true;
+        m_player->setControlsReversed(true);
     }
 
     void PlayState::checkWinCondition()

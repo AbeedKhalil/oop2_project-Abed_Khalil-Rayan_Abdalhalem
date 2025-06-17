@@ -75,6 +75,11 @@ namespace FishGame
         // Power-up effects
         void applySpeedBoost(float multiplier, sf::Time duration);
 
+        // Poison effect
+        void applyPoisonEffect(sf::Time duration);
+        void setControlsReversed(bool reversed) { m_controlsReversed = reversed; }
+        bool areControlsReversed() const { return m_controlsReversed; }
+
         // Size information
         bool isAtMaxSize() const { return m_currentStage >= Constants::MAX_STAGES; }
         void setWindowBounds(const sf::Vector2u& windowSize);
@@ -118,6 +123,8 @@ namespace FishGame
         // Control state
         bool m_useMouseControl;
         sf::Vector2f m_targetPosition;
+        bool m_controlsReversed{ false };
+        sf::Time m_poisonColorTimer{ sf::Time::Zero };
 
         // System references
         GrowthMeter* m_growthMeter;
