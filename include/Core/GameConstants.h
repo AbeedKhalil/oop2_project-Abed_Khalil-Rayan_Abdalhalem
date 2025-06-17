@@ -60,11 +60,11 @@ namespace FishGame
 
         // ==================== Spawn Rates ====================
         constexpr float BARRACUDA_SPAWN_RATE = 0.05f;
-        constexpr float PUFFERFISH_SPAWN_RATE = 0.08f;
-        constexpr float ANGELFISH_SPAWN_RATE = 0.1f;
+        constexpr float PUFFERFISH_SPAWN_RATE = 0.1f;
+        constexpr float ANGELFISH_SPAWN_RATE = 0.05f;
         constexpr float SCHOOL_SPAWN_CHANCE = 0.05f;
         constexpr float MAX_SCHOOL_SPAWN_CHANCE = 0.10f;
-        constexpr float POISONFISH_SPAWN_RATE = 0.12f;
+        constexpr float POISONFISH_SPAWN_RATE = 0.15f;
 
         // ==================== Visual Settings ====================
         constexpr float HUD_MARGIN = 20.0f;
