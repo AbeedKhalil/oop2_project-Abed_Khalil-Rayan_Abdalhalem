@@ -109,10 +109,9 @@ namespace FishGame
         }
         else if (event.type == sf::Event::MouseMoved)
         {
-            m_player->followMouse(sf::Vector2f(
-                static_cast<float>(event.mouseMove.x),
-                static_cast<float>(event.mouseMove.y)
-            ));
+            sf::Vector2f worldPos = getGame().getWindow().mapPixelToCoords(
+                sf::Vector2i(event.mouseMove.x, event.mouseMove.y));
+            m_player->followMouse(worldPos);
         }
     }
 

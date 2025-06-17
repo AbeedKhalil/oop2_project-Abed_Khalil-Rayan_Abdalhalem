@@ -2,6 +2,7 @@
 #include "CollisionDetector.h"
 #include "GameConstants.h"
 #include "Player.h"
+#include "SpriteManager.h"
 #include <random>
 #include <algorithm>
 #include <cmath>
@@ -211,6 +212,13 @@ namespace FishGame
         , m_stateTimer(sf::Time::Zero)
         , m_inflationLevel(0.0f)
         , m_normalRadius(25.0f)
+        , m_frame(0)
+        , m_frameTimer(sf::Time::Zero)
+        , m_texture(nullptr)
+        , m_frameWidth(0)
+        , m_frameHeight(0)
+        , m_playPuff(false)
+        , m_puffPlayed(false)
     {
         m_radius = m_normalRadius;
 
@@ -228,6 +236,20 @@ namespace FishGame
             });
 
         updateVisual();
+    }
+
+    void Pufferfish::initializeSprite(SpriteManager& spriteManager)
+    {
+        Fish::initializeSprite(spriteManager);
+
+        m_texture = &spriteManager.getTexture(getTextureID());
+        if (m_texture)
+        {
+            m_frameWidth = 190;
+            m_frameHeight = static_cast<int>(m_texture->getSize().y) - 2;
+            int x = 1 + m_swimStart * m_frameWidth;
+            getSpriteComponent()->setTextureRect(sf::IntRect(x, 1, m_frameWidth, m_frameHeight));
+        }
     }
 
     void Pufferfish::update(sf::Time deltaTime)
@@ -350,6 +372,38 @@ namespace FishGame
         m_shape.setFillColor(currentColor);
     }
 
+    void Pufferfish::updateSpriteEffects(sf::Time deltaTime)
+    {
+        if (getRenderMode() != RenderMode::Sprite || !getSpriteComponent() || !m_texture)
+            return;
+
+        m_frameTimer += deltaTime;
+        if (m_frameTimer.asSeconds() >= m_frameTime)
+        {
+            m_frameTimer -= sf::seconds(m_frameTime);
+
+            if (m_playPuff && !m_puffPlayed)
+            {
+                ++m_frame;
+                if (m_frame >= m_puffStart + m_puffCount)
+                {
+                    m_puffPlayed = true;
+                    m_playPuff = false;
+                    m_frame = m_swimStart;
+                }
+            }
+            else
+            {
+                ++m_frame;
+                if (m_frame >= m_swimStart + m_swimCount)
+                    m_frame = m_swimStart;
+            }
+
+            int x = 1 + m_frame * m_frameWidth;
+            getSpriteComponent()->setTextureRect(sf::IntRect(x, 1, m_frameWidth, m_frameHeight));
+        }
+    }
+
     void Pufferfish::updateCycleState(sf::Time deltaTime)
     {
         m_stateTimer += deltaTime;
@@ -408,12 +462,16 @@ namespace FishGame
     {
         m_isPuffed = true;
         m_stateTimer = sf::Time::Zero;
+        m_playPuff = true;
+        m_puffPlayed = false;
+        m_frame = m_puffStart;
     }
 
     void Pufferfish::transitionToNormal()
     {
         m_isPuffed = false;
         m_stateTimer = sf::Time::Zero;
+        m_frame = m_swimStart;
     }
 
     // PoisonFish implementation
