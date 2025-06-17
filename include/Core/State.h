@@ -18,8 +18,7 @@ namespace FishGame
         Play,
         Pause,
         GameOver,
-        Settings,
-        Credits,
+		GameOptions,
         BonusStage
     };
 

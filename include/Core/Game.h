@@ -55,17 +55,6 @@ namespace FishGame
             return nullptr;
         }
 
-        template<typename StateType>
-        StateType* getPreviousState() const
-        {
-            if (m_stateStack.size() >= 2)
-            {
-                auto& container = m_stateStack._Get_container();
-                return dynamic_cast<StateType*>(container[container.size() - 2].get());
-            }
-            return nullptr;
-        }
-
     private:
         // Core game loop methods
         void processInput();
@@ -90,13 +79,6 @@ namespace FishGame
                 {
                     return std::make_unique<T>(*this);
                 };
-        }
-
-        // Template method for efficient state creation
-        template<typename StateType, typename... Args>
-        std::unique_ptr<State> createStateWithArgs(Args&&... args)
-        {
-            return std::make_unique<StateType>(*this, std::forward<Args>(args)...);
         }
 
         std::unique_ptr<State> createState(StateID id);
@@ -132,9 +114,4 @@ namespace FishGame
             float currentFPS = 0.0f;
         } m_metrics;
     };
-
-    // Template utility for state validation
-    template<typename T>
-    inline constexpr bool is_valid_state_v = std::is_base_of_v<State, T> &&
-        !std::is_same_v<State, T>;
 }
