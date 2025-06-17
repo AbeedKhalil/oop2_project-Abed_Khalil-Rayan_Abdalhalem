@@ -72,7 +72,6 @@ namespace FishGame
 
     protected:
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
-        virtual void updateVisual();
         void updateMovement(sf::Time deltaTime);
 
         // Sprite-specific updates
@@ -109,11 +108,6 @@ namespace FishGame
         sf::Vector2f m_fleeDirection;
 
         static constexpr float m_fleeSpeedMultiplier = 3.0f;
-
-        // Visual properties
-        sf::Color m_baseColor;
-        sf::Color m_outlineColor;
-        float m_outlineThickness;
 
         // Additional member for damage flash effect
         sf::Time m_damageFlashTimer;

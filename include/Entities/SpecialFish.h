@@ -100,7 +100,6 @@ namespace FishGame
 
     protected:
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
-        void updateVisual() override;
         void updateSpriteEffects(sf::Time deltaTime) override;
 
     private:
@@ -166,7 +165,6 @@ namespace FishGame
 
     protected:
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
-        void updateVisual() override;
 
     private:
         void updatePoisonBubbles(sf::Time deltaTime);
@@ -202,7 +200,6 @@ namespace FishGame
 
     protected:
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
-        void updateVisual() override;
 
     private:
         void updateErraticMovement(sf::Time deltaTime);

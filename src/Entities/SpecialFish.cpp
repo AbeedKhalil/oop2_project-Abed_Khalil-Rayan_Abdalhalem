@@ -104,17 +104,12 @@ namespace FishGame
         , m_isDashing(false)
     {
         // Barracuda appearance
-        m_baseColor = sf::Color(100, 100, 150);  // Dark blue-gray
-        m_outlineColor = sf::Color(50, 50, 100);
-        m_outlineThickness = 3.0f;
         m_pointValue = getPointValue(m_size, m_currentLevel) * 2;  // Double points
 
         // Make Barracuda larger than default large fish
         m_radius = 50.0f;
         m_shape.setRadius(m_radius);
         m_shape.setOrigin(m_radius, m_radius);
-
-        updateVisual();
     }
 
     void Barracuda::updateAI(const std::vector<std::unique_ptr<Entity>>& entities,
@@ -222,10 +217,6 @@ namespace FishGame
     {
         m_radius = m_normalRadius;
 
-        // Pufferfish appearance
-        m_baseColor = sf::Color(255, 220, 100);  // Yellow
-        m_outlineColor = sf::Color(200, 170, 50);
-
         // Create spikes
         m_spikes.reserve(m_spikeCount);
         std::generate_n(std::back_inserter(m_spikes), m_spikeCount, [] {
@@ -234,8 +225,6 @@ namespace FishGame
             spike.setOrigin(3.0f, 3.0f);
             return spike;
             });
-
-        updateVisual();
     }
 
     void Pufferfish::initializeSprite(SpriteManager& spriteManager)
@@ -362,16 +351,6 @@ namespace FishGame
         }
     }
 
-    void Pufferfish::updateVisual()
-    {
-        Fish::updateVisual();
-
-        // Update color based on inflation
-        sf::Color currentColor = m_baseColor;
-        currentColor.r = static_cast<sf::Uint8>(currentColor.r + (255 - currentColor.r) * m_inflationLevel * 0.3f);
-        m_shape.setFillColor(currentColor);
-    }
-
     void Pufferfish::updateSpriteEffects(sf::Time deltaTime)
     {
         if (getRenderMode() != RenderMode::Sprite || !getSpriteComponent() || !m_texture)
@@ -483,9 +462,6 @@ namespace FishGame
         , m_poisonPoints(m_basePoisonPoints* currentLevel)
     {
         // Purple poisonous appearance
-        m_baseColor = sf::Color(150, 0, 200);
-        m_outlineColor = sf::Color(100, 0, 150);
-        m_outlineThickness = 1.5f;
         m_pointValue = 0;
 
         // Set amplitude for sinusoidal movement - reduced for smaller fish
@@ -500,8 +476,6 @@ namespace FishGame
             bubble.setOrigin(2.0f, 2.0f);
             return bubble;
             });
-
-        updateVisual();
     }
 
     void PoisonFish::update(sf::Time deltaTime)
@@ -560,18 +534,6 @@ namespace FishGame
         Fish::draw(target, states);
     }
 
-    void PoisonFish::updateVisual()
-    {
-        Fish::updateVisual();
-
-        // Pulsing purple color effect
-        float pulse = 0.8f + 0.2f * std::sin(m_wobbleAnimation);
-        sf::Color currentColor = m_baseColor;
-        currentColor.r = static_cast<sf::Uint8>(currentColor.r * pulse);
-        currentColor.b = static_cast<sf::Uint8>(currentColor.b * pulse);
-        m_shape.setFillColor(currentColor);
-    }
-
     // Angelfish implementation
     Angelfish::Angelfish(int currentLevel)
         : AdvancedFish(FishSize::Small, m_baseSpeed, currentLevel, MovementPattern::ZigZag)
@@ -582,11 +544,6 @@ namespace FishGame
         , m_isEvading(false)
         , m_evasionTimer(sf::Time::Zero)
     {
-        // Angelfish appearance - rainbow effect
-        m_baseColor = sf::Color::Cyan;
-        m_outlineColor = sf::Color::Blue;
-        m_outlineThickness = 2.0f;
-
         // Create decorative fins
         m_fins.reserve(3);
         std::generate_n(std::back_inserter(m_fins), 3, [] {
@@ -595,8 +552,6 @@ namespace FishGame
             fin.setOrigin(10.0f, 10.0f);
             return fin;
             });
-
-        updateVisual();
     }
 
     void Angelfish::update(sf::Time deltaTime)
@@ -652,8 +607,6 @@ namespace FishGame
                 m_fins[i].setScale(scale, scale);
             }
         }
-
-        updateVisual();
     }
 
     void Angelfish::updateAI(const std::vector<std::unique_ptr<Entity>>& entities,
@@ -844,43 +797,6 @@ namespace FishGame
             });
 
         Fish::draw(target, states);
-    }
-
-    void Angelfish::updateVisual()
-    {
-        Fish::updateVisual();
-
-        // Rainbow color effect
-        float hue = std::fmod(m_colorShift * 60.0f, 360.0f);
-
-        // Simple HSV to RGB conversion
-        float c = 1.0f;
-        float x = c * (1 - std::abs(std::fmod(hue / 60.0f, 2) - 1));
-        float m = 0.5f;
-
-        float r, g, b;
-        if (hue < 60) { r = c; g = x; b = 0; }
-        else if (hue < 120) { r = x; g = c; b = 0; }
-        else if (hue < 180) { r = 0; g = c; b = x; }
-        else if (hue < 240) { r = 0; g = x; b = c; }
-        else if (hue < 300) { r = x; g = 0; b = c; }
-        else { r = c; g = 0; b = x; }
-
-        sf::Color rainbowColor(
-            static_cast<sf::Uint8>((r + m) * 255),
-            static_cast<sf::Uint8>((g + m) * 255),
-            static_cast<sf::Uint8>((b + m) * 255)
-        );
-
-        // Flash brighter when evading
-        if (m_isEvading)
-        {
-            rainbowColor.r = std::min(255, rainbowColor.r + 50);
-            rainbowColor.g = std::min(255, rainbowColor.g + 50);
-            rainbowColor.b = std::min(255, rainbowColor.b + 50);
-        }
-
-        m_shape.setFillColor(rainbowColor);
     }
 
     void Angelfish::updateErraticMovement(sf::Time deltaTime)
