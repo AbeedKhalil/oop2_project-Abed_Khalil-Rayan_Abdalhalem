@@ -389,10 +389,10 @@ namespace FishGame
                 {
                     m_puffPlayed = true;
                     m_playPuff = false;
-                    m_frame = m_swimStart;
+                    m_frame = m_puffStart + m_puffCount - 1;
                 }
             }
-            else
+            else if (!m_isPuffed)
             {
                 ++m_frame;
                 if (m_frame >= m_swimStart + m_swimCount)
