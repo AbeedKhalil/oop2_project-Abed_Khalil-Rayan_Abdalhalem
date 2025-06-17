@@ -19,9 +19,6 @@ namespace FishGame
         , m_speed(speed)
         , m_currentLevel(currentLevel)
         , m_windowBounds(WINDOW_WIDTH, WINDOW_HEIGHT)
-        , m_baseColor(sf::Color::White)
-        , m_outlineColor(sf::Color::Black)
-        , m_outlineThickness(1.0f)
         , m_isFleeing(false)
         , m_fleeSpeed(speed* m_fleeSpeedMultiplier)
         , m_fleeDirection(0.0f, 0.0f)
@@ -53,7 +50,6 @@ namespace FishGame
 
         m_shape.setRadius(m_radius);
         m_shape.setOrigin(m_radius, m_radius);
-        updateVisual();
     }
 
     void Fish::startFleeing()
@@ -443,22 +439,10 @@ namespace FishGame
 
     void Fish::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        if (m_renderMode == RenderMode::Sprite && m_sprite)
+        if (m_sprite)
         {
             target.draw(*m_sprite, states);
         }
-        else
-        {
-            // Fallback to circle rendering
-            target.draw(m_shape, states);
-        }
-    }
-
-    void Fish::updateVisual()
-    {
-        m_shape.setFillColor(m_baseColor);
-        m_shape.setOutlineColor(m_outlineColor);
-        m_shape.setOutlineThickness(m_outlineThickness);
     }
 
     void Fish::updateMovement(sf::Time deltaTime)

@@ -56,7 +56,6 @@ namespace FishGame
         explicit GenericFish(int currentLevel = 1)
             : Fish(Size, FishTraits<Size>::speed, currentLevel)
         {
-            updateVisual();
         }
 
         ~GenericFish() override = default;
@@ -83,13 +82,6 @@ namespace FishGame
         }
 
     protected:
-        void updateVisual() override
-        {
-            m_baseColor = FishTraits<Size>::fillColor;
-            m_outlineColor = FishTraits<Size>::outlineColor;
-            m_outlineThickness = FishTraits<Size>::outlineThickness;
-            Fish::updateVisual();
-        }
     };
 
     // Type aliases for convenience and backward compatibility

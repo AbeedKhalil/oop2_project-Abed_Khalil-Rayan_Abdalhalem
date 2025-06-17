@@ -667,13 +667,9 @@ namespace FishGame
             }
         }
 
-        if (m_renderMode == RenderMode::Sprite && m_animator)
+        if (m_animator)
         {
             target.draw(*m_animator, states);
-        }
-        else
-        {
-            target.draw(m_shape, states);
         }
     }
 
