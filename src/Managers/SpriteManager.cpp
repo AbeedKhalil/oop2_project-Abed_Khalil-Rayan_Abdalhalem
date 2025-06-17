@@ -22,7 +22,7 @@ namespace FishGame
         // Special fish
         {TextureID::Barracuda, "Barracuda.png"},
         {TextureID::Pufferfish, "Pufferfish.png"},
-        {TextureID::PufferfishInflated, "Pufferfish.png"},    //inflated fish.
+        {TextureID::PufferfishInflated, "Pufferfish.png"},
         {TextureID::Angelfish, "Angelfish.png"},
         {TextureID::PoisonFish, "PoisonFish.png"},
 
