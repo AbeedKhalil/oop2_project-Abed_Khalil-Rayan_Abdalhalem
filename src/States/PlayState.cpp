@@ -836,11 +836,6 @@ namespace FishGame
             createParticleEffect(powerUp.getPosition(), Constants::SPEED_BOOST_COLOR);
             break;
 
-        case PowerUpType::Invincibility:
-            m_player->applyInvincibility(powerUp.getDuration());
-            createParticleEffect(powerUp.getPosition(), Constants::INVINCIBILITY_COLOR);
-            break;
-
         case PowerUpType::Freeze:
             m_powerUpManager->activatePowerUp(powerUp.getPowerUpType(), powerUp.getDuration());
             applyFreeze();
@@ -850,12 +845,6 @@ namespace FishGame
         case PowerUpType::ExtraLife:
             m_gameState.playerLives++;
             createParticleEffect(powerUp.getPosition(), sf::Color::Green, 15);
-            break;
-
-        case PowerUpType::Shield:
-            m_powerUpManager->activatePowerUp(powerUp.getPowerUpType(), powerUp.getDuration());
-            m_player->applyInvincibility(powerUp.getDuration());
-            createParticleEffect(powerUp.getPosition(), sf::Color(255, 215, 0), 20);
             break;
         }
     }
@@ -1137,9 +1126,7 @@ namespace FishGame
                     std::unordered_map<PowerUpType, std::string> names = {
                         {PowerUpType::ScoreDoubler, "2X Score"},
                         {PowerUpType::SpeedBoost, "Speed Boost"},
-                        {PowerUpType::Invincibility, "Invincible"},
-                        {PowerUpType::Freeze, "Freeze"},
-                        {PowerUpType::Shield, "Shield"}
+                        {PowerUpType::Freeze, "Freeze"}
                     };
 
                     if (auto it = names.find(type); it != names.end())

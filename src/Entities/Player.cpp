@@ -25,8 +25,6 @@ namespace FishGame
         , m_useMouseControl(false)
         , m_targetPosition(0.0f, 0.0f)
         , m_mouseControlActive(true)
-        , m_lastMousePosition(m_position)
-        , m_mouseVelocity(0.0f, 0.0f)
         , m_autoOrient(true)
         , m_growthMeter(nullptr)
         , m_frenzySystem(nullptr)
@@ -37,7 +35,6 @@ namespace FishGame
         , m_damageCooldown(sf::Time::Zero)
         , m_speedMultiplier(1.0f)
         , m_speedBoostTimer(sf::Time::Zero)
-        , m_invincibilityTimer(sf::Time::Zero)
         , m_windowBounds(Constants::WINDOW_WIDTH, Constants::WINDOW_HEIGHT)
         , m_totalFishEaten(0)
         , m_damageTaken(0)
@@ -109,8 +106,6 @@ namespace FishGame
             m_damageCooldown -= deltaTime;
         if (m_speedBoostTimer > sf::Time::Zero)
             m_speedBoostTimer -= deltaTime;
-        if (m_invincibilityTimer > sf::Time::Zero)
-            m_invincibilityTimer -= deltaTime;
 
         // Handle input
         handleInput();
@@ -360,11 +355,6 @@ namespace FishGame
     void Player::enableMouseControl(bool enable)
     {
         m_mouseControlActive = enable;
-        if (enable)
-        {
-            m_lastMousePosition = m_position;
-            m_mouseVelocity = sf::Vector2f(0.0f, 0.0f);
-        }
     }
 
     void Player::setMousePosition(const sf::Vector2f& screenPos)
@@ -377,7 +367,7 @@ namespace FishGame
 
     bool Player::canEat(const Entity& other) const
     {
-        if (m_invulnerabilityTimer > sf::Time::Zero && m_invincibilityTimer <= sf::Time::Zero)
+        if (m_invulnerabilityTimer > sf::Time::Zero)
             return false;
 
         EntityType otherType = other.getType();
@@ -544,7 +534,7 @@ namespace FishGame
 
     void Player::takeDamage()
     {
-        if (m_invulnerabilityTimer > sf::Time::Zero || m_invincibilityTimer > sf::Time::Zero)
+        if (m_invulnerabilityTimer > sf::Time::Zero)
             return;
 
         m_damageTaken++;
@@ -590,11 +580,6 @@ namespace FishGame
     {
         m_speedMultiplier = multiplier;
         m_speedBoostTimer = duration;
-    }
-
-    void Player::applyInvincibility(sf::Time duration)
-    {
-        m_invincibilityTimer = duration;
     }
 
     void Player::triggerEatEffect()
@@ -746,12 +731,6 @@ namespace FishGame
         {
             float alpha = std::sin(m_invulnerabilityTimer.asSeconds() * 10.0f) * 0.5f + 0.5f;
             currentColor.a = static_cast<sf::Uint8>(255 * alpha);
-        }
-        else if (m_invincibilityTimer > sf::Time::Zero)
-        {
-            currentColor = sf::Color(255, 215, 0);
-            float glow = std::sin(m_invincibilityTimer.asSeconds() * 5.0f) * 0.3f + 0.7f;
-            currentColor.r = static_cast<sf::Uint8>(currentColor.r * glow);
         }
         else if (m_damageFlashIntensity > 0.0f)
         {

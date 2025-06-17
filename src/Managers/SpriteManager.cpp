@@ -43,7 +43,6 @@ namespace FishGame
         {TextureID::PowerUpSpeedBoost, "powerup_speed.png"},
         {TextureID::PowerUpFreeze, "powerup_freeze.png"},
         {TextureID::PowerUpExtraLife, "powerup_life.png"},
-        {TextureID::PowerUpShield, "powerup_shield.png"},
 
         // Environment
         {TextureID::Background, "Background1.png"},
