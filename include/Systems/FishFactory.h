@@ -8,22 +8,6 @@
 
 namespace FishGame
 {
-    // Template trait for fish construction parameters
-    template<typename FishType>
-    struct FishConstructorTraits
-    {
-        static constexpr size_t paramCount = 1;
-        using ParamType = int; // Default to level only
-    };
-
-    // Specializations for fish that need different parameters
-    template<>
-    struct FishConstructorTraits<AdvancedFish>
-    {
-        static constexpr size_t paramCount = 4;
-        using ParamType = std::tuple<FishSize, float, int, MovementPattern>;
-    };
-
     // Template factory for creating fish instances
     template<typename FishType>
     class FishFactory
@@ -75,13 +59,6 @@ namespace FishGame
             return fish;
         }
     };
-
-    // Template concept for schoolable fish (C++20 style, fallback for C++17)
-    template<typename T>
-    inline constexpr bool is_schoolable_v =
-        std::is_same_v<T, SmallFish> ||
-        std::is_same_v<T, MediumFish> ||
-        std::is_same_v<T, Angelfish>;
 
     // Note: SchoolingFishFactory is defined in SchoolingSystem.h to avoid circular dependencies
 }

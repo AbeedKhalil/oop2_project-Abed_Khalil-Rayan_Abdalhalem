@@ -255,7 +255,7 @@ namespace FishGame
         }
 
         // Check boundaries
-        if (m_position.y > 1080.0f + 100.0f)
+        if (m_position.y > static_cast<float>(Constants::WINDOW_HEIGHT) + 100.0f)
         {
             m_position.y = -100.0f;
         }

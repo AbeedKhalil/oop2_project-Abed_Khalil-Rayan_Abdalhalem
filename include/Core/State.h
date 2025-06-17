@@ -8,7 +8,7 @@
 namespace FishGame
 {
     // Forward declarations
-    class Game;
+    class Game; 
 
     // State identifiers
     enum class StateID

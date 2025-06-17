@@ -10,15 +10,6 @@
 
 namespace FishGame
 {
-    template<typename T>
-    struct is_hazard : std::false_type {};
-
-    template<>
-    struct is_hazard<Hazard> : std::true_type {};
-
-    template<typename T>
-    inline constexpr bool is_hazard_v = is_hazard<T>::value;
-
     class FishCollisionHandler
     {
     public:

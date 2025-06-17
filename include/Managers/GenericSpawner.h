@@ -2,11 +2,10 @@
 
 #include <SFML/Graphics.hpp>
 #include <memory>
+#include "GameConstants.h"
 #include <random>
 #include <vector>
 #include <functional>
-#include <algorithm>
-#include <type_traits>
 
 namespace FishGame
 {
@@ -16,7 +15,7 @@ namespace FishGame
     {
         float spawnRate = 1.0f;
         sf::Vector2f minBounds = { 0.0f, 0.0f };
-        sf::Vector2f maxBounds = { 1920.0f, 1080.0f };
+        sf::Vector2f maxBounds = { static_cast<float>(Constants::WINDOW_WIDTH), static_cast<float>(Constants::WINDOW_HEIGHT) };
         std::function<void(T&)> customizer = nullptr;
     };
 

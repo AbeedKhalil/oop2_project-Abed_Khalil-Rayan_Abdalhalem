@@ -42,7 +42,6 @@ namespace FishGame
         // Growth and size
         void grow(int scoreValue);
         void addPoints(int points);
-        void advanceStage();
         void resetSize();
         void fullReset();
         int getCurrentStage() const { return m_currentStage; }
@@ -98,11 +97,7 @@ namespace FishGame
         void constrainToWindow();
         void updateInvulnerability(sf::Time deltaTime);
         void updateVisualEffects(sf::Time deltaTime);
-        void handlePredatorBehavior(const Entity& predator);
         void checkStageAdvancement();
-
-        template<typename T>
-        int getPointValue() const;
 
     private:
         int m_score;
@@ -146,14 +141,14 @@ namespace FishGame
         sf::Time m_invincibilityTimer;
 
         // Movement parameters
-        static constexpr float m_baseSpeed = 400.0f;
-        static constexpr float m_acceleration = 5.0f;
-        static constexpr float m_deceleration = 6.0f;
-        static constexpr float m_maxSpeed = 600.0f;
+        static constexpr float m_baseSpeed = Constants::PLAYER_BASE_SPEED;
+        static constexpr float m_acceleration = Constants::PLAYER_ACCELERATION;
+        static constexpr float m_deceleration = Constants::PLAYER_DECELERATION;
+        static constexpr float m_maxSpeed = Constants::PLAYER_MAX_SPEED;
 
         // Size parameters
-        static constexpr float m_baseRadius = 20.0f;
-        static constexpr float m_growthFactor = 1.5f;
+        static constexpr float m_baseRadius = Constants::PLAYER_BASE_RADIUS;
+        static constexpr float m_growthFactor = Constants::PLAYER_GROWTH_FACTOR;
 
         // Growth values for visual growth
         static constexpr float m_tinyFishGrowth = 3.0f;

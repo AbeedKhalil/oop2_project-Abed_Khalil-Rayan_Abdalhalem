@@ -17,10 +17,10 @@ namespace FishGame
         constexpr float RAD_TO_DEG = 180.0f / PI;
 
         // ==================== Player Settings ====================
-        constexpr float PLAYER_BASE_SPEED = 600.0f;
+        constexpr float PLAYER_BASE_SPEED = 400.0f;
         constexpr float PLAYER_ACCELERATION = 10.0f;
         constexpr float PLAYER_DECELERATION = 8.0f;
-        constexpr float PLAYER_MAX_SPEED = 800.0f;
+        constexpr float PLAYER_MAX_SPEED = 600.0f;
         constexpr float PLAYER_BASE_RADIUS = 20.0f;
         constexpr float PLAYER_GROWTH_FACTOR = 1.5f;
         constexpr float SPEED_BOOST_MULTIPLIER = 1.5f;
@@ -35,7 +35,6 @@ namespace FishGame
         constexpr int ANGELFISH_POINTS = 100;
         constexpr int PUFFERFISH_POINTS = 7;
         constexpr int PUFFERFISH_SCORE_PENALTY = 20;
-        constexpr int POISONFISH_POINTS_PENALTY = 0;
 
         // ==================== Game Rules - Points Thresholds ====================
         constexpr int INITIAL_LIVES = 3;
@@ -76,21 +75,16 @@ namespace FishGame
         constexpr float FPS_TEXT_X_OFFSET = 100.0f;
 
         // ==================== System UI Positions ====================
-        constexpr float GROWTH_METER_X = 20.0f;
-        constexpr float GROWTH_METER_Y_OFFSET = 60.0f;
         constexpr float FRENZY_Y_POSITION = 100.0f;
 
         // ==================== Menu Constants ====================
         constexpr const char* GAME_TITLE = "FEEDING FRENZY";
         constexpr float TITLE_Y_POSITION = 200.0f;
-        constexpr unsigned int TITLE_FONT_SIZE = 72;
-        constexpr float TITLE_OUTLINE_THICKNESS = 3.0f;
 
         constexpr float MENU_START_Y = 500.0f;
         constexpr float MENU_ITEM_SPACING = 180.0f;
         // Scale factor applied to menu button sprites
         constexpr float MENU_BUTTON_SCALE = 1.75f;
-        constexpr unsigned int MENU_FONT_SIZE = 48;
 
         // ==================== Animation Constants ====================
         constexpr float MENU_PULSE_SPEED = 2.0f;

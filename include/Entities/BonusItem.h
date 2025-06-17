@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Entity.h"
-#include <functional>
 #include <random>
 
 namespace FishGame

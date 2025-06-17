@@ -6,7 +6,6 @@
 #include <string>
 #include <string_view>
 #include <algorithm>
-#include <optional>
 
 namespace FishGame
 {

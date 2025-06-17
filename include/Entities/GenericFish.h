@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Fish.h"
+#include "GameConstants.h"
 #include "SpriteManager.h"
-#include <type_traits>
 
 namespace FishGame
 {
@@ -21,31 +21,31 @@ namespace FishGame
     template<>
     struct FishTraits<FishSize::Small>
     {
-        static constexpr float speed = 150.0f;
-        static constexpr float radius = 15.0f;
+        static constexpr float speed = Constants::SMALL_FISH_SPEED;
+        static constexpr float radius = Constants::SMALL_FISH_RADIUS;
         static constexpr float outlineThickness = 1.0f;
-        static inline sf::Color fillColor = sf::Color::Green;
-        static inline sf::Color outlineColor = sf::Color(0, 100, 0);
+        static inline sf::Color fillColor = Constants::SMALL_FISH_COLOR;
+        static inline sf::Color outlineColor = Constants::SMALL_FISH_OUTLINE;
     };
 
     template<>
     struct FishTraits<FishSize::Medium>
     {
-        static constexpr float speed = 120.0f;
-        static constexpr float radius = 25.0f;
+        static constexpr float speed = Constants::MEDIUM_FISH_SPEED;
+        static constexpr float radius = Constants::MEDIUM_FISH_RADIUS;
         static constexpr float outlineThickness = 1.5f;
-        static inline sf::Color fillColor = sf::Color::Blue;
-        static inline sf::Color outlineColor = sf::Color(0, 0, 100);
+        static inline sf::Color fillColor = Constants::MEDIUM_FISH_COLOR;
+        static inline sf::Color outlineColor = Constants::MEDIUM_FISH_OUTLINE;
     };
 
     template<>
     struct FishTraits<FishSize::Large>
     {
-        static constexpr float speed = 90.0f;
-        static constexpr float radius = 35.0f;
+        static constexpr float speed = Constants::LARGE_FISH_SPEED;
+        static constexpr float radius = Constants::LARGE_FISH_RADIUS;
         static constexpr float outlineThickness = 2.0f;
-        static inline sf::Color fillColor = sf::Color::Red;
-        static inline sf::Color outlineColor = sf::Color(100, 0, 0);
+        static inline sf::Color fillColor = Constants::LARGE_FISH_COLOR;
+        static inline sf::Color outlineColor = Constants::LARGE_FISH_OUTLINE;
     };
 
     // Generic fish template
