@@ -38,7 +38,7 @@ namespace FishGame
         , m_speedMultiplier(1.0f)
         , m_speedBoostTimer(sf::Time::Zero)
         , m_invincibilityTimer(sf::Time::Zero)
-        , m_windowBounds(1920, 1080)
+        , m_windowBounds(Constants::WINDOW_WIDTH, Constants::WINDOW_HEIGHT)
         , m_totalFishEaten(0)
         , m_damageTaken(0)
         , m_activeEffects()
@@ -333,11 +333,6 @@ namespace FishGame
             m_currentStage = 3;
             updateStage();
         }
-    }
-
-    void Player::advanceStage()
-    {
-        checkStageAdvancement();
     }
 
     void Player::resetSize()
@@ -771,22 +766,5 @@ namespace FishGame
 
         if (m_animator)
             m_animator->setColor(currentColor);
-    }
-
-    void Player::handlePredatorBehavior(const Entity& predator)
-    {
-        if (m_invulnerabilityTimer > sf::Time::Zero || m_invincibilityTimer > sf::Time::Zero)
-            return;
-
-        sf::Vector2f pushDirection = m_position - predator.getPosition();
-        float distance = std::sqrt(pushDirection.x * pushDirection.x + pushDirection.y * pushDirection.y);
-
-        if (distance > 0)
-        {
-            pushDirection /= distance;
-            m_velocity = pushDirection * 300.0f;
-        }
-
-        takeDamage();
     }
 }

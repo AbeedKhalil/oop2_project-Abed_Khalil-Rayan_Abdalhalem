@@ -91,11 +91,8 @@ namespace FishGame
         , m_totalScore(0)
         , m_currentChain(0)
         , m_floatingScores()
-        , m_recentEvents()
-        , m_timeSinceStart(sf::Time::Zero)
     {
         m_floatingScores.reserve(20);
-        m_recentEvents.resize(0);
     }
 
     int ScoreSystem::calculateScore(ScoreEventType type, int basePoints, int frenzyMultiplier, float powerUpMultiplier)
@@ -123,21 +120,6 @@ namespace FishGame
         // Create floating score
         int displayMultiplier = static_cast<int>(frenzyMultiplier * powerUpMultiplier);
         createFloatingScore(totalPoints, displayMultiplier, position);
-
-        // Record event
-        m_recentEvents.push_back({
-            type,
-            basePoints,
-            totalPoints,
-            position,
-            m_timeSinceStart
-            });
-
-        // Maintain event history size
-        if (m_recentEvents.size() > m_maxRecentEvents)
-        {
-            m_recentEvents.pop_front();
-        }
     }
 
     void ScoreSystem::registerHit()
@@ -183,8 +165,6 @@ namespace FishGame
 
     void ScoreSystem::update(sf::Time deltaTime)
     {
-        m_timeSinceStart += deltaTime;
-
         // Update floating scores
         std::for_each(m_floatingScores.begin(), m_floatingScores.end(),
             [deltaTime](std::unique_ptr<FloatingScore>& score) {
@@ -199,8 +179,6 @@ namespace FishGame
                 }),
             m_floatingScores.end()
         );
-
-        updateRecentEvents();
     }
 
     void ScoreSystem::drawFloatingScores(sf::RenderTarget& target) const
@@ -216,51 +194,11 @@ namespace FishGame
         m_currentScore = 0;
         m_currentChain = 0;
         m_floatingScores.clear();
-        m_recentEvents.clear();
-        m_timeSinceStart = sf::Time::Zero;
-    }
-
-    float ScoreSystem::getAverageScorePerSecond() const
-    {
-        if (m_timeSinceStart <= sf::Time::Zero)
-            return 0.0f;
-
-        // Calculate total score from recent events
-        int recentScore = std::accumulate(m_recentEvents.begin(), m_recentEvents.end(), 0,
-            [](int sum, const ScoreEvent& event) {
-                return sum + event.totalPoints;
-            });
-
-        // Get time span of recent events
-        if (!m_recentEvents.empty())
-        {
-            sf::Time timeSpan = m_timeSinceStart - m_recentEvents.front().timestamp;
-            if (timeSpan > sf::Time::Zero)
-            {
-                return static_cast<float>(recentScore) / timeSpan.asSeconds();
-            }
-        }
-
-        return static_cast<float>(m_currentScore) / m_timeSinceStart.asSeconds();
     }
 
     void ScoreSystem::createFloatingScore(int points, int multiplier, sf::Vector2f position)
     {
         auto floatingScore = std::make_unique<FloatingScore>(m_font, points, multiplier, position);
         m_floatingScores.push_back(std::move(floatingScore));
-    }
-
-    void ScoreSystem::updateRecentEvents()
-    {
-        // Remove events older than 30 seconds
-        const sf::Time maxEventAge = sf::seconds(30.0f);
-
-        m_recentEvents.erase(
-            std::remove_if(m_recentEvents.begin(), m_recentEvents.end(),
-                [this, maxEventAge](const ScoreEvent& event) {
-                    return (m_timeSinceStart - event.timestamp) > maxEventAge;
-                }),
-            m_recentEvents.end()
-        );
     }
 }

@@ -3,7 +3,6 @@
 #include <SFML/Graphics.hpp>
 #include <memory>
 #include <vector>
-#include <deque>
 #include <functional>
 #include <numeric>
 
@@ -17,15 +16,6 @@ namespace FishGame
         TailBite,
         PowerUpCollected,
         LevelComplete
-    };
-
-    struct ScoreEvent
-    {
-        ScoreEventType type = ScoreEventType::FishEaten;
-        int basePoints = 0;
-        int totalPoints = 0;
-        sf::Vector2f position{};
-        sf::Time timestamp = sf::Time::Zero;
     };
 
     // Floating score text that appears when points are earned
@@ -94,13 +84,8 @@ namespace FishGame
         void addToTotalScore(int score) { m_totalScore += score; }
         void reset();
 
-        // Statistics
-        const std::deque<ScoreEvent>& getRecentEvents() const { return m_recentEvents; }
-        float getAverageScorePerSecond() const;
-
     private:
         void createFloatingScore(int points, int multiplier, sf::Vector2f position);
-        void updateRecentEvents();
 
     private:
         const sf::Font& m_font;
@@ -115,11 +100,6 @@ namespace FishGame
 
         // Visual elements
         std::vector<std::unique_ptr<FloatingScore>> m_floatingScores;
-
-        // Event tracking
-        std::deque<ScoreEvent> m_recentEvents;
-        static constexpr size_t m_maxRecentEvents = 50;
-        sf::Time m_timeSinceStart;
 
         // Bonus values
         static constexpr int m_tailBiteBonus = 75;

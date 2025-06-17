@@ -6,7 +6,6 @@
 #include <map>
 #include <vector>
 #include <functional>
-#include <algorithm>
 #include <type_traits>
 #include "ResourceHolder.h"
 #include "State.h"

@@ -1,4 +1,5 @@
 #include "EnvironmentSystem.h"
+#include "GameConstants.h"
 #include <cmath>
 #include <algorithm>
 #include <numeric>
@@ -86,7 +87,7 @@ namespace FishGame
             // Generate kelp strands
             std::generate_n(std::back_inserter(m_elements), 20, [&]() {
                 sf::RectangleShape kelp(sf::Vector2f(10.0f, sizeDist(rng) * 3.0f));
-                kelp.setPosition(xDist(rng), 1080.0f);
+                kelp.setPosition(xDist(rng), static_cast<float>(Constants::WINDOW_HEIGHT));
                 kelp.setOrigin(5.0f, sizeDist(rng) * 3.0f);
                 kelp.setFillColor(sf::Color(
                     0,
@@ -125,8 +126,8 @@ namespace FishGame
 
         // Initialize current particles
         std::mt19937 rng(std::chrono::steady_clock::now().time_since_epoch().count());
-        std::uniform_real_distribution<float> xDist(0.0f, 1920.0f);
-        std::uniform_real_distribution<float> yDist(0.0f, 1080.0f);
+        std::uniform_real_distribution<float> xDist(0.0f, static_cast<float>(Constants::WINDOW_WIDTH));
+        std::uniform_real_distribution<float> yDist(0.0f, static_cast<float>(Constants::WINDOW_HEIGHT));
 
         std::generate_n(std::back_inserter(m_particles), 50, [&]() {
             CurrentParticle particle;
@@ -186,10 +187,10 @@ namespace FishGame
 
                 // Wrap around screen
                 sf::Vector2f pos = particle.shape.getPosition();
-                if (pos.x > 1920.0f) pos.x = 0.0f;
-                if (pos.x < 0.0f) pos.x = 1920.0f;
-                if (pos.y > 1080.0f) pos.y = 0.0f;
-                if (pos.y < 0.0f) pos.y = 1080.0f;
+                if (pos.x > static_cast<float>(Constants::WINDOW_WIDTH)) pos.x = 0.0f;
+                if (pos.x < 0.0f) pos.x = static_cast<float>(Constants::WINDOW_WIDTH);
+                if (pos.y > static_cast<float>(Constants::WINDOW_HEIGHT)) pos.y = 0.0f;
+                if (pos.y < 0.0f) pos.y = static_cast<float>(Constants::WINDOW_HEIGHT);
                 particle.shape.setPosition(pos);
 
                 // Update lifetime
@@ -209,20 +210,20 @@ namespace FishGame
         , m_midLayer(std::make_unique<BackgroundLayer>(20.0f, sf::Color(0, 70, 120, 70)))
         , m_nearLayer(std::make_unique<BackgroundLayer>(30.0f, sf::Color(0, 90, 140, 90)))
         , m_oceanCurrents(std::make_unique<OceanCurrentSystem>())
-        , m_lightingOverlay(sf::Vector2f(1920.0f, 1080.0f))
+        , m_lightingOverlay(sf::Vector2f(static_cast<float>(Constants::WINDOW_WIDTH),
+            static_cast<float>(Constants::WINDOW_HEIGHT)))
         , m_dayNightTimer(sf::Time::Zero)
         , m_transitionTimer(sf::Time::Zero)
         , m_predatorAggressionBase(1.0f)
         , m_isTransitioning(false)
         , m_dayNightCyclePaused(true)  // Start paused by default
-        , m_onEnvironmentChange(nullptr)
         , m_randomEngine(std::chrono::steady_clock::now().time_since_epoch().count())
         , m_timeDist(0, 3)
     {
         m_lightingOverlay.setFillColor(sf::Color(0, 0, 0, 0));
         // Initialize simple background fish
-        std::uniform_real_distribution<float> xDist(0.0f, 1920.0f);
-        std::uniform_real_distribution<float> yDist(100.0f, 1000.0f);
+        std::uniform_real_distribution<float> xDist(0.0f, static_cast<float>(Constants::WINDOW_WIDTH));
+        std::uniform_real_distribution<float> yDist(100.0f, static_cast<float>(Constants::WINDOW_HEIGHT) - 80.0f);
         std::uniform_real_distribution<float> speedDist(20.0f, 60.0f);
         std::uniform_real_distribution<float> radiusDist(5.0f, 15.0f);
         std::uniform_int_distribution<int> dirDist(0, 1);
@@ -257,10 +258,10 @@ namespace FishGame
             fish.shape.move(fish.velocity * deltaTime.asSeconds());
             sf::Vector2f pos = fish.shape.getPosition();
             float radius = fish.shape.getRadius();
-            if (fish.velocity.x > 0.f && pos.x - radius > 1920.f)
+            if (fish.velocity.x > 0.f && pos.x - radius > static_cast<float>(Constants::WINDOW_WIDTH))
                 pos.x = -radius;
             else if (fish.velocity.x < 0.f && pos.x + radius < 0.f)
-                pos.x = 1920.f + radius;
+                pos.x = static_cast<float>(Constants::WINDOW_WIDTH) + radius;
             fish.shape.setPosition(pos);
         }
 
@@ -441,10 +442,5 @@ namespace FishGame
         m_farLayer->setEnvironment(newType);
         m_midLayer->setEnvironment(newType);
         m_nearLayer->setEnvironment(newType);
-
-        if (m_onEnvironmentChange)
-        {
-            m_onEnvironmentChange(newType);
-        }
     }
 }

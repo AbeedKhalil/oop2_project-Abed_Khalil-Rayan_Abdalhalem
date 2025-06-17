@@ -4,8 +4,6 @@
 #include <memory>
 #include <vector>
 #include <random>
-#include <functional>
-#include <algorithm>
 
 namespace FishGame
 {
@@ -103,14 +101,7 @@ namespace FishGame
 
         // Day/night cycle control methods
         void pauseDayNightCycle() { m_dayNightCyclePaused = true; }
-        void resumeDayNightCycle() { m_dayNightCyclePaused = false; }
         void setRandomTimeOfDay();
-
-        // Callbacks
-        void setOnEnvironmentChange(std::function<void(EnvironmentType)> callback)
-        {
-            m_onEnvironmentChange = callback;
-        }
 
     protected:
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
@@ -145,8 +136,6 @@ namespace FishGame
         float m_predatorAggressionBase;
         bool m_isTransitioning;
         bool m_dayNightCyclePaused;
-
-        std::function<void(EnvironmentType)> m_onEnvironmentChange;
 
         // Random number generation for time of day
         std::mt19937 m_randomEngine;
