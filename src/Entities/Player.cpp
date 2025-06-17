@@ -9,7 +9,6 @@
 #include <SFML/Window.hpp>
 #include <cmath>
 #include <algorithm>
-#include <array>
 
 namespace FishGame
 {
@@ -19,7 +18,6 @@ namespace FishGame
 
     Player::Player()
         : Entity()
-        , m_shape(m_baseRadius)
         , m_score(0)
         , m_currentStage(1)
         , m_growthProgress(0.0f)
@@ -52,10 +50,6 @@ namespace FishGame
         , m_facingRight(false)
     {
         m_radius = m_baseRadius;
-        m_shape.setFillColor(sf::Color::Yellow);
-        m_shape.setOutlineColor(sf::Color(255, 200, 0));
-        m_shape.setOutlineThickness(2.0f);
-        m_shape.setOrigin(m_radius, m_radius);
 
         // Start at center of screen
         m_position = sf::Vector2f(m_windowBounds.x / 2.0f, m_windowBounds.y / 2.0f);
@@ -188,10 +182,6 @@ namespace FishGame
         // Rest of the update logic remains the same...
         checkStageAdvancement();
         updateVisualEffects(deltaTime);
-
-        // Update visual representation
-        m_shape.setPosition(m_position);
-        m_shape.setScale(m_eatAnimationScale, m_eatAnimationScale);
 
         if (m_renderMode == RenderMode::Sprite && m_animator)
         {
@@ -356,8 +346,6 @@ namespace FishGame
         m_currentStage = 1;
         m_growthProgress = 0.0f;
         m_radius = m_baseRadius;
-        m_shape.setRadius(m_radius);
-        m_shape.setOrigin(m_radius, m_radius);
 
         if (m_growthMeter)
         {
@@ -676,19 +664,6 @@ namespace FishGame
     void Player::updateStage()
     {
         m_radius = m_baseRadius * std::pow(m_growthFactor, m_currentStage - 1);
-        m_shape.setRadius(m_radius);
-        m_shape.setOrigin(m_radius, m_radius);
-
-        const std::array<sf::Color, 3> stageColors{
-            sf::Color::Yellow,
-            sf::Color(255, 150, 0),
-            sf::Color(255, 50, 50)
-        };
-
-        if (m_currentStage >= 1 && m_currentStage <= Constants::MAX_STAGES)
-        {
-            m_shape.setFillColor(stageColors[m_currentStage - 1]);
-        }
 
         if (m_growthMeter)
         {
@@ -770,7 +745,7 @@ namespace FishGame
             m_activeEffects.end()
         );
 
-        sf::Color currentColor = m_shape.getFillColor();
+        sf::Color currentColor = sf::Color::White;
 
         if (m_invulnerabilityTimer > sf::Time::Zero)
         {
@@ -794,7 +769,8 @@ namespace FishGame
             currentColor.a = 255;
         }
 
-        m_shape.setFillColor(currentColor);
+        if (m_animator)
+            m_animator->setColor(currentColor);
     }
 
     void Player::handlePredatorBehavior(const Entity& predator)

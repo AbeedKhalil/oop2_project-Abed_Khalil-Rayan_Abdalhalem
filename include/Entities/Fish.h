@@ -81,7 +81,6 @@ namespace FishGame
         virtual TextureID getTextureID() const;
 
     protected:
-        sf::CircleShape m_shape;
         FishSize m_size;
         float m_speed;
         int m_pointValue;

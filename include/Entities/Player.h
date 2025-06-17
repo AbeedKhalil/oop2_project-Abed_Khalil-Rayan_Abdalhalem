@@ -105,7 +105,6 @@ namespace FishGame
         int getPointValue() const;
 
     private:
-        sf::CircleShape m_shape;
         int m_score;
         int m_currentStage;
         float m_growthProgress;
