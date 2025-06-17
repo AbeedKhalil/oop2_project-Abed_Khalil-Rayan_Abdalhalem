@@ -19,7 +19,6 @@ namespace FishGame
         , m_powerUpsEnabled(true)
         , m_spawnedItems()
         , m_randomEngine(std::random_device{}())
-        , m_powerUpTypeDist(0, 1)  // 2 types of power-ups for now
         , m_positionDist(0.0f, 1.0f)  // Initialize with valid range
     {
         m_spawnedItems.reserve(10);
@@ -157,7 +156,7 @@ namespace FishGame
     std::unique_ptr<PowerUp> BonusItemManager::createRandomPowerUp()
     {
         // Extended to include new power-ups
-        int type = std::uniform_int_distribution<int>(0, 6)(m_randomEngine);
+        int type = std::uniform_int_distribution<int>(0, 4)(m_randomEngine);
 
         switch (type)
         {
@@ -181,14 +180,6 @@ namespace FishGame
 
         case 4:
             return std::make_unique<SpeedBoostPowerUp>();
-
-        case 5:
-            // Shield power-up (you'd need to create this)
-            return std::make_unique<ScoreDoublerPowerUp>(); // Placeholder
-
-        case 6:
-            // Invincibility power-up
-            return std::make_unique<ScoreDoublerPowerUp>(); // Placeholder
 
         default:
             return nullptr;

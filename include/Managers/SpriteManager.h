@@ -51,7 +51,6 @@ namespace FishGame
         PowerUpSpeedBoost,
         PowerUpFreeze,
         PowerUpExtraLife,
-        PowerUpShield,
 
         // Environment
         Background,

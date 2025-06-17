@@ -74,7 +74,6 @@ namespace FishGame
 
         // Power-up effects
         void applySpeedBoost(float multiplier, sf::Time duration);
-        void applyInvincibility(sf::Time duration);
 
         // Size information
         bool isAtMaxSize() const { return m_currentStage >= Constants::MAX_STAGES; }
@@ -106,8 +105,6 @@ namespace FishGame
 
         // Mouse control enhancements
         bool m_mouseControlActive;
-        sf::Vector2f m_lastMousePosition;
-        sf::Vector2f m_mouseVelocity;
         static constexpr float m_mouseDeadzone = 2.0f;
         static constexpr float m_mouseSmoothingFactor = 0.15f;
 
@@ -137,8 +134,7 @@ namespace FishGame
 
         // Power-up effects
         float m_speedMultiplier;
-        sf::Time m_speedBoostTimer;
-        sf::Time m_invincibilityTimer;
+        sf::Time m_speedBoostTimer;     
 
         // Movement parameters
         static constexpr float m_baseSpeed = Constants::PLAYER_BASE_SPEED;

@@ -193,7 +193,6 @@ namespace FishGame
 
         // Random number generation for power-ups
         std::mt19937 m_randomEngine;
-        std::uniform_int_distribution<int> m_powerUpTypeDist;
         std::uniform_real_distribution<float> m_positionDist;
 
         // Base spawn rates

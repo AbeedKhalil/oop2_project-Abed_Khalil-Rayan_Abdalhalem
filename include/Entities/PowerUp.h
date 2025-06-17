@@ -12,10 +12,8 @@ namespace FishGame
         ScoreDoubler,
         FrenzyStarter,
         SpeedBoost,
-        Invincibility,
         Freeze,
-        ExtraLife,
-        Shield
+        ExtraLife
     };
 
     // Base class for all power-ups
@@ -111,28 +109,11 @@ namespace FishGame
         std::vector<PowerUpType> getActivePowerUps() const;
 
         // Specific power-up queries
-        bool hasShield() const { return isActive(PowerUpType::Shield); }
         bool isFreezeActive() const { return isActive(PowerUpType::Freeze); }
         bool hasSpeedBoost() const { return isActive(PowerUpType::SpeedBoost); }
-        bool hasInvincibility() const { return isActive(PowerUpType::Invincibility); }
 
         // Get effect values
         float getSpeedMultiplier() const;
-        float getFreezeSlowdown() const { return m_freezeSlowdown; }
-
-        // Template method for applying effects
-        template<typename Entity>
-        void applyEffects(Entity& entity)
-        {
-            if (hasSpeedBoost())
-            {
-                entity.setSpeedMultiplier(m_speedBoostMultiplier);
-            }
-            if (hasShield())
-            {
-                entity.enableShield();
-            }
-        }
 
     private:
         struct ActivePowerUp
@@ -157,8 +138,6 @@ namespace FishGame
         }
 
         // Power-up effect values
-        static constexpr float m_freezeSlowdown = 0.1f;        // 90% speed reduction
-        static constexpr float m_shieldDuration = 10.0f;       // Shield lasts 10 seconds
         static constexpr float m_speedBoostMultiplier = 1.5f;  // 50% speed increase
         static constexpr float m_scoreDoubleMultiplier = 2.0f; // Double score
     };
