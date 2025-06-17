@@ -100,7 +100,7 @@ namespace FishGame
 
         // Sprite component - using unique_ptr requires complete type in .cpp
         std::unique_ptr<SpriteComponent<Entity>> m_sprite;
-        RenderMode m_renderMode = RenderMode::Circle;
+        RenderMode m_renderMode = RenderMode::Sprite;
 
     private:
         // Tag system implementation

@@ -108,8 +108,6 @@ namespace FishGame
 
         // Make Barracuda larger than default large fish
         m_radius = 50.0f;
-        m_shape.setRadius(m_radius);
-        m_shape.setOrigin(m_radius, m_radius);
     }
 
     void Barracuda::updateAI(const std::vector<std::unique_ptr<Entity>>& entities,
@@ -248,7 +246,6 @@ namespace FishGame
         {
             // Just update position with frozen velocity
             updateMovement(deltaTime);
-            m_shape.setPosition(m_position);
 
             // Still update visual elements but not state transitions
             for (size_t i = 0; i < m_spikes.size(); ++i)
@@ -404,8 +401,6 @@ namespace FishGame
 
                     // Update radius
                     m_radius = m_normalRadius * (1.0f + m_inflationLevel * (m_inflatedRadiusMultiplier - 1.0f));
-                    m_shape.setRadius(m_radius);
-                    m_shape.setOrigin(m_radius, m_radius);
                 }
             }
         }
@@ -426,8 +421,6 @@ namespace FishGame
 
                     // Update radius
                     m_radius = m_normalRadius * (1.0f + m_inflationLevel * (m_inflatedRadiusMultiplier - 1.0f));
-                    m_shape.setRadius(m_radius);
-                    m_shape.setOrigin(m_radius, m_radius);
                 }
             }
         }

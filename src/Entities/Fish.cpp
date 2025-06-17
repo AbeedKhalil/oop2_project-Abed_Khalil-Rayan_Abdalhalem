@@ -14,7 +14,6 @@ namespace FishGame
 
     Fish::Fish(FishSize size, float speed, int currentLevel)
         : Entity()
-        , m_shape()
         , m_size(size)
         , m_speed(speed)
         , m_currentLevel(currentLevel)
@@ -47,9 +46,6 @@ namespace FishGame
 
         // Set point value based on size and level
         m_pointValue = getPointValue(m_size, m_currentLevel);
-
-        m_shape.setRadius(m_radius);
-        m_shape.setOrigin(m_radius, m_radius);
     }
 
     void Fish::startFleeing()
@@ -244,18 +240,12 @@ namespace FishGame
             destroy();
         }
 
-        // Update visual position
-        m_shape.setPosition(m_position);
-
         // Update sprite if present
         if (m_sprite && m_renderMode == RenderMode::Sprite)
         {
             m_sprite->update(deltaTime);
             updateSpriteEffects(deltaTime);
         }
-
-        // Update visual position (both circle and sprite)
-        m_shape.setPosition(m_position);
     }
 
     sf::FloatRect Fish::getBounds() const
