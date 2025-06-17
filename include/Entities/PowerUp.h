@@ -3,9 +3,6 @@
 #include "BonusItem.h"
 #include <vector>
 #include <algorithm>
-#include <unordered_map>
-#include <functional>
-#include <type_traits>
 
 namespace FishGame
 {
@@ -83,26 +80,6 @@ namespace FishGame
     private:
         std::vector<sf::CircleShape> m_lightningBolts;
         float m_sparkAnimation;
-    };
-
-    // Template factory for creating power-ups
-    template<typename T>
-    class PowerUpFactory
-    {
-        static_assert(std::is_base_of_v<PowerUp, T>, "T must be derived from PowerUp");
-
-    public:
-        static std::unique_ptr<PowerUp> create()
-        {
-            return std::make_unique<T>();
-        }
-
-        // Template method for creating with custom parameters
-        template<typename... Args>
-        static std::unique_ptr<PowerUp> createWithParams(Args&&... args)
-        {
-            return std::make_unique<T>(std::forward<Args>(args)...);
-        }
     };
 
     // Power-up manager to handle active effects
@@ -184,104 +161,5 @@ namespace FishGame
         static constexpr float m_shieldDuration = 10.0f;       // Shield lasts 10 seconds
         static constexpr float m_speedBoostMultiplier = 1.5f;  // 50% speed increase
         static constexpr float m_scoreDoubleMultiplier = 2.0f; // Double score
-    };
-
-    // Template specialization for power-up type traits
-    template<PowerUpType Type>
-    struct PowerUpTraits
-    {
-        static constexpr float duration = 10.0f;
-        static constexpr const char* name = "Unknown";
-    };
-
-    // Specializations for each power-up type
-    template<>
-    struct PowerUpTraits<PowerUpType::ScoreDoubler>
-    {
-        static constexpr float duration = 10.0f;
-        static constexpr const char* name = "Score Doubler";
-    };
-
-    template<>
-    struct PowerUpTraits<PowerUpType::FrenzyStarter>
-    {
-        static constexpr float duration = 0.0f; // Instant effect
-        static constexpr const char* name = "Frenzy Starter";
-    };
-
-    template<>
-    struct PowerUpTraits<PowerUpType::SpeedBoost>
-    {
-        static constexpr float duration = 8.0f;
-        static constexpr const char* name = "Speed Boost";
-    };
-
-    template<>
-    struct PowerUpTraits<PowerUpType::Invincibility>
-    {
-        static constexpr float duration = 5.0f;
-        static constexpr const char* name = "Invincibility";
-    };
-
-    template<>
-    struct PowerUpTraits<PowerUpType::Freeze>
-    {
-        static constexpr float duration = 5.0f;
-        static constexpr const char* name = "Freeze";
-    };
-
-    template<>
-    struct PowerUpTraits<PowerUpType::ExtraLife>
-    {
-        static constexpr float duration = 0.0f; // Instant effect
-        static constexpr const char* name = "Extra Life";
-    };
-
-    template<>
-    struct PowerUpTraits<PowerUpType::Shield>
-    {
-        static constexpr float duration = 10.0f;
-        static constexpr const char* name = "Shield";
-    };
-
-    // Template utility for creating power-ups by type
-    template<PowerUpType Type>
-    class TypedPowerUpFactory
-    {
-    public:
-        static std::unique_ptr<PowerUp> create();
-    };
-
-    // Factory method for creating power-ups dynamically
-    class PowerUpCreator
-    {
-    public:
-        using CreatorFunc = std::function<std::unique_ptr<PowerUp>()>;
-
-        static PowerUpCreator& getInstance()
-        {
-            static PowerUpCreator instance;
-            return instance;
-        }
-
-        template<typename PowerUpClass>
-        void registerPowerUp(PowerUpType type)
-        {
-            m_creators[type] = []() { return PowerUpFactory<PowerUpClass>::create(); };
-        }
-
-        std::unique_ptr<PowerUp> create(PowerUpType type) const
-        {
-            auto it = m_creators.find(type);
-            if (it != m_creators.end())
-            {
-                return it->second();
-            }
-            return nullptr;
-        }
-
-    private:
-        PowerUpCreator() = default;
-        std::unordered_map<PowerUpType, CreatorFunc> m_creators;
     };
 }

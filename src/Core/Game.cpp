@@ -6,8 +6,6 @@
 #include "PauseState.h"
 #include <algorithm>
 #include <stdexcept>
-#include <numeric>
-#include <execution>
 
 namespace FishGame
 {
