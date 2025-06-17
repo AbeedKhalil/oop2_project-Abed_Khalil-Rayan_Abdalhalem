@@ -50,7 +50,7 @@ namespace FishGame
             }},
             {TextureID::GameOptions, TextureID::GameOptionsHover, [this]() {
                 deferAction([this]() {
-                    requestStackPush(StateID::Settings);
+                    requestStackPush(StateID::GameOptions);
                 });
             }},
             {TextureID::Exit, TextureID::ExitHover, [this]() {

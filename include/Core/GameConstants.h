@@ -75,11 +75,6 @@ namespace FishGame
         constexpr float POWERUP_TEXT_X_OFFSET = 300.0f;
         constexpr float FPS_TEXT_X_OFFSET = 100.0f;
 
-        // ==================== Progress Bar Settings ====================
-        constexpr float PROGRESS_BAR_WIDTH = 200.0f;
-        constexpr float PROGRESS_BAR_HEIGHT = 20.0f;
-        constexpr float PROGRESS_BAR_OUTLINE = 2.0f;
-
         // ==================== System UI Positions ====================
         constexpr float GROWTH_METER_X = 20.0f;
         constexpr float GROWTH_METER_Y_OFFSET = 60.0f;
