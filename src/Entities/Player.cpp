@@ -15,6 +15,7 @@ namespace FishGame
     // Static member initialization
     const sf::Time Player::m_invulnerabilityDuration = sf::seconds(2.0f);
     const sf::Time Player::m_damageCooldownDuration = sf::seconds(0.5f);
+    const sf::Time Player::m_eatAnimationDuration = sf::seconds(0.6f);
 
     Player::Player()
         : Entity()
@@ -40,6 +41,7 @@ namespace FishGame
         , m_damageTaken(0)
         , m_activeEffects()
         , m_eatAnimationScale(1.0f)
+        , m_eatAnimationTimer(sf::Time::Zero)
         , m_damageFlashColor(sf::Color::White)
         , m_damageFlashIntensity(0.0f)
         , m_animator(nullptr)
@@ -164,7 +166,7 @@ namespace FishGame
         constrainToWindow();
 
         // Auto-orient sprite based on velocity
-        if (m_autoOrient && m_animator && m_renderMode == RenderMode::Sprite)
+        if (m_autoOrient && m_animator && m_renderMode == RenderMode::Sprite && m_eatAnimationTimer <= sf::Time::Zero)
         {
             if (std::abs(m_velocity.x) > m_orientationThreshold)
             {
@@ -215,7 +217,7 @@ namespace FishGame
             else
                 desired = m_facingRight ? "idleRight" : "idleLeft";
 
-            if (desired != m_currentAnimation)
+            if (m_eatAnimationTimer <= sf::Time::Zero && desired != m_currentAnimation)
             {
                 m_animator->play(desired);
                 m_currentAnimation = desired;
@@ -604,6 +606,7 @@ namespace FishGame
     void Player::triggerEatEffect()
     {
         m_eatAnimationScale = 1.3f;
+        m_eatAnimationTimer = m_eatAnimationDuration;
 
         if (m_animator)
         {
@@ -721,6 +724,13 @@ namespace FishGame
 
     void Player::updateVisualEffects(sf::Time deltaTime)
     {
+        if (m_eatAnimationTimer > sf::Time::Zero)
+        {
+            m_eatAnimationTimer -= deltaTime;
+            if (m_eatAnimationTimer < sf::Time::Zero)
+                m_eatAnimationTimer = sf::Time::Zero;
+        }
+
         if (m_eatAnimationScale > 1.0f)
         {
             m_eatAnimationScale -= m_eatAnimationSpeed * deltaTime.asSeconds();
