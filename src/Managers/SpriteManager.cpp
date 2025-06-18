@@ -134,13 +134,19 @@ namespace FishGame
             config.baseSize = sf::Vector2f(50.0f, 50.0f);
             break;
 
+        case TextureID::SmallFish:
+        case TextureID::PoisonFish:
+        case TextureID::Angelfish:
+            config.scaleMultiplier = getScaleForSize(size) * 1.5f;
+            break;
+
         case TextureID::Jellyfish:
             config.baseSize = sf::Vector2f(10.0f, 30.0f);
             config.scaleMultiplier = 0.7f;
             break;
 
         case TextureID::Barracuda:
-            config.scaleMultiplier = getScaleForSize(size) * 1.5f;
+            config.scaleMultiplier = getScaleForSize(size) * 1.3f;
             break;
 
         case TextureID::Starfish:

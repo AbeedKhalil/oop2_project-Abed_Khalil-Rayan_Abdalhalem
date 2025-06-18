@@ -152,6 +152,12 @@ namespace FishGame
         case FishSize::Large: scale = cfg.large; break;
         }
 
+        if (id == TextureID::SmallFish || id == TextureID::PoisonFish ||
+            id == TextureID::Angelfish)
+        {
+            scale *= 1.7f;
+        }
+
         m_animator->setScale({ scale, scale });
         m_animator->setPosition(m_position);
         m_facingRight = m_velocity.x > 0.f;
