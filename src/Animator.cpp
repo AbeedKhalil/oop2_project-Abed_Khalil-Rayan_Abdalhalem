@@ -153,3 +153,25 @@ Animator createBarracudaAnimator(const sf::Texture& tex)
 
     return a;
 }
+
+Animator createSimpleFishAnimator(const sf::Texture& tex)
+{
+    Animator a(tex, 66, 44);
+
+    auto makeClip = [&](const std::string& name, int rowY, int start, int count,
+        Time dur, bool loop = true, bool reverse = false)
+        {
+            a.addClipRow(name, rowY, start, count, dur, loop, reverse);
+        };
+
+    const int SWIM_Y = 1;
+    const int TURN_Y = 45;
+
+    makeClip("swimLeft", SWIM_Y, 0, 15, milliseconds(80));
+    makeClip("turnLeftToRight", TURN_Y, 0, 5, milliseconds(90), false);
+    makeClip("turnRightToLeft", TURN_Y, 0, 5, milliseconds(90), false, true);
+
+    a.copyFlip("swimLeft", "swimRight");
+
+    return a;
+}

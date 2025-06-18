@@ -1,8 +1,10 @@
 #pragma once
 
 #include "Entity.h"
+#include "Animator.h"
 #include <vector>
 #include <memory>
+#include <string>
 
 namespace FishGame
 {
@@ -68,6 +70,7 @@ namespace FishGame
 
         // Sprite support methods
         void initializeSprite(SpriteManager& spriteManager);
+        void initializeAnimation(SpriteManager& spriteManager);
         void updateVisualState();
 
     protected:
@@ -110,5 +113,13 @@ namespace FishGame
 
         // Additional member for damage flash effect
         sf::Time m_damageFlashTimer;
+
+        // Animation support
+        std::unique_ptr<Animator> m_animator;
+        std::string m_currentAnimation;
+        bool m_facingRight{ false };
+        bool m_turning{ false };
+        sf::Time m_turnTimer{ sf::Time::Zero };
+        static constexpr float m_turnDuration = 0.45f;
     };
 }

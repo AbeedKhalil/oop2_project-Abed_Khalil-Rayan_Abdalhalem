@@ -100,6 +100,8 @@ namespace FishGame
             // Apply initial visual state
             updateVisualState();
         }
+
+        initializeAnimation(spriteManager);
     }
 
     void Fish::updateVisualState()
@@ -130,6 +132,31 @@ namespace FishGame
                 m_sprite->applyPulseEffect(0.1f, 5.0f);
             }
         }
+    }
+
+    void Fish::initializeAnimation(SpriteManager& spriteManager)
+    {
+        TextureID id = getTextureID();
+        if (id != TextureID::SmallFish && id != TextureID::PoisonFish && id != TextureID::Angelfish)
+            return;
+
+        const sf::Texture& tex = spriteManager.getTexture(id);
+        m_animator = std::make_unique<Animator>(createSimpleFishAnimator(tex));
+
+        float scale = 1.f;
+        const auto& cfg = spriteManager.getScaleConfig();
+        switch (m_size)
+        {
+        case FishSize::Small: scale = cfg.small; break;
+        case FishSize::Medium: scale = cfg.medium; break;
+        case FishSize::Large: scale = cfg.large; break;
+        }
+
+        m_animator->setScale({ scale, scale });
+        m_animator->setPosition(m_position);
+        m_facingRight = m_velocity.x > 0.f;
+        m_currentAnimation = m_facingRight ? "swimRight" : "swimLeft";
+        m_animator->play(m_currentAnimation);
     }
 
     void Fish::updateSpriteEffects(sf::Time deltaTime)
@@ -241,8 +268,37 @@ namespace FishGame
             destroy();
         }
 
-        // Update sprite if present
-        if (m_sprite && m_renderMode == RenderMode::Sprite)
+        // Update sprite or animator
+        if (m_animator && m_renderMode == RenderMode::Sprite)
+        {
+            bool newFacingRight = m_velocity.x > 0.f;
+            if (std::abs(m_velocity.x) > 1.f && newFacingRight != m_facingRight)
+            {
+                m_facingRight = newFacingRight;
+                std::string turn = m_facingRight ? "turnLeftToRight" : "turnRightToLeft";
+                m_animator->play(turn);
+                m_currentAnimation = turn;
+                m_turning = true;
+                m_turnTimer = sf::Time::Zero;
+            }
+
+            m_animator->update(deltaTime);
+
+            if (m_turning)
+            {
+                m_turnTimer += deltaTime;
+                if (m_turnTimer.asSeconds() >= m_turnDuration)
+                {
+                    std::string swim = m_facingRight ? "swimRight" : "swimLeft";
+                    m_animator->play(swim);
+                    m_currentAnimation = swim;
+                    m_turning = false;
+                }
+            }
+
+            m_animator->setPosition(m_position);
+        }
+        else if (m_sprite && m_renderMode == RenderMode::Sprite)
         {
             m_sprite->update(deltaTime);
             updateSpriteEffects(deltaTime);
@@ -431,7 +487,11 @@ namespace FishGame
 
     void Fish::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        if (m_sprite)
+        if (m_animator)
+        {
+            target.draw(*m_animator, states);
+        }
+        else if (m_sprite)
         {
             target.draw(*m_sprite, states);
         }

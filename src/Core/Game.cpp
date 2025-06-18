@@ -96,7 +96,7 @@ namespace FishGame
 
         // Configure sprite scales
         SpriteScaleConfig scaleConfig;
-        scaleConfig.small = 0.5f;    // Adjust based on your sprite sizes
+        scaleConfig.small = 1.0f;    // Adjust based on your sprite sizes
         scaleConfig.medium = 0.75f;
         scaleConfig.large = 1.0f;
         m_spriteManager->setScaleConfig(scaleConfig);
