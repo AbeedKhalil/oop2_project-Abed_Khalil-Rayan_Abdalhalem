@@ -58,7 +58,6 @@ namespace FishGame
 
     private:
         sf::Text m_icon; // "2X" text
-        static constexpr float m_doubleDuration = 10.0f;
     };
 
     // Frenzy Starter - instantly activates Frenzy Mode
@@ -136,9 +135,5 @@ namespace FishGame
         {
             return std::find_if(m_activePowerUps.begin(), m_activePowerUps.end(), pred);
         }
-
-        // Power-up effect values
-        static constexpr float m_speedBoostMultiplier = 1.5f;  // 50% speed increase
-        static constexpr float m_scoreDoubleMultiplier = 2.0f; // Double score
     };
 }

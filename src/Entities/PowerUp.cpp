@@ -34,7 +34,8 @@ namespace FishGame
 
     // ScoreDoublerPowerUp implementation
     ScoreDoublerPowerUp::ScoreDoublerPowerUp()
-        : PowerUp(PowerUpType::ScoreDoubler, sf::seconds(m_doubleDuration))
+        : PowerUp(PowerUpType::ScoreDoubler,
+            sf::seconds(Constants::SCORE_DOUBLER_POWERUP_DURATION))
         , m_icon()
     {
         // Setup "2X" icon text - font will be set later
@@ -236,7 +237,7 @@ namespace FishGame
 
         if (isActive(PowerUpType::ScoreDoubler))
         {
-            multiplier *= m_scoreDoubleMultiplier;
+            multiplier *= Constants::SCORE_DOUBLER_MULTIPLIER;
         }
 
         // Add other score-affecting power-ups here
@@ -246,7 +247,7 @@ namespace FishGame
 
     float PowerUpManager::getSpeedMultiplier() const
     {
-        return isActive(PowerUpType::SpeedBoost) ? m_speedBoostMultiplier : 1.0f;
+        return isActive(PowerUpType::SpeedBoost) ? Constants::SPEED_BOOST_MULTIPLIER : 1.0f;
     }
 
     std::vector<PowerUpType> PowerUpManager::getActivePowerUps() const
