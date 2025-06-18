@@ -59,7 +59,7 @@ void FishAnimator::buildAnimations()
         };
 
     // Build left-facing clips from the sprite sheet rows
-    m_clips["eatLeft"] = makeClip(EAT_Y, 0, 6, milliseconds(100), false);
+    m_clips["eatLeft"] = makeClip(EAT_Y, 0, 6, milliseconds(50), false);
     m_clips["idleLeft"] = makeClip(IDLE_Y, 0, 6, milliseconds(120));
     m_clips["swimLeft"] = makeClip(SWIM_Y, 0, 14, milliseconds(80));
     m_clips["turnLeftToRight"] = makeClip(TURN_Y, 0, 5, milliseconds(90), false);

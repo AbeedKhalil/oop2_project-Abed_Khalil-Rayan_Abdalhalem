@@ -181,6 +181,10 @@ namespace FishGame
         sf::Time m_eatAnimationTimer;
         static const sf::Time m_eatAnimationDuration;
 
+        // Turn animation
+        sf::Time m_turnAnimationTimer;
+        static const sf::Time m_turnAnimationDuration;
+
         // Damage flash
         sf::Color m_damageFlashColor;
         float m_damageFlashIntensity;

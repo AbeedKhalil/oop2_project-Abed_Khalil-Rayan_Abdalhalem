@@ -15,7 +15,8 @@ namespace FishGame
     // Static member initialization
     const sf::Time Player::m_invulnerabilityDuration = sf::seconds(2.0f);
     const sf::Time Player::m_damageCooldownDuration = sf::seconds(0.5f);
-    const sf::Time Player::m_eatAnimationDuration = sf::seconds(0.6f);
+    const sf::Time Player::m_eatAnimationDuration = sf::seconds(0.3f);
+    const sf::Time Player::m_turnAnimationDuration = sf::seconds(0.45f);
 
     Player::Player()
         : Entity()
@@ -47,6 +48,7 @@ namespace FishGame
         , m_animator(nullptr)
         , m_currentAnimation()
         , m_facingRight(false)
+        , m_turnAnimationTimer(sf::Time::Zero)
         , m_controlsReversed(false)
         , m_poisonColorTimer(sf::Time::Zero)
     {
@@ -174,6 +176,10 @@ namespace FishGame
                 if (newFacingRight != m_facingRight)
                 {
                     m_facingRight = newFacingRight;
+                    m_turnAnimationTimer = m_turnAnimationDuration;
+                    std::string turnAnim = m_facingRight ? "turnLeftToRight" : "turnRightToLeft";
+                    m_animator->play(turnAnim);
+                    m_currentAnimation = turnAnim;
                 }
             }
         }
@@ -217,7 +223,7 @@ namespace FishGame
             else
                 desired = m_facingRight ? "idleRight" : "idleLeft";
 
-            if (m_eatAnimationTimer <= sf::Time::Zero && desired != m_currentAnimation)
+            if (m_turnAnimationTimer <= sf::Time::Zero && m_eatAnimationTimer <= sf::Time::Zero && desired != m_currentAnimation)
             {
                 m_animator->play(desired);
                 m_currentAnimation = desired;
@@ -729,6 +735,13 @@ namespace FishGame
             m_eatAnimationTimer -= deltaTime;
             if (m_eatAnimationTimer < sf::Time::Zero)
                 m_eatAnimationTimer = sf::Time::Zero;
+        }
+
+        if (m_turnAnimationTimer > sf::Time::Zero)
+        {
+            m_turnAnimationTimer -= deltaTime;
+            if (m_turnAnimationTimer < sf::Time::Zero)
+                m_turnAnimationTimer = sf::Time::Zero;
         }
 
         if (m_eatAnimationScale > 1.0f)
