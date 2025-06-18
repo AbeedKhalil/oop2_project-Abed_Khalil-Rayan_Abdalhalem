@@ -3,7 +3,7 @@
 #include "GameConstants.h"
 #include "Player.h"
 #include "SpriteManager.h"
-#include "BarracudaAnimator.h"
+#include "Animator.h"
 #include <random>
 #include <algorithm>
 #include <cmath>
@@ -119,7 +119,7 @@ namespace FishGame
     void Barracuda::initializeSprite(SpriteManager& spriteManager)
     {
         const sf::Texture& tex = spriteManager.getTexture(getTextureID());
-        m_animator = std::make_unique<BarracudaAnimator>(tex);
+        m_animator = std::make_unique<Animator>(createBarracudaAnimator(tex));
 
         float scale = spriteManager.getScaleConfig().large * 1.5f;
         m_animator->setScale({ scale, scale });

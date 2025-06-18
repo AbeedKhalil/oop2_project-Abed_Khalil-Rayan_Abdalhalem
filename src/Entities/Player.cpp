@@ -3,7 +3,7 @@
 #include "BonusItem.h"
 #include "PowerUp.h"
 #include "SpecialFish.h"
-#include "FishAnimator.h"
+#include "Animator.h"
 #include "CollisionDetector.h"
 #include "GenericFish.h"
 #include <SFML/Window.hpp>
@@ -79,7 +79,7 @@ namespace FishGame
         m_spriteManager = &spriteManager;
 
         const sf::Texture& tex = spriteManager.getTexture(getTextureID());
-        m_animator = std::make_unique<FishAnimator>(tex);
+        m_animator = std::make_unique<Animator>(createFishAnimator(tex));
         m_animator->setPosition(m_position);
         setRenderMode(RenderMode::Sprite);
         m_currentAnimation = "idleLeft";

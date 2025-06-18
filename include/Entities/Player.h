@@ -3,7 +3,7 @@
 #include "GameConstants.h"
 #include "Fish.h"
 #include "SpriteManager.h"
-#include "FishAnimator.h"
+#include "Animator.h"
 #include <memory>
 #include <string>
 #include "GrowthMeter.h"
@@ -190,7 +190,7 @@ namespace FishGame
         float m_damageFlashIntensity;
 
         // Animation
-        std::unique_ptr<FishAnimator> m_animator;
+        std::unique_ptr<Animator> m_animator;
         std::string m_currentAnimation;
         bool m_facingRight{ false };
     };

@@ -3,7 +3,7 @@
 #include "Fish.h"
 #include "CollisionDetector.h"
 #include "GenericFish.h"
-#include "BarracudaAnimator.h"
+#include "Animator.h"
 #include <cmath>
 #include <algorithm>
 #include <vector>
@@ -74,7 +74,7 @@ namespace FishGame
         float m_dashSpeed;
         bool m_isDashing;
 
-        std::unique_ptr<BarracudaAnimator> m_animator;
+        std::unique_ptr<Animator> m_animator;
         std::string m_currentAnimation;
         bool m_facingRight{ false };
         bool m_turning{ false };
