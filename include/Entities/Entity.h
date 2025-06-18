@@ -2,10 +2,6 @@
 
 #include <SFML/Graphics.hpp>
 #include <memory>
-#include <unordered_set>
-#include <string>
-#include <string_view>
-#include <algorithm>
 
 namespace FishGame
 {
@@ -66,14 +62,6 @@ namespace FishGame
         // Common movement update
         void updatePosition(sf::Time deltaTime) noexcept;
 
-        // Tag system for flexible behaviors
-        void addTag(std::string_view tag);
-        void removeTag(std::string_view tag);
-        bool hasTag(std::string_view tag) const;
-        bool hasAnyTag(std::initializer_list<std::string_view> tags) const;
-        void clearTags() noexcept { m_tags.clear(); }
-        const std::unordered_set<std::string>& getTags() const noexcept { return m_tags; }
-
         // Sprite support - declared here, defined in Entity.cpp
         void setSpriteComponent(std::unique_ptr<SpriteComponent<Entity>> sprite);
         SpriteComponent<Entity>* getSpriteComponent();
@@ -100,10 +88,6 @@ namespace FishGame
         // Sprite component - using unique_ptr requires complete type in .cpp
         std::unique_ptr<SpriteComponent<Entity>> m_sprite;
         RenderMode m_renderMode = RenderMode::Sprite;
-
-    private:
-        // Tag system implementation
-        std::unordered_set<std::string> m_tags;
     };
 
     // Utility functions for entity operations
