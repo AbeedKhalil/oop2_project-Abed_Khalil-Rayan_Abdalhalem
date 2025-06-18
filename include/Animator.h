@@ -53,3 +53,4 @@ private:
 // Helper factory functions
 Animator createFishAnimator(const sf::Texture& texture);
 Animator createBarracudaAnimator(const sf::Texture& texture);
+Animator createSimpleFishAnimator(const sf::Texture& texture);
