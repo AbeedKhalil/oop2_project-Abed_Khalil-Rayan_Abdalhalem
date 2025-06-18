@@ -6,11 +6,16 @@ namespace
 {
     // Sprite sheet layout constants
     constexpr int START_X = 1;
-    constexpr int START_Y = 1;
 
     // Size of each frame in the sheet
     constexpr int FRAME_W = 126;
     constexpr int FRAME_H = 102;
+
+    // Row starting positions
+    constexpr int EAT_Y = 1;
+    constexpr int IDLE_Y = 107;
+    constexpr int SWIM_Y = 213;
+    constexpr int TURN_Y = 319;
 }
 
 FishAnimator::FishAnimator(const Texture& texture) : m_texture(texture)
@@ -35,7 +40,8 @@ void FishAnimator::applyScale()
 
 void FishAnimator::buildAnimations()
 {
-    auto makeClip = [&](int startFrame, int count, Time dur,
+    // Helper to build a clip given the row position and range
+    auto makeClip = [&](int rowY, int startFrame, int count, Time dur,
         bool loop = true, bool reverse = false) -> Clip
         {
             Clip c;
@@ -45,19 +51,19 @@ void FishAnimator::buildAnimations()
             {
                 int index = reverse ? startFrame + count - 1 - i : startFrame + i;
                 IntRect rect(START_X + index * FRAME_W,
-                    START_Y,
+                    rowY,
                     FRAME_W, FRAME_H);
                 c.frames.push_back(rect);
             }
             return c;
         };
 
-    // Frame ranges follow the updated sprite sheet layout
-    m_clips["eatLeft"] = makeClip(0, 6, milliseconds(100));
-    m_clips["idleLeft"] = makeClip(6, 1, milliseconds(120));
-    m_clips["swimLeft"] = makeClip(7, 15, milliseconds(80));
-    m_clips["turnLeftToRight"] = makeClip(22, 5, milliseconds(90), /*loop*/ false);
-    m_clips["turnRightToLeft"] = makeClip(22, 5, milliseconds(90), /*loop*/ false, /*reverse*/ true);
+    // Build left-facing clips from the sprite sheet rows
+    m_clips["eatLeft"] = makeClip(EAT_Y, 0, 6, milliseconds(100), false);
+    m_clips["idleLeft"] = makeClip(IDLE_Y, 0, 6, milliseconds(120));
+    m_clips["swimLeft"] = makeClip(SWIM_Y, 0, 14, milliseconds(80));
+    m_clips["turnLeftToRight"] = makeClip(TURN_Y, 0, 5, milliseconds(90), false);
+    m_clips["turnRightToLeft"] = makeClip(TURN_Y, 0, 5, milliseconds(90), false, true);
 
 
     // Create right-facing versions
