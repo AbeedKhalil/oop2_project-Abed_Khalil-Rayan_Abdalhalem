@@ -18,8 +18,6 @@ namespace FishGame
         , m_textScale(1.0f)
         , m_textRotation(0.0f)
         , m_currentColor(sf::Color::White)
-        , m_onFrenzyStart(nullptr)
-        , m_onFrenzyEnd(nullptr)
     {
         // Setup frenzy text
         m_frenzyText.setFont(font);
@@ -179,8 +177,6 @@ namespace FishGame
             switch (level)
             {
             case FrenzyLevel::None:
-                if (m_onFrenzyEnd)
-                    m_onFrenzyEnd();
                 break;
 
             case FrenzyLevel::Frenzy:
@@ -188,8 +184,6 @@ namespace FishGame
                 m_multiplierText.setString("2X Score Multiplier");
                 m_currentColor = sf::Color::Yellow;
                 m_textScale = 1.5f;
-                if (m_onFrenzyStart)
-                    m_onFrenzyStart(level);
                 break;
 
             case FrenzyLevel::SuperFrenzy:
@@ -197,8 +191,6 @@ namespace FishGame
                 m_multiplierText.setString("4X Score Multiplier");
                 m_currentColor = sf::Color::Magenta;
                 m_textScale = 2.0f;
-                if (oldLevel != FrenzyLevel::None && m_onFrenzyStart)
-                    m_onFrenzyStart(level);
                 break;
             }
 

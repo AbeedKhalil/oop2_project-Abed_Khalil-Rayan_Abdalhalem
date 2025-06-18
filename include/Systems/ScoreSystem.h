@@ -3,8 +3,6 @@
 #include <SFML/Graphics.hpp>
 #include <memory>
 #include <vector>
-#include <functional>
-#include <numeric>
 
 namespace FishGame
 {
@@ -62,16 +60,10 @@ namespace FishGame
         // Chain system
         void registerHit(); // Successful fish eaten
         void registerMiss(); // Missed attempt or damage taken
-        void updateChain(sf::Time deltaTime);
         int getChainBonus() const { return m_currentChain; }
 
         // Tail-bite mechanic
         void registerTailBite(sf::Vector2f position, int frenzyMultiplier, float powerUpMultiplier);
-
-        // End-of-level bonuses
-        int calculateTimeBonus(sf::Time completionTime, sf::Time targetTime);
-        int calculateGrowthBonus(bool reachedMaxSize);
-        int calculateUntouchableBonus(bool tookNoDamage);
 
         // Update and rendering
         void update(sf::Time deltaTime);
@@ -103,9 +95,6 @@ namespace FishGame
 
         // Bonus values
         static constexpr int m_tailBiteBonus = 75;
-        static constexpr int m_timeBonusMax = 500;
-        static constexpr int m_growthBonus = 1000;
-        static constexpr int m_untouchableBonus = 2000;
     };
 
     // Template function for calculating scores with different multipliers

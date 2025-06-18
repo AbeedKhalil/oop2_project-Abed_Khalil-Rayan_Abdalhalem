@@ -16,7 +16,6 @@ namespace FishGame
         : m_window(sf::VideoMode(m_windowWidth, m_windowHeight),
             Constants::GAME_TITLE,
             sf::Style::Close)
-        , m_textures()
         , m_fonts()
         , m_spriteTextures(nullptr)
         , m_stateStack()

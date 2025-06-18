@@ -1,9 +1,7 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
-#include <memory>
 #include <deque>
-#include <functional>
 
 namespace FishGame
 {
@@ -35,17 +33,10 @@ namespace FishGame
         void forceFrenzy(); // For Frenzy Starter power-up
 
         // Getters
-        FrenzyLevel getCurrentLevel() const { return m_currentLevel; }
         int getMultiplier() const { return static_cast<int>(m_currentLevel); }
-        bool isActive() const { return m_currentLevel != FrenzyLevel::None; }
-        float getRemainingTime() const { return m_frenzyTimer.asSeconds(); }
 
         // Setters
         void setPosition(float x, float y);
-
-        // Callbacks
-        void setOnFrenzyStart(std::function<void(FrenzyLevel)> callback) { m_onFrenzyStart = callback; }
-        void setOnFrenzyEnd(std::function<void()> callback) { m_onFrenzyEnd = callback; }
 
     protected:
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
@@ -88,9 +79,5 @@ namespace FishGame
         // Visual constants
         static constexpr float m_timerBarWidth = 200.0f;
         static constexpr float m_timerBarHeight = 10.0f;
-
-        // Callbacks
-        std::function<void(FrenzyLevel)> m_onFrenzyStart;
-        std::function<void()> m_onFrenzyEnd;
     };
 }
