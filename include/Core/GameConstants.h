@@ -92,10 +92,6 @@ namespace FishGame
         constexpr float MENU_FADE_SPEED = 500.0f;
 
         // ==================== Timing ====================
-        const sf::Time INVULNERABILITY_DURATION = sf::seconds(2.0f);
-        const sf::Time LEVEL_TRANSITION_DURATION = sf::seconds(3.0f);
-        const sf::Time RESPAWN_MESSAGE_DURATION = sf::seconds(2.0f);
-        const sf::Time SCORE_FLASH_DURATION = sf::seconds(0.5f);
         const sf::Time FPS_UPDATE_INTERVAL = sf::seconds(1.0f);
         const sf::Time SCHOOL_EXTRACT_INTERVAL = sf::seconds(0.1f);
 
@@ -124,8 +120,6 @@ namespace FishGame
 
         // ==================== Colors - General ====================
         const sf::Color OCEAN_BLUE(0, 100, 150);
-        const sf::Color PLAYER_COLOR = sf::Color::Yellow;
-        const sf::Color PLAYER_OUTLINE(255, 200, 0);
 
         // ==================== Colors - Fish ====================
         const sf::Color SMALL_FISH_COLOR = sf::Color::Green;
@@ -141,12 +135,6 @@ namespace FishGame
         const sf::Color PROGRESS_BAR_OUTLINE_COLOR(255, 255, 255);
         const sf::Color HUD_TEXT_COLOR = sf::Color::White;
         const sf::Color OVERLAY_COLOR(0, 0, 0, 128);
-
-        // ==================== Colors - Menu ====================
-        const sf::Color TITLE_COLOR = sf::Color::Yellow;
-        const sf::Color TITLE_OUTLINE_COLOR = sf::Color::Black;
-        const sf::Color MENU_NORMAL_COLOR = sf::Color::White;
-        const sf::Color MENU_SELECTED_COLOR = sf::Color::Yellow;
 
         // ==================== Colors - Messages ====================
         const sf::Color MESSAGE_COLOR = sf::Color::Yellow;
@@ -170,6 +158,5 @@ namespace FishGame
         const sf::Color SCORE_DOUBLER_COLOR = sf::Color::Yellow;
         const sf::Color FRENZY_STARTER_COLOR = sf::Color::Magenta;
         const sf::Color SPEED_BOOST_COLOR = sf::Color::Cyan;
-        const sf::Color INVINCIBILITY_COLOR(255, 215, 0);
     }
 }

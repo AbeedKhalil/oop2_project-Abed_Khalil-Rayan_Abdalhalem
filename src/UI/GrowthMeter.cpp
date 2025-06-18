@@ -23,28 +23,30 @@ namespace FishGame
         , m_onStageComplete(nullptr)
     {
         // Setup background
-        m_background.setFillColor(sf::Color(30, 30, 30, 200));
+        sf::Color bgColor = Constants::PROGRESS_BAR_BACKGROUND;
+        bgColor.a = 200;
+        m_background.setFillColor(bgColor);
         m_background.setOutlineThickness(0);
 
         // Setup fill bar
-        m_fillBar.setFillColor(sf::Color(0, 255, 100));
+        m_fillBar.setFillColor(Constants::PROGRESS_BAR_FILL);
         m_fillBar.setPosition(m_borderThickness, m_borderThickness);
 
         // Setup border
         m_border.setFillColor(sf::Color::Transparent);
-        m_border.setOutlineColor(sf::Color::White);
+        m_border.setOutlineColor(Constants::PROGRESS_BAR_OUTLINE_COLOR);
         m_border.setOutlineThickness(m_borderThickness);
 
         // Setup stage text
         m_stageText.setFont(font);
         m_stageText.setCharacterSize(20);
-        m_stageText.setFillColor(sf::Color::White);
+        m_stageText.setFillColor(Constants::HUD_TEXT_COLOR);
         m_stageText.setString("Stage 1");
 
         // Setup progress text
         m_progressText.setFont(font);
         m_progressText.setCharacterSize(16);
-        m_progressText.setFillColor(sf::Color::White);
+        m_progressText.setFillColor(Constants::HUD_TEXT_COLOR);
 
         updateVisuals();
     }
