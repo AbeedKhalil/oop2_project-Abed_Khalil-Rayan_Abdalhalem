@@ -178,6 +178,8 @@ namespace FishGame
         // Eat animation
         float m_eatAnimationScale;
         static constexpr float m_eatAnimationSpeed = 10.0f;
+        sf::Time m_eatAnimationTimer;
+        static const sf::Time m_eatAnimationDuration;
 
         // Damage flash
         sf::Color m_damageFlashColor;
