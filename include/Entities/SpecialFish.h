@@ -16,7 +16,6 @@ namespace FishGame
     {
         Linear,
         Sinusoidal,
-        Circular,
         ZigZag,
         Aggressive
     };

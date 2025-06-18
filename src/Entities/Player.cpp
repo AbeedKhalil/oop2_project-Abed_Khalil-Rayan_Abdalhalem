@@ -357,6 +357,8 @@ namespace FishGame
             m_growthMeter->reset();
             m_growthMeter->setStage(1);
         }
+
+        updateStage();
     }
 
     void Player::fullReset()

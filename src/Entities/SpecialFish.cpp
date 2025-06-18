@@ -74,21 +74,6 @@ namespace FishGame
             break;
         }
 
-        case MovementPattern::Circular:
-        {
-            float radius = 50.0f;
-            float angle = m_patternTimer * 2.0f;
-            sf::Vector2f circularOffset(
-                radius * std::cos(angle),
-                radius * std::sin(angle)
-            );
-
-            // Apply circular motion around current trajectory
-            m_velocity.x = m_speed * std::cos(angle);
-            m_velocity.y = m_speed * std::sin(angle);
-            break;
-        }
-
         case MovementPattern::Linear:
         default:
             // No special movement
