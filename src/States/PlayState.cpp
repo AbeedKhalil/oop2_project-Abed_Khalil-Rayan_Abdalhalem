@@ -1248,10 +1248,10 @@ namespace FishGame
         window.draw(m_backgroundSprite);
         window.draw(*m_environmentSystem);
 
+        m_oysterManager->draw(window);
+
         StateUtils::renderContainer(m_hazards, window);
         StateUtils::renderContainer(m_entities, window);
-
-        m_oysterManager->draw(window);
 
         StateUtils::renderContainer(m_bonusItems, window);
 

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "State.h"
 #include "Player.h"
 #include "EnhancedFishSpawner.h"
 #include "SchoolingSystem.h"
@@ -19,11 +18,9 @@
 #include "GameConstants.h"
 #include "StateUtils.h"
 #include "PauseState.h"
-#include <memory>
 #include <vector>
 #include <random>
 #include <unordered_map>
-#include <functional>
 #include <optional>
 #include <algorithm>
 #include <numeric>

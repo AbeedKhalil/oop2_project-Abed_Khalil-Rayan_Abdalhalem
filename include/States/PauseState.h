@@ -2,7 +2,6 @@
 
 #include "State.h"
 #include "GameConstants.h"
-#include <SFML/Graphics.hpp>
 
 namespace FishGame
 {
