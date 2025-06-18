@@ -5,10 +5,16 @@
 #include <string>
 #include <vector>
 
-class FishAnimator : public sf::Drawable
+class Animator : public sf::Drawable
 {
 public:
-    explicit FishAnimator(const sf::Texture& texture);
+    Animator(const sf::Texture& texture, int frameWidth, int frameHeight, int startX = 1);
+
+    void addClip(const std::string& name, const std::vector<sf::IntRect>& frames,
+        sf::Time frameTime, bool loop = true, bool flipped = false);
+    void addClipRow(const std::string& name, int rowY, int startFrame, int count,
+        sf::Time frameTime, bool loop = true, bool reverse = false);
+    void copyFlip(const std::string& left, const std::string& right);
 
     void play(const std::string& name);
     void update(sf::Time dt);
@@ -28,17 +34,22 @@ private:
         bool flipped{ false };
     };
 
-    void buildAnimations();
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+    void applyScale();
 
     const sf::Texture& m_texture;
     sf::Sprite m_sprite;
+    int m_startX;
+    int m_frameW;
+    int m_frameH;
     sf::Vector2f m_scale{ 1.f, 1.f };
     std::unordered_map<std::string, Clip> m_clips;
     const Clip* m_current{ nullptr };
     std::string m_currentName;
     std::size_t m_index{ 0 };
     sf::Time m_elapsed{};
-
-    void applyScale();
 };
+
+// Helper factory functions
+Animator createFishAnimator(const sf::Texture& texture);
+Animator createBarracudaAnimator(const sf::Texture& texture);
