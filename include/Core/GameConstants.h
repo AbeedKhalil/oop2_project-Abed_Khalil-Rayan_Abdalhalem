@@ -117,6 +117,8 @@ namespace FishGame
         constexpr float FREEZE_POWERUP_DURATION = 5.0f;
         constexpr float SPEEDBOOST_POWERUP_DURATION = 8.0f;
         constexpr float EXTRA_LIFE_HEARTBEAT_SPEED = 3.0f;
+        constexpr float SCORE_DOUBLER_POWERUP_DURATION = 10.0f;
+        constexpr float SCORE_DOUBLER_MULTIPLIER = 2.0f;
 
         // ==================== Colors - General ====================
         const sf::Color OCEAN_BLUE(0, 100, 150);

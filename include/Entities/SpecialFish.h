@@ -3,6 +3,7 @@
 #include "Fish.h"
 #include "CollisionDetector.h"
 #include "GenericFish.h"
+#include "BarracudaAnimator.h"
 #include <cmath>
 #include <algorithm>
 #include <vector>
@@ -58,6 +59,12 @@ namespace FishGame
         void updateAI(const std::vector<std::unique_ptr<Entity>>& entities,
             const Entity* player, sf::Time deltaTime);
 
+        void update(sf::Time deltaTime) override;
+        void initializeSprite(SpriteManager& spriteManager);
+        void playEatAnimation();
+    protected:
+        void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+
     private:
         void updateHuntingBehavior(const Entity* target, sf::Time deltaTime);
 
@@ -67,6 +74,13 @@ namespace FishGame
         float m_dashSpeed;
         bool m_isDashing;
 
+        std::unique_ptr<BarracudaAnimator> m_animator;
+        std::string m_currentAnimation;
+        bool m_facingRight{ false };
+        bool m_turning{ false };
+        sf::Time m_turnTimer{ sf::Time::Zero };
+
+        static constexpr float m_turnDuration = 0.45f;
         static constexpr float m_huntRange = 250.0f;
         static constexpr float m_dashMultiplier = 2.5f;
         static constexpr float m_dashDuration = 1.0f;
