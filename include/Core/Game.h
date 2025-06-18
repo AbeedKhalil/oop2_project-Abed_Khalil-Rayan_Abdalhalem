@@ -31,7 +31,6 @@ namespace FishGame
         // Resource accessors
         sf::RenderWindow& getWindow() { return m_window; }
         const sf::RenderWindow& getWindow() const { return m_window; }
-        TextureHolder& getTextures() { return m_textures; }
         FontHolder& getFonts() { return m_fonts; }
         SpriteManager& getSpriteManager() { return *m_spriteManager; }
 
@@ -91,7 +90,6 @@ namespace FishGame
 
         // Core systems
         sf::RenderWindow m_window;
-        TextureHolder m_textures;
         FontHolder m_fonts;
         std::unique_ptr<ResourceHolder<sf::Texture, TextureID>> m_spriteTextures;
 

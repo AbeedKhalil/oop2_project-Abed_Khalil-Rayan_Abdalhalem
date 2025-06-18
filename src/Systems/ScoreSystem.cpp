@@ -132,35 +132,9 @@ namespace FishGame
         m_currentChain = 0;
     }
 
-    void ScoreSystem::updateChain(sf::Time deltaTime)
-    {
-        // Chain doesn't decay over time in this implementation
-        // Could add decay logic here if needed
-    }
-
     void ScoreSystem::registerTailBite(sf::Vector2f position, int frenzyMultiplier, float powerUpMultiplier)
     {
         addScore(ScoreEventType::TailBite, m_tailBiteBonus, position, frenzyMultiplier, powerUpMultiplier);
-    }
-
-    int ScoreSystem::calculateTimeBonus(sf::Time completionTime, sf::Time targetTime)
-    {
-        if (completionTime <= targetTime)
-        {
-            float ratio = 1.0f - (completionTime.asSeconds() / targetTime.asSeconds());
-            return static_cast<int>(m_timeBonusMax * ratio);
-        }
-        return 0;
-    }
-
-    int ScoreSystem::calculateGrowthBonus(bool reachedMaxSize)
-    {
-        return reachedMaxSize ? m_growthBonus : 0;
-    }
-
-    int ScoreSystem::calculateUntouchableBonus(bool tookNoDamage)
-    {
-        return tookNoDamage ? m_untouchableBonus : 0;
     }
 
     void ScoreSystem::update(sf::Time deltaTime)

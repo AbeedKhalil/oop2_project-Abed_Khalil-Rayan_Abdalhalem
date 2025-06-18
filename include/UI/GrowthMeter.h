@@ -1,7 +1,6 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
-#include <memory>
 #include <functional>
 
 namespace FishGame
@@ -11,8 +10,6 @@ namespace FishGame
     public:
         explicit GrowthMeter(const sf::Font& font);
         ~GrowthMeter() = default;
-
-        std::function<void()> getOnStageComplete() const { return m_onStageComplete; }
 
         // Delete copy operations
         GrowthMeter(const GrowthMeter&) = delete;
@@ -28,12 +25,6 @@ namespace FishGame
         void reset();
         void setPosition(float x, float y);
         void setStage(int stage);
-
-        // Getters
-        float getCurrentProgress() const { return m_currentProgress; }
-        float getMaxProgress() const { return m_maxProgress; }
-        bool isStageComplete() const { return m_currentProgress >= m_maxProgress; }
-        int getCurrentStage() const { return m_currentStage; }
 
         // Callbacks
         void setOnStageComplete(std::function<void()> callback) { m_onStageComplete = callback; }

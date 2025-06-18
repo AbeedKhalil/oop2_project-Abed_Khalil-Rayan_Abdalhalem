@@ -29,7 +29,6 @@ namespace FishGame
         , m_bonusItemManager(nullptr)
         , m_oysterManager(nullptr)
         , m_gameState()
-        , m_levelStats()
         , m_hud()
         , m_isPlayerFrozen(false)
         , m_hasControlsReversed(false)

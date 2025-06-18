@@ -59,23 +59,6 @@ namespace FishGame
             float alpha = 0.f;
         };
 
-        // Level statistics
-        struct LevelStats
-        {
-            sf::Time completionTime = sf::Time::Zero;
-            bool reachedMaxSize = false;
-            bool tookNoDamage = false;
-            int timeBonus = 0;
-            int growthBonus = 0;
-            int untouchableBonus = 0;
-            int totalBonus = 0;
-
-            int calculateTotalBonus() const
-            {
-                return timeBonus + growthBonus + untouchableBonus;
-            }
-        };
-
         // Game state tracking
         struct GameStateData
         {
@@ -215,7 +198,6 @@ namespace FishGame
 
         // State tracking
         GameStateData m_gameState;
-        LevelStats m_levelStats;
         HUDElements m_hud;
 
         // Effect states
