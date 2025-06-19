@@ -17,6 +17,9 @@ configure_file ("Background1.png" ${CMAKE_BINARY_DIR} COPYONLY)
 configure_file ("Grass.png" ${CMAKE_BINARY_DIR} COPYONLY)
 configure_file ("GameTitle.png" ${CMAKE_BINARY_DIR} COPYONLY)
 
+configure_file ("Intro1.png" ${CMAKE_BINARY_DIR} COPYONLY)
+configure_file ("Intro2.png" ${CMAKE_BINARY_DIR} COPYONLY)
+
 configure_file ("NewGame.png" ${CMAKE_BINARY_DIR} COPYONLY)
 configure_file ("NewGameHover.png" ${CMAKE_BINARY_DIR} COPYONLY)
 configure_file ("GameOptions.png" ${CMAKE_BINARY_DIR} COPYONLY)
