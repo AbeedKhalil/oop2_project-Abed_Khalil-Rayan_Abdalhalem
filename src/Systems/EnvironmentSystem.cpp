@@ -221,24 +221,6 @@ namespace FishGame
         , m_spriteManager(&spriteManager)
     {
         m_lightingOverlay.setFillColor(sf::Color(0, 0, 0, 0));
-        std::uniform_real_distribution<float> xDist(0.0f, static_cast<float>(Constants::WINDOW_WIDTH));
-        std::uniform_real_distribution<float> yDist(100.0f, static_cast<float>(Constants::WINDOW_HEIGHT) - 80.0f);
-        std::uniform_real_distribution<float> speedDist(20.0f, 60.0f);
-        std::uniform_real_distribution<float> scaleDist(0.3f, 0.6f);
-        std::uniform_int_distribution<int> dirDist(0, 1);
-
-        m_backgroundFish.resize(10);
-        for (auto& fish : m_backgroundFish)
-        {
-            fish.sprite.setTexture(m_spriteManager->getTexture(TextureID::SmallFish));
-            sf::FloatRect b = fish.sprite.getLocalBounds();
-            fish.sprite.setOrigin(b.width / 2.f, b.height / 2.f);
-            float scale = scaleDist(m_randomEngine);
-            float dir = dirDist(m_randomEngine) ? 1.f : -1.f;
-            fish.sprite.setScale(scale * dir, scale); // flip horizontally when dir < 0
-            fish.sprite.setPosition(xDist(m_randomEngine), yDist(m_randomEngine));
-            fish.velocity = sf::Vector2f(dir * speedDist(m_randomEngine), 0.f);
-        }
     }
 
     void EnvironmentSystem::update(sf::Time deltaTime)
@@ -251,19 +233,6 @@ namespace FishGame
         // Update ocean currents
         m_oceanCurrents->update(deltaTime);
 
-        // Update background fish
-        for (auto& fish : m_backgroundFish)
-        {
-            fish.sprite.move(fish.velocity * deltaTime.asSeconds());
-            sf::Vector2f pos = fish.sprite.getPosition();
-            sf::FloatRect bounds = fish.sprite.getGlobalBounds();
-            float halfWidth = bounds.width / 2.f;
-            if (fish.velocity.x > 0.f && pos.x - halfWidth > static_cast<float>(Constants::WINDOW_WIDTH))
-                pos.x = -halfWidth;
-            else if (fish.velocity.x < 0.f && pos.x + halfWidth < 0.f)
-                pos.x = static_cast<float>(Constants::WINDOW_WIDTH) + halfWidth;
-            fish.sprite.setPosition(pos);
-        }
 
         // Update day/night cycle only if not paused
         if (!m_dayNightCyclePaused)
@@ -342,11 +311,7 @@ namespace FishGame
         // Draw background layers (far to near)
         m_farLayer->draw(target);
 
-        // Draw background fish behind near layer
-        for (const auto& fish : m_backgroundFish)
-        {
-            target.draw(fish.sprite, states);
-        }
+
 
         m_midLayer->draw(target);
         m_nearLayer->draw(target);

@@ -112,11 +112,6 @@ namespace FishGame
         void transitionEnvironment(EnvironmentType newType);
 
     private:
-        struct BackgroundFish
-        {
-            sf::Sprite sprite;
-            sf::Vector2f velocity;
-        };
 
         EnvironmentType m_currentEnvironment;
         TimeOfDay m_currentTimeOfDay;
@@ -125,7 +120,6 @@ namespace FishGame
         std::unique_ptr<BackgroundLayer> m_midLayer;
         std::unique_ptr<BackgroundLayer> m_nearLayer;
 
-        std::vector<BackgroundFish> m_backgroundFish;
 
         SpriteManager* m_spriteManager;
 
