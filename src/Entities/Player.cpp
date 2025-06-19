@@ -230,12 +230,26 @@ namespace FishGame
         };
 
         sf::Vector2f inputDirection{ 0.f, 0.f };
-        for (const auto& key : m_pressedKeys)
+        if (!m_pressedKeys.empty())
         {
-            auto it = keyMap.find(key);
-            if (it != keyMap.end())
+            for (const auto& key : m_pressedKeys)
             {
-                inputDirection += it->second;
+                auto it = keyMap.find(key);
+                if (it != keyMap.end())
+                {
+                    inputDirection += it->second;
+                }
+            }
+        }
+        else
+        {
+            // Fallback to real-time polling if no events were captured
+            for (const auto& [key, dir] : keyMap)
+            {
+                if (sf::Keyboard::isKeyPressed(key))
+                {
+                    inputDirection += dir;
+                }
             }
         }
 
