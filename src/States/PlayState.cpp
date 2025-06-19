@@ -339,7 +339,11 @@ namespace FishGame
         {
             m_gameState.winTimer += deltaTime;
 
-            if (m_gameState.enemiesFleeing && areAllEnemiesGone())
+            bool timerExpired = m_gameState.winTimer >=
+                Constants::WIN_SEQUENCE_DURATION;
+            bool noEnemies = m_gameState.enemiesFleeing && areAllEnemiesGone();
+
+            if (timerExpired || noEnemies)
             {
                 m_gameState.enemiesFleeing = false;
                 m_gameState.levelComplete = true;
