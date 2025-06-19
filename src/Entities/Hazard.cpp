@@ -2,7 +2,6 @@
 #include "Player.h"
 #include "GameConstants.h"
 #include "SpriteManager.h"
-#include "Utils/DrawHelpers.h"
 #include <cmath>
 #include <numeric>
 #include <algorithm>
@@ -98,11 +97,12 @@ namespace FishGame
         }
     }
 
-sf::FloatRect Bomb::getBounds() const
-{
-    float effectiveRadius = m_isExploding ? m_explosionRadius : m_radius;
-    return EntityUtils::makeBounds(m_position, effectiveRadius);
-}
+    sf::FloatRect Bomb::getBounds() const
+    {
+        float effectiveRadius = m_isExploding ? m_explosionRadius : m_radius;
+        return sf::FloatRect(m_position.x - effectiveRadius, m_position.y - effectiveRadius,
+            effectiveRadius * 2.0f, effectiveRadius * 2.0f);
+    }
 
     void Bomb::onContact(Entity& entity)
     {
@@ -240,22 +240,19 @@ sf::FloatRect Bomb::getBounds() const
         m_bell.setPosition(m_position);
 
         // Update tentacles with wave motion
-        size_t index = 0;
-        std::for_each(m_tentacles.begin(), m_tentacles.end(),
-            [&, index](sf::RectangleShape& tentacle) mutable
-            {
-                float angle = (360.0f / m_tentacleCount) * index * Constants::DEG_TO_RAD;
-                float wave = std::sin(m_tentacleWave + index * 0.5f) * 10.0f;
+        for (size_t i = 0; i < m_tentacles.size(); ++i)
+        {
+            float angle = (360.0f / m_tentacleCount) * i * Constants::DEG_TO_RAD;
+            float wave = std::sin(m_tentacleWave + i * 0.5f) * 10.0f;
 
-                sf::Vector2f tentaclePos(
-                    m_position.x + std::cos(angle) * 15.0f,
-                    m_position.y + std::sin(angle) * 15.0f
-                );
+            sf::Vector2f tentaclePos(
+                m_position.x + std::cos(angle) * 15.0f,
+                m_position.y + std::sin(angle) * 15.0f
+            );
 
-                tentacle.setPosition(tentaclePos);
-                tentacle.setRotation((angle * Constants::RAD_TO_DEG) + 90.0f + wave);
-                ++index;
-            });
+            m_tentacles[i].setPosition(tentaclePos);
+            m_tentacles[i].setRotation((angle * Constants::RAD_TO_DEG) + 90.0f + wave);
+        }
 
         // Check boundaries
         if (m_position.y > static_cast<float>(Constants::WINDOW_HEIGHT) + 100.0f)
@@ -264,12 +261,13 @@ sf::FloatRect Bomb::getBounds() const
         }
     }
 
-sf::FloatRect Jellyfish::getBounds() const
-{
-    // Include tentacle reach
-    float effectiveRadius = m_radius + 15.0f;
-    return EntityUtils::makeBounds(m_position, effectiveRadius);
-}
+    sf::FloatRect Jellyfish::getBounds() const
+    {
+        // Include tentacle reach
+        float effectiveRadius = m_radius + 15.0f;
+        return sf::FloatRect(m_position.x - effectiveRadius, m_position.y - effectiveRadius,
+            effectiveRadius * 2.0f, effectiveRadius * 2.0f);
+    }
 
     void Jellyfish::onContact(Entity& entity)
     {
@@ -281,8 +279,8 @@ sf::FloatRect Jellyfish::getBounds() const
     void Jellyfish::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
         if (getRenderMode() == RenderMode::Sprite && getSpriteComponent())
-        {
-            DrawUtils::drawSpriteIfPresent(*this, target, states);
+    {
+            target.draw(*getSpriteComponent(), states);
         }
         else
         {

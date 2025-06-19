@@ -9,8 +9,6 @@
 #include <algorithm>
 #include <vector>
 #include <random>
-#include <memory>
-#include "Animator.h"
 
 namespace FishGame
 {
@@ -73,7 +71,7 @@ namespace FishGame
     private:
         struct BackgroundFish
         {
-            std::unique_ptr<Animator> animator;
+            sf::CircleShape shape;
             sf::Vector2f velocity;
         };
         // UI elements

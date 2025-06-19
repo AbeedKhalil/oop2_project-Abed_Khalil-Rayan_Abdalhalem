@@ -6,7 +6,6 @@
 #include "Animator.h"
 #include <memory>
 #include <string>
-#include <unordered_set>
 #include "GrowthMeter.h"
 #include "FrenzySystem.h"
 #include "PowerUp.h"
@@ -31,10 +30,6 @@ namespace FishGame
 
         // Player-specific methods
         void handleInput();
-        void onKeyPressed(sf::Keyboard::Key key);
-        void onKeyReleased(sf::Keyboard::Key key);
-        // Clear any cached input states
-        void clearInput();
         void followMouse(const sf::Vector2f& mousePosition);
         sf::Vector2f getTargetPosition() const { return m_targetPosition; }
         bool isUsingMouseControl() const { return m_useMouseControl; }
@@ -49,7 +44,9 @@ namespace FishGame
         void addPoints(int points);
         void resetSize();
         void fullReset();
+        int getCurrentStage() const { return m_currentStage; }
         int getScore() const { return m_score; }
+        float getGrowthProgress() const { return m_growthProgress; }
 
         void enableMouseControl(bool enable);
         void setMousePosition(const sf::Vector2f& screenPos);
@@ -88,6 +85,9 @@ namespace FishGame
         void setWindowBounds(const sf::Vector2u& windowSize);
 
         // Statistics tracking
+        int getTotalFishEaten() const { return m_totalFishEaten; }
+        int getDamageTaken() const { return m_damageTaken; }
+        bool hasTakenDamage() const { return m_damageTaken > 0; }
 
         // Visual effects
         void triggerEatEffect();
@@ -123,7 +123,6 @@ namespace FishGame
         // Control state
         bool m_useMouseControl;
         sf::Vector2f m_targetPosition;
-        std::unordered_set<sf::Keyboard::Key> m_pressedKeys;
         bool m_controlsReversed{ false };
         sf::Time m_poisonColorTimer{ sf::Time::Zero };
 

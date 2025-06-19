@@ -13,14 +13,4 @@ namespace FishGame::DrawUtils {
                 target.draw(drawable, states);
             });
     }
-
-    // Draw an entity's sprite component if one exists
-    template<typename EntityType>
-    void drawSpriteIfPresent(const EntityType& entity, sf::RenderTarget& target,
-        sf::RenderStates states = {})
-    {
-        if (auto sprite = entity.getSpriteComponent())
-            target.draw(*sprite, states);
-    }
 }
-

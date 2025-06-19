@@ -24,7 +24,6 @@ public:
     void setScale(const sf::Vector2f& scale);
     sf::Vector2f getScale() const { return m_scale; }
     void setColor(const sf::Color& color) { m_sprite.setColor(color); }
-    sf::FloatRect getGlobalBounds() const { return m_sprite.getGlobalBounds(); }
 
 private:
     struct Clip

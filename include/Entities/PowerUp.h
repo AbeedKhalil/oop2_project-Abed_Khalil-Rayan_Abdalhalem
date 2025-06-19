@@ -1,8 +1,8 @@
 #pragma once
 
 #include "BonusItem.h"
-#include "SpriteComponent.h"
-#include "Utils/SpriteDrawable.h"
+#include <vector>
+#include <algorithm>
 
 namespace FishGame
 {
@@ -34,40 +34,48 @@ namespace FishGame
         PowerUpType m_powerUpType;
         sf::Time m_duration;
 
+        // Shared visual components
+        sf::CircleShape m_iconBackground;
+        sf::CircleShape m_aura;
         float m_pulseAnimation;
-
-        // Common update logic shared by many power-ups
-        void commonUpdate(sf::Time deltaTime, float pulseSpeed,
-            float freqMul = 1.f, float ampMul = 1.f);
     };
 
     // Score Doubler - doubles all points for duration
-    class ScoreDoublerPowerUp : public PowerUp, public SpriteDrawable<ScoreDoublerPowerUp>
+    class ScoreDoublerPowerUp : public PowerUp
     {
     public:
         ScoreDoublerPowerUp();
         ~ScoreDoublerPowerUp() override = default;
 
         void update(sf::Time deltaTime) override;
-        void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+        void onCollect() override;
         sf::Color getAuraColor() const override { return sf::Color::Yellow; }
 
-        void setFont(const sf::Font& font) {}
+        void setFont(const sf::Font& font) { m_icon.setFont(font); }
 
+    protected:
+        void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+
+    private:
+        sf::Text m_icon; // "2X" text
     };
 
     // Frenzy Starter - instantly activates Frenzy Mode
-    class FrenzyStarterPowerUp : public PowerUp, public SpriteDrawable<FrenzyStarterPowerUp>
+    class FrenzyStarterPowerUp : public PowerUp
     {
     public:
         FrenzyStarterPowerUp();
         ~FrenzyStarterPowerUp() override = default;
 
         void update(sf::Time deltaTime) override;
-        void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+        void onCollect() override;
         sf::Color getAuraColor() const override { return sf::Color::Magenta; }
 
+    protected:
+        void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+
     private:
+        std::vector<sf::CircleShape> m_lightningBolts;
         float m_sparkAnimation;
     };
 
@@ -116,22 +124,16 @@ namespace FishGame
         std::vector<ActivePowerUp> m_activePowerUps;
 
         // Use template to find power-up in vector
-        template<typename Predicate, typename Container>
-        static auto findPowerUpImpl(Container& container, Predicate pred)
-        {
-            return std::find_if(container.begin(), container.end(), pred);
-        }
-
         template<typename Predicate>
         auto findPowerUp(Predicate pred)
         {
-            return findPowerUpImpl(m_activePowerUps, pred);
+            return std::find_if(m_activePowerUps.begin(), m_activePowerUps.end(), pred);
         }
 
         template<typename Predicate>
         auto findPowerUp(Predicate pred) const
         {
-            return findPowerUpImpl(m_activePowerUps, pred);
+            return std::find_if(m_activePowerUps.begin(), m_activePowerUps.end(), pred);
         }
     };
 }
