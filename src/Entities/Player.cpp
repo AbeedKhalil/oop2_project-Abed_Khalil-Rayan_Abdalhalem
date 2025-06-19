@@ -230,12 +230,11 @@ namespace FishGame
         };
 
         sf::Vector2f inputDirection{ 0.f, 0.f };
-        for (const auto& key : m_pressedKeys)
+        for (const auto& [key, dir] : keyMap)
         {
-            auto it = keyMap.find(key);
-            if (it != keyMap.end())
+            if (sf::Keyboard::isKeyPressed(key))
             {
-                inputDirection += it->second;
+                inputDirection += dir;
             }
         }
 
