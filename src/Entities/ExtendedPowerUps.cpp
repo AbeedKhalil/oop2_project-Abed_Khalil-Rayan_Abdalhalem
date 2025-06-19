@@ -12,17 +12,10 @@ namespace FishGame
     {
     }
 
-    void FreezePowerUp::update(sf::Time deltaTime)
-    {
-        // DO NOT call base class update - implement everything here
-        if (!updateLifetime(deltaTime))
-            return;
-
-        m_pulseAnimation += deltaTime.asSeconds() * 2.0f;
-        m_position.y = m_baseY + computeBobbingOffset();
-        if (getSpriteComponent())
-            getSpriteComponent()->update(deltaTime);
-    }
+void FreezePowerUp::update(sf::Time deltaTime)
+{
+    commonUpdate(deltaTime, 2.0f);
+}
 
     void FreezePowerUp::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
@@ -36,22 +29,16 @@ namespace FishGame
     {
     }
 
-    void ExtraLifePowerUp::update(sf::Time deltaTime)
+void ExtraLifePowerUp::update(sf::Time deltaTime)
+{
+    commonUpdate(deltaTime, 3.0f);
+    m_heartbeatAnimation += deltaTime.asSeconds() * m_heartbeatSpeed;
+    if (auto sprite = getSpriteComponent())
     {
-        // DO NOT call base class update - implement everything here
-        if (!updateLifetime(deltaTime))
-            return;
-
-        m_heartbeatAnimation += deltaTime.asSeconds() * m_heartbeatSpeed;
-        m_pulseAnimation += deltaTime.asSeconds() * 3.0f;
-        m_position.y = m_baseY + computeBobbingOffset();
-        if (getSpriteComponent())
-        {
-            getSpriteComponent()->update(deltaTime);
-            float scale = 1.0f + 0.2f * std::sin(m_heartbeatAnimation);
-            getSpriteComponent()->setScale(scale, scale);
-        }
+        float scale = 1.0f + 0.2f * std::sin(m_heartbeatAnimation);
+        sprite->setScale(scale, scale);
     }
+}
 
     void ExtraLifePowerUp::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
@@ -65,18 +52,11 @@ namespace FishGame
     {
     }
 
-    void SpeedBoostPowerUp::update(sf::Time deltaTime)
-    {
-        // DO NOT call base class update - implement everything here
-        if (!updateLifetime(deltaTime))
-            return;
-
-        m_lineAnimation += deltaTime.asSeconds() * 5.0f;
-        m_pulseAnimation += deltaTime.asSeconds() * 4.0f;
-        m_position.y = m_baseY + computeBobbingOffset(1.5f);
-        if (getSpriteComponent())
-            getSpriteComponent()->update(deltaTime);
-    }
+void SpeedBoostPowerUp::update(sf::Time deltaTime)
+{
+    commonUpdate(deltaTime, 4.0f, 1.5f);
+    m_lineAnimation += deltaTime.asSeconds() * 5.0f;
+}
 
     void SpeedBoostPowerUp::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {

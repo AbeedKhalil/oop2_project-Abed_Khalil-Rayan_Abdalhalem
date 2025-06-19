@@ -34,6 +34,10 @@ namespace FishGame
         sf::Time m_duration;
 
         float m_pulseAnimation;
+
+        // Common update logic shared by many power-ups
+        void commonUpdate(sf::Time deltaTime, float pulseSpeed,
+            float freqMul = 1.f, float ampMul = 1.f);
     };
 
     // Score Doubler - doubles all points for duration

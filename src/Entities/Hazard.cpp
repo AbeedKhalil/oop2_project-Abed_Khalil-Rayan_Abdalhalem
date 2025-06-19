@@ -98,12 +98,11 @@ namespace FishGame
         }
     }
 
-    sf::FloatRect Bomb::getBounds() const
-    {
-        float effectiveRadius = m_isExploding ? m_explosionRadius : m_radius;
-        return sf::FloatRect(m_position.x - effectiveRadius, m_position.y - effectiveRadius,
-            effectiveRadius * 2.0f, effectiveRadius * 2.0f);
-    }
+sf::FloatRect Bomb::getBounds() const
+{
+    float effectiveRadius = m_isExploding ? m_explosionRadius : m_radius;
+    return EntityUtils::makeBounds(m_position, effectiveRadius);
+}
 
     void Bomb::onContact(Entity& entity)
     {
@@ -262,13 +261,12 @@ namespace FishGame
         }
     }
 
-    sf::FloatRect Jellyfish::getBounds() const
-    {
-        // Include tentacle reach
-        float effectiveRadius = m_radius + 15.0f;
-        return sf::FloatRect(m_position.x - effectiveRadius, m_position.y - effectiveRadius,
-            effectiveRadius * 2.0f, effectiveRadius * 2.0f);
-    }
+sf::FloatRect Jellyfish::getBounds() const
+{
+    // Include tentacle reach
+    float effectiveRadius = m_radius + 15.0f;
+    return EntityUtils::makeBounds(m_position, effectiveRadius);
+}
 
     void Jellyfish::onContact(Entity& entity)
     {

@@ -276,11 +276,10 @@ namespace FishGame
         m_targetPosition = mousePosition;
     }
 
-    sf::FloatRect Player::getBounds() const
-    {
-        return sf::FloatRect(m_position.x - m_radius, m_position.y - m_radius,
-            m_radius * 2.0f, m_radius * 2.0f);
-    }
+sf::FloatRect Player::getBounds() const
+{
+    return EntityUtils::makeBounds(m_position, m_radius);
+}
 
     void Player::grow(int scoreValue)
     {
