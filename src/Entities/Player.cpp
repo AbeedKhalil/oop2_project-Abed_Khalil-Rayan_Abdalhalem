@@ -608,6 +608,8 @@ sf::FloatRect Player::getBounds() const
     void Player::applyPoisonEffect(sf::Time duration)
     {
         m_poisonColorTimer = duration;
+        // Reverse current movement direction immediately
+        m_velocity = -m_velocity;
         m_controlsReversed = true;
     }
 
