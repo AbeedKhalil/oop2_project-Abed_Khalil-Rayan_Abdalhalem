@@ -1,5 +1,6 @@
 #include "PowerUp.h"
 #include "GameConstants.h"
+#include "Utils/DrawHelpers.h"
 #include <cmath>
 #include <algorithm>
 
@@ -37,15 +38,9 @@ namespace FishGame
             getSpriteComponent()->update(deltaTime);
     }
 
-    void ScoreDoublerPowerUp::onCollect()
-    {
-        destroy();
-    }
-
     void ScoreDoublerPowerUp::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        if (getSpriteComponent())
-            target.draw(*getSpriteComponent(), states);
+        DrawUtils::drawSpriteIfPresent(*this, target, states);
     }
 
     // FrenzyStarterPowerUp implementation
@@ -67,15 +62,9 @@ namespace FishGame
             getSpriteComponent()->update(deltaTime);
     }
 
-    void FrenzyStarterPowerUp::onCollect()
-    {
-        destroy();
-    }
-
     void FrenzyStarterPowerUp::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        if (getSpriteComponent())
-            target.draw(*getSpriteComponent(), states);
+        DrawUtils::drawSpriteIfPresent(*this, target, states);
     }
 
     // PowerUpManager implementation
