@@ -2,6 +2,7 @@
 #include "Player.h"
 #include "GameConstants.h"
 #include "SpriteManager.h"
+#include "Utils/DrawHelpers.h"
 #include <cmath>
 #include <numeric>
 #include <algorithm>
@@ -279,8 +280,8 @@ namespace FishGame
     void Jellyfish::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
         if (getRenderMode() == RenderMode::Sprite && getSpriteComponent())
-    {
-            target.draw(*getSpriteComponent(), states);
+        {
+            DrawUtils::drawSpriteIfPresent(*this, target, states);
         }
         else
         {

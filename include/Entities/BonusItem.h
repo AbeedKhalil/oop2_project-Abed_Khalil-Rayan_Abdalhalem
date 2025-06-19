@@ -29,7 +29,7 @@ namespace FishGame
         // Bonus item interface
         virtual BonusType getBonusType() const { return m_bonusType; }
         virtual int getPoints() const { return m_points; }
-        virtual void onCollect() = 0;
+        virtual void onCollect();
 
         // Lifetime management
         void setLifetime(sf::Time lifetime) { m_lifetime = lifetime; }
@@ -65,7 +65,6 @@ namespace FishGame
         void initializeSprite(SpriteManager& spriteManager);
 
         void update(sf::Time deltaTime) override;
-        void onCollect() override;
 
     protected:
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;

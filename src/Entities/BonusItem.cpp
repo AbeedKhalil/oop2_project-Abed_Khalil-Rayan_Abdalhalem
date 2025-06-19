@@ -1,6 +1,7 @@
 #include "BonusItem.h"
 #include "GameConstants.h"
 #include "SpriteManager.h"
+#include "Utils/DrawHelpers.h"
 #include <cmath>
 #include <algorithm>
 #include <iterator>
@@ -44,11 +45,16 @@ namespace FishGame
         return true;
     }
 
-    float BonusItem::computeBobbingOffset(float freqMul, float ampMul) const
-    {
-        return std::sin(m_lifetimeElapsed.asSeconds() * m_bobFrequency * freqMul) *
-            m_bobAmplitude * ampMul;
-    }
+float BonusItem::computeBobbingOffset(float freqMul, float ampMul) const
+{
+    return std::sin(m_lifetimeElapsed.asSeconds() * m_bobFrequency * freqMul) *
+        m_bobAmplitude * ampMul;
+}
+
+void BonusItem::onCollect()
+{
+    destroy();
+}
 
     // Starfish implementation
     Starfish::Starfish()
@@ -112,16 +118,9 @@ namespace FishGame
 
     }
 
-    void Starfish::onCollect()
-    {
-        // Visual/audio feedback would go here
-        destroy();
-    }
-
     void Starfish::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        if (getSpriteComponent())
-            target.draw(*getSpriteComponent(), states);
+        DrawUtils::drawSpriteIfPresent(*this, target, states);
     }
 
     // PearlOyster implementation
@@ -191,8 +190,7 @@ namespace FishGame
 
     void PearlOyster::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        if (getSpriteComponent())
-            target.draw(*getSpriteComponent(), states);
+        DrawUtils::drawSpriteIfPresent(*this, target, states);
 
         if (m_isOpen)
             target.draw(m_pearlSprite, states);

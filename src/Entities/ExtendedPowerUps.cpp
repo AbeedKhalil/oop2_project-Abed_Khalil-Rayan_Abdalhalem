@@ -1,4 +1,5 @@
 #include "ExtendedPowerUps.h"
+#include "Utils/DrawHelpers.h"
 #include <algorithm>
 #include <cmath>
 #include <iterator>
@@ -23,15 +24,9 @@ namespace FishGame
             getSpriteComponent()->update(deltaTime);
     }
 
-    void FreezePowerUp::onCollect()
-    {
-        destroy();
-    }
-
     void FreezePowerUp::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        if (getSpriteComponent())
-            target.draw(*getSpriteComponent(), states);
+        DrawUtils::drawSpriteIfPresent(*this, target, states);
     }
 
     // ExtraLifePowerUp implementation
@@ -58,15 +53,9 @@ namespace FishGame
         }
     }
 
-    void ExtraLifePowerUp::onCollect()
-    {
-        destroy();
-    }
-
     void ExtraLifePowerUp::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        if (getSpriteComponent())
-            target.draw(*getSpriteComponent(), states);
+        DrawUtils::drawSpriteIfPresent(*this, target, states);
     }
 
     // SpeedBoostPowerUp implementation
@@ -89,14 +78,8 @@ namespace FishGame
             getSpriteComponent()->update(deltaTime);
     }
 
-    void SpeedBoostPowerUp::onCollect()
-    {
-        destroy();
-    }
-
     void SpeedBoostPowerUp::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        if (getSpriteComponent())
-            target.draw(*getSpriteComponent(), states);
+        DrawUtils::drawSpriteIfPresent(*this, target, states);
     }
 }

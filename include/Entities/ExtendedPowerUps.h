@@ -13,7 +13,6 @@ namespace FishGame
         ~FreezePowerUp() override = default;
 
         void update(sf::Time deltaTime) override;
-        void onCollect() override;
         sf::Color getAuraColor() const override { return sf::Color::Cyan; }
 
         void setFont(const sf::Font& font) {}
@@ -33,7 +32,6 @@ namespace FishGame
         ~ExtraLifePowerUp() override = default;
 
         void update(sf::Time deltaTime) override;
-        void onCollect() override;
         sf::Color getAuraColor() const override { return sf::Color::Green; }
 
     protected:
@@ -52,7 +50,6 @@ namespace FishGame
         ~SpeedBoostPowerUp() override = default;
 
         void update(sf::Time deltaTime) override;
-        void onCollect() override;
         sf::Color getAuraColor() const override { return sf::Color(0, 255, 255); }
 
     protected:
