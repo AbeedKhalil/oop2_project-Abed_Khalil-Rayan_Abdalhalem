@@ -537,8 +537,12 @@ namespace FishGame
             m_player->setVelocity(m_player->getVelocity() + playerCurrent * deltaTime.asSeconds() * 0.3f);
         }
 
-        // Apply currents to all entities
+        // Apply currents to non-fish entities only
         StateUtils::applyToEntities(m_entities, [this, deltaTime](Entity& entity) {
+            // Skip fish so they keep their speed
+            if (dynamic_cast<Fish*>(&entity))
+                return;
+
             sf::Vector2f current = m_environmentSystem->getOceanCurrentForce(entity.getPosition());
             entity.setVelocity(entity.getVelocity() + current * deltaTime.asSeconds() * 0.1f);
             });
