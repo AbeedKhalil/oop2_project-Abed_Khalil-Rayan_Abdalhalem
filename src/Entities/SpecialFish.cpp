@@ -4,6 +4,7 @@
 #include "Player.h"
 #include "SpriteManager.h"
 #include "Animator.h"
+#include "Utils/AnimatorHelpers.h"
 #include <random>
 #include <algorithm>
 #include <cmath>
@@ -132,32 +133,16 @@ namespace FishGame
 
         if (m_animator && getRenderMode() == RenderMode::Sprite)
         {
-            bool newFacingRight = m_velocity.x > 0.f;
-            if (newFacingRight != m_facingRight)
-            {
-                m_facingRight = newFacingRight;
-                std::string turn = m_facingRight ? "turnLeftToRight" : "turnRightToLeft";
-                m_animator->play(turn);
-                m_currentAnimation = turn;
-                m_turning = true;
-                m_turnTimer = sf::Time::Zero;
-            }
-
-            m_animator->update(deltaTime);
-
-            if (m_turning)
-            {
-                m_turnTimer += deltaTime;
-                if (m_turnTimer.asSeconds() >= m_turnDuration)
-                {
-                    std::string swim = m_facingRight ? "swimRight" : "swimLeft";
-                    m_animator->play(swim);
-                    m_currentAnimation = swim;
-                    m_turning = false;
-                }
-            }
-
-            m_animator->setPosition(m_position);
+            AnimatorHelpers::updateTurn(
+                *m_animator,
+                deltaTime,
+                m_velocity,
+                m_position,
+                m_facingRight,
+                m_turning,
+                m_turnTimer,
+                sf::seconds(m_turnDuration),
+                m_currentAnimation);
         }
     }
 
