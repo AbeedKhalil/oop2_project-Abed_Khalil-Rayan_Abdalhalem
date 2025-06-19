@@ -10,6 +10,8 @@
 #include <SFML/Window.hpp>
 #include <cmath>
 #include <algorithm>
+#include <unordered_map>
+#include <numeric>
 
 namespace FishGame
 {
@@ -220,44 +222,35 @@ namespace FishGame
 
     void Player::handleInput()
     {
-        // Check for keyboard input - this will override mouse control
-        sf::Vector2f inputDirection(0.0f, 0.0f);
-        bool keyboardUsed = false;
+        static const std::unordered_map<sf::Keyboard::Key, sf::Vector2f> keyMap = {
+            {sf::Keyboard::W, {0.f, -1.f}}, {sf::Keyboard::Up, {0.f, -1.f}},
+            {sf::Keyboard::S, {0.f, 1.f}},  {sf::Keyboard::Down, {0.f, 1.f}},
+            {sf::Keyboard::A, {-1.f, 0.f}}, {sf::Keyboard::Left, {-1.f, 0.f}},
+            {sf::Keyboard::D, {1.f, 0.f}},  {sf::Keyboard::Right, {1.f, 0.f}}
+        };
 
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
-        {
-            inputDirection.y -= 1.0f;
-            keyboardUsed = true;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) || sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
-        {
-            inputDirection.y += 1.0f;
-            keyboardUsed = true;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
-        {
-            inputDirection.x -= 1.0f;
-            keyboardUsed = true;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
-        {
-            inputDirection.x += 1.0f;
-            keyboardUsed = true;
-        }
+        sf::Vector2f inputDirection = std::accumulate(
+            m_pressedKeys.begin(), m_pressedKeys.end(), sf::Vector2f{0.f, 0.f},
+            [&keyMap](sf::Vector2f sum, sf::Keyboard::Key key)
+            {
+                auto it = keyMap.find(key);
+                if (it != keyMap.end())
+                    sum += it->second;
+                return sum;
+            });
 
         if (m_controlsReversed)
         {
             inputDirection = -inputDirection;
         }
 
-        // Switch to keyboard control if keys are pressed
+        bool keyboardUsed = (inputDirection.x != 0.f || inputDirection.y != 0.f);
+
         if (keyboardUsed)
         {
             m_mouseControlActive = false;
-
-            // Normalize diagonal movement
             float length = std::sqrt(inputDirection.x * inputDirection.x + inputDirection.y * inputDirection.y);
-            if (length > 0.0f)
+            if (length > 0.f)
             {
                 inputDirection /= length;
                 float speed = m_baseSpeed * (m_speedBoostTimer > sf::Time::Zero ? m_speedMultiplier : 1.0f);
@@ -266,9 +259,18 @@ namespace FishGame
         }
         else if (!m_mouseControlActive)
         {
-            // Apply deceleration when no keyboard input
             m_velocity *= 0.9f;
         }
+    }
+
+    void Player::onKeyPressed(sf::Keyboard::Key key)
+    {
+        m_pressedKeys.insert(key);
+    }
+
+    void Player::onKeyReleased(sf::Keyboard::Key key)
+    {
+        m_pressedKeys.erase(key);
     }
 
     void Player::followMouse(const sf::Vector2f& mousePosition)

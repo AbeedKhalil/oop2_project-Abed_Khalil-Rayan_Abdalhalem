@@ -226,6 +226,7 @@ namespace FishGame
         switch (processedEvent.type)
         {
         case sf::Event::KeyPressed:
+            m_player->onKeyPressed(processedEvent.key.code);
             switch (processedEvent.key.code)
             {
             case sf::Keyboard::Escape:
@@ -263,6 +264,10 @@ namespace FishGame
             default:
                 break;
             }
+            break;
+
+        case sf::Event::KeyReleased:
+            m_player->onKeyReleased(processedEvent.key.code);
             break;
 
         case sf::Event::MouseMoved:
