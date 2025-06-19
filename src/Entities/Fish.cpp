@@ -5,8 +5,6 @@
 #include "GameConstants.h"
 #include "Player.h"
 #include "SpecialFish.h"
-#include "Utils/FishSizeUtils.h"
-#include "Utils/AnimatorHelpers.h"
 #include <cmath>
 #include <algorithm>
 
@@ -33,11 +31,18 @@ namespace FishGame
         , m_damageFlashTimer(sf::Time::Zero)
     {
         // Set radius based on size
-        m_radius = FishSizeUtils::selectBySize(
-            m_size,
-            SMALL_FISH_RADIUS,
-            MEDIUM_FISH_RADIUS,
-            LARGE_FISH_RADIUS);
+        switch (m_size)
+        {
+        case FishSize::Small:
+            m_radius = SMALL_FISH_RADIUS;
+            break;
+        case FishSize::Medium:
+            m_radius = MEDIUM_FISH_RADIUS;
+            break;
+        case FishSize::Large:
+            m_radius = LARGE_FISH_RADIUS;
+            break;
+        }
 
         // Set point value based on size and level
         m_pointValue = getPointValue(m_size, m_currentLevel);
@@ -140,7 +145,12 @@ namespace FishGame
 
         float scale = 1.f;
         const auto& cfg = spriteManager.getScaleConfig();
-        scale = FishSizeUtils::valueFromConfig(cfg, m_size);
+        switch (m_size)
+        {
+        case FishSize::Small: scale = cfg.small; break;
+        case FishSize::Medium: scale = cfg.medium; break;
+        case FishSize::Large: scale = cfg.large; break;
+        }
 
         if (id == TextureID::SmallFish || id == TextureID::PoisonFish ||
             id == TextureID::Angelfish)
@@ -175,11 +185,17 @@ namespace FishGame
     TextureID Fish::getTextureID() const
     {
         // Default implementation - override in derived classes
-        return FishSizeUtils::selectBySize(
-            m_size,
-            TextureID::SmallFish,
-            TextureID::MediumFish,
-            TextureID::LargeFish);
+        switch (m_size)
+        {
+        case FishSize::Small:
+            return TextureID::SmallFish;
+        case FishSize::Medium:
+            return TextureID::MediumFish;
+        case FishSize::Large:
+            return TextureID::LargeFish;
+        default:
+            return TextureID::SmallFish;
+        }
     }
 
     void Fish::setFrozen(bool frozen)
@@ -261,16 +277,32 @@ namespace FishGame
         // Update sprite or animator
         if (m_animator && m_renderMode == RenderMode::Sprite)
         {
-            AnimatorHelpers::updateTurn(
-                *m_animator,
-                deltaTime,
-                m_velocity,
-                m_position,
-                m_facingRight,
-                m_turning,
-                m_turnTimer,
-                sf::seconds(m_turnDuration),
-                m_currentAnimation);
+            bool newFacingRight = m_velocity.x > 0.f;
+            if (std::abs(m_velocity.x) > 1.f && newFacingRight != m_facingRight)
+            {
+                m_facingRight = newFacingRight;
+                std::string turn = m_facingRight ? "turnLeftToRight" : "turnRightToLeft";
+                m_animator->play(turn);
+                m_currentAnimation = turn;
+                m_turning = true;
+                m_turnTimer = sf::Time::Zero;
+            }
+
+            m_animator->update(deltaTime);
+
+            if (m_turning)
+            {
+                m_turnTimer += deltaTime;
+                if (m_turnTimer.asSeconds() >= m_turnDuration)
+                {
+                    std::string swim = m_facingRight ? "swimRight" : "swimLeft";
+                    m_animator->play(swim);
+                    m_currentAnimation = swim;
+                    m_turning = false;
+                }
+            }
+
+            m_animator->setPosition(m_position);
         }
         else if (m_sprite && m_renderMode == RenderMode::Sprite)
         {
@@ -279,10 +311,11 @@ namespace FishGame
         }
     }
 
-sf::FloatRect Fish::getBounds() const
-{
-    return EntityUtils::makeBounds(m_position, m_radius);
-}
+    sf::FloatRect Fish::getBounds() const
+    {
+        return sf::FloatRect(m_position.x - m_radius, m_position.y - m_radius,
+            m_radius * 2.0f, m_radius * 2.0f);
+    }
 
     void Fish::setDirection(float dirX, float dirY)
     {

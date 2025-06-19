@@ -20,7 +20,7 @@ namespace FishGame
         , m_player(std::make_unique<Player>())
         , m_entities()
         , m_bonusItems()
-        , m_environment(std::make_unique<EnvironmentSystem>(getGame().getSpriteManager()))
+        , m_environment(std::make_unique<EnvironmentSystem>())
         , m_timeLimit(sf::Time::Zero)
         , m_timeElapsed(sf::Time::Zero)
         , m_objective()
@@ -153,15 +153,12 @@ namespace FishGame
             [deltaTime, this](auto& entity) {
                 entity->update(deltaTime);
 
-                // Apply currents only to non-fish entities
-                if (dynamic_cast<Fish*>(entity.get()))
+                // Apply ocean currents to fish
+                if (Fish* fish = dynamic_cast<Fish*>(entity.get()))
                 {
-                    // Fish should not be affected by currents here
-                    return;
+                    sf::Vector2f force = m_environment->getOceanCurrentForce(entity->getPosition());
+                    entity->setVelocity(entity->getVelocity() + force * deltaTime.asSeconds() * 0.5f);
                 }
-
-                sf::Vector2f force = m_environment->getOceanCurrentForce(entity->getPosition());
-                entity->setVelocity(entity->getVelocity() + force * deltaTime.asSeconds() * 0.5f);
             });
 
         // Update bonus items

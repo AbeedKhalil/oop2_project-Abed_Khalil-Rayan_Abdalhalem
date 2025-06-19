@@ -203,7 +203,7 @@ namespace FishGame
     }
 
     // EnvironmentSystem implementation
-    EnvironmentSystem::EnvironmentSystem(SpriteManager& spriteManager)
+    EnvironmentSystem::EnvironmentSystem()
         : m_currentEnvironment(EnvironmentType::OpenOcean)
         , m_currentTimeOfDay(TimeOfDay::Day)
         , m_farLayer(std::make_unique<BackgroundLayer>(10.0f, sf::Color(0, 50, 100, 50)))
@@ -214,13 +214,32 @@ namespace FishGame
             static_cast<float>(Constants::WINDOW_HEIGHT)))
         , m_dayNightTimer(sf::Time::Zero)
         , m_transitionTimer(sf::Time::Zero)
+        , m_predatorAggressionBase(1.0f)
         , m_isTransitioning(false)
         , m_dayNightCyclePaused(true)  // Start paused by default
         , m_randomEngine(std::chrono::steady_clock::now().time_since_epoch().count())
         , m_timeDist(0, 3)
-        , m_spriteManager(&spriteManager)
     {
         m_lightingOverlay.setFillColor(sf::Color(0, 0, 0, 0));
+        // Initialize simple background fish
+        std::uniform_real_distribution<float> xDist(0.0f, static_cast<float>(Constants::WINDOW_WIDTH));
+        std::uniform_real_distribution<float> yDist(100.0f, static_cast<float>(Constants::WINDOW_HEIGHT) - 80.0f);
+        std::uniform_real_distribution<float> speedDist(20.0f, 60.0f);
+        std::uniform_real_distribution<float> radiusDist(5.0f, 15.0f);
+        std::uniform_int_distribution<int> dirDist(0, 1);
+
+        m_backgroundFish.resize(10);
+        for (auto& fish : m_backgroundFish)
+        {
+            float radius = radiusDist(m_randomEngine);
+            fish.shape.setRadius(radius);
+            fish.shape.setOrigin(radius, radius);
+            fish.shape.setFillColor(sf::Color(255, 255, 255, 100));
+            fish.shape.setPosition(xDist(m_randomEngine), yDist(m_randomEngine));
+
+            float dir = dirDist(m_randomEngine) ? 1.f : -1.f;
+            fish.velocity = sf::Vector2f(dir * speedDist(m_randomEngine), 0.f);
+        }
     }
 
     void EnvironmentSystem::update(sf::Time deltaTime)
@@ -233,6 +252,18 @@ namespace FishGame
         // Update ocean currents
         m_oceanCurrents->update(deltaTime);
 
+        // Update background fish
+        for (auto& fish : m_backgroundFish)
+        {
+            fish.shape.move(fish.velocity * deltaTime.asSeconds());
+            sf::Vector2f pos = fish.shape.getPosition();
+            float radius = fish.shape.getRadius();
+            if (fish.velocity.x > 0.f && pos.x - radius > static_cast<float>(Constants::WINDOW_WIDTH))
+                pos.x = -radius;
+            else if (fish.velocity.x < 0.f && pos.x + radius < 0.f)
+                pos.x = static_cast<float>(Constants::WINDOW_WIDTH) + radius;
+            fish.shape.setPosition(pos);
+        }
 
         // Update day/night cycle only if not paused
         if (!m_dayNightCyclePaused)
@@ -283,6 +314,26 @@ namespace FishGame
         setTimeOfDay(times[m_timeDist(m_randomEngine)]);
     }
 
+    float EnvironmentSystem::getPredatorAggressionMultiplier() const
+    {
+        float timeMultiplier = 1.0f;
+
+        switch (m_currentTimeOfDay)
+        {
+        case TimeOfDay::Night:
+            timeMultiplier = 1.5f; // More aggressive at night
+            break;
+        case TimeOfDay::Dusk:
+        case TimeOfDay::Dawn:
+            timeMultiplier = 1.2f; // Slightly more aggressive during transitions
+            break;
+        default:
+            timeMultiplier = 1.0f;
+            break;
+        }
+
+        return m_predatorAggressionBase * timeMultiplier;
+    }
 
     sf::Color EnvironmentSystem::getAmbientLightColor() const
     {
@@ -311,7 +362,11 @@ namespace FishGame
         // Draw background layers (far to near)
         m_farLayer->draw(target);
 
-
+        // Draw background fish behind near layer
+        for (const auto& fish : m_backgroundFish)
+        {
+            target.draw(fish.shape, states);
+        }
 
         m_midLayer->draw(target);
         m_nearLayer->draw(target);
@@ -358,16 +413,19 @@ namespace FishGame
         switch (m_currentEnvironment)
         {
         case EnvironmentType::CoralReef:
+            m_predatorAggressionBase = 0.8f; // Less aggressive in coral reef
             m_oceanCurrents->setStrength(30.0f);
             m_oceanCurrents->setDirection(sf::Vector2f(1.0f, 0.2f));
             break;
 
         case EnvironmentType::OpenOcean:
+            m_predatorAggressionBase = 1.0f; // Normal aggression
             m_oceanCurrents->setStrength(50.0f);
             m_oceanCurrents->setDirection(sf::Vector2f(1.0f, 0.0f));
             break;
 
         case EnvironmentType::KelpForest:
+            m_predatorAggressionBase = 1.2f; // More aggressive in kelp forest
             m_oceanCurrents->setStrength(20.0f);
             m_oceanCurrents->setDirection(sf::Vector2f(0.5f, -0.5f));
             break;

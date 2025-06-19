@@ -6,13 +6,9 @@
 #include "Animator.h"
 #include "CollisionDetector.h"
 #include "GenericFish.h"
-#include "Utils/FishSizeUtils.h"
 #include <SFML/Window.hpp>
 #include <cmath>
 #include <algorithm>
-#include <unordered_map>
-#include <array>
-#include <numeric>
 
 namespace FishGame
 {
@@ -92,11 +88,17 @@ namespace FishGame
 
     TextureID Player::getTextureID() const
     {
-        return FishSizeUtils::selectBySize(
-            getCurrentFishSize(),
-            TextureID::PlayerSmall,
-            TextureID::PlayerMedium,
-            TextureID::PlayerLarge);
+        switch (getCurrentFishSize())
+        {
+        case FishSize::Small:
+            return TextureID::PlayerSmall;
+        case FishSize::Medium:
+            return TextureID::PlayerMedium;
+        case FishSize::Large:
+            return TextureID::PlayerLarge;
+        default:
+            return TextureID::PlayerSmall;
+        }
     }
 
     void Player::update(sf::Time deltaTime)
@@ -194,11 +196,21 @@ namespace FishGame
             if (m_spriteManager)
             {
                 const auto& cfg = m_spriteManager->getScaleConfig();
-                stageScale = FishSizeUtils::valueFromConfig(cfg, getCurrentFishSize());
-                if (getCurrentFishSize() == FishSize::Medium)
-                    stageScale += 0.18f;
-                else if (getCurrentFishSize() == FishSize::Large)
-                    stageScale += 0.4f;
+                switch (getCurrentFishSize())
+                {
+                case FishSize::Small:
+                    stageScale = cfg.small;
+                    break;
+                case FishSize::Medium:
+                    stageScale = (cfg.medium) + 0.18f;
+                    break;
+                case FishSize::Large:
+                    stageScale = (cfg.large) + 0.4f;
+                    break;
+                default:
+                    stageScale = 1.0f;
+                    break;
+                }
             }
 
             m_animator->setScale(sf::Vector2f(stageScale * m_eatAnimationScale,
@@ -223,29 +235,29 @@ namespace FishGame
 
     void Player::handleInput()
     {
-        sf::Vector2f inputDirection{ 0.f, 0.f };
+        // Check for keyboard input - this will override mouse control
+        sf::Vector2f inputDirection(0.0f, 0.0f);
+        bool keyboardUsed = false;
 
-        auto keyActive = [this](sf::Keyboard::Key k)
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
         {
-            return m_pressedKeys.contains(k) || sf::Keyboard::isKeyPressed(k);
-        };
-
-        static const std::array<std::pair<sf::Keyboard::Key, sf::Vector2f>, 8>
-            keyMap{{
-                {sf::Keyboard::W, {0.f, -1.f}},
-                {sf::Keyboard::Up, {0.f, -1.f}},
-                {sf::Keyboard::S, {0.f, 1.f}},
-                {sf::Keyboard::Down, {0.f, 1.f}},
-                {sf::Keyboard::A, {-1.f, 0.f}},
-                {sf::Keyboard::Left, {-1.f, 0.f}},
-                {sf::Keyboard::D, {1.f, 0.f}},
-                {sf::Keyboard::Right, {1.f, 0.f}},
-            }};
-
-        for (const auto& [key, vec] : keyMap)
+            inputDirection.y -= 1.0f;
+            keyboardUsed = true;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) || sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
         {
-            if (keyActive(key))
-                inputDirection += vec;
+            inputDirection.y += 1.0f;
+            keyboardUsed = true;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+        {
+            inputDirection.x -= 1.0f;
+            keyboardUsed = true;
+        }
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+        {
+            inputDirection.x += 1.0f;
+            keyboardUsed = true;
         }
 
         if (m_controlsReversed)
@@ -253,13 +265,14 @@ namespace FishGame
             inputDirection = -inputDirection;
         }
 
-        bool keyboardUsed = (inputDirection.x != 0.f || inputDirection.y != 0.f);
-
+        // Switch to keyboard control if keys are pressed
         if (keyboardUsed)
         {
             m_mouseControlActive = false;
+
+            // Normalize diagonal movement
             float length = std::sqrt(inputDirection.x * inputDirection.x + inputDirection.y * inputDirection.y);
-            if (length > 0.f)
+            if (length > 0.0f)
             {
                 inputDirection /= length;
                 float speed = m_baseSpeed * (m_speedBoostTimer > sf::Time::Zero ? m_speedMultiplier : 1.0f);
@@ -268,23 +281,9 @@ namespace FishGame
         }
         else if (!m_mouseControlActive)
         {
+            // Apply deceleration when no keyboard input
             m_velocity *= 0.9f;
         }
-    }
-
-    void Player::onKeyPressed(sf::Keyboard::Key key)
-    {
-        m_pressedKeys.insert(key);
-    }
-
-    void Player::onKeyReleased(sf::Keyboard::Key key)
-    {
-        m_pressedKeys.erase(key);
-    }
-
-    void Player::clearInput()
-    {
-        m_pressedKeys.clear();
     }
 
     void Player::followMouse(const sf::Vector2f& mousePosition)
@@ -292,10 +291,11 @@ namespace FishGame
         m_targetPosition = mousePosition;
     }
 
-sf::FloatRect Player::getBounds() const
-{
-    return EntityUtils::makeBounds(m_position, m_radius);
-}
+    sf::FloatRect Player::getBounds() const
+    {
+        return sf::FloatRect(m_position.x - m_radius, m_position.y - m_radius,
+            m_radius * 2.0f, m_radius * 2.0f);
+    }
 
     void Player::grow(int scoreValue)
     {
@@ -608,8 +608,6 @@ sf::FloatRect Player::getBounds() const
     void Player::applyPoisonEffect(sf::Time duration)
     {
         m_poisonColorTimer = duration;
-        // Reverse current movement direction immediately
-        m_velocity = -m_velocity;
         m_controlsReversed = true;
     }
 
@@ -653,20 +651,19 @@ sf::FloatRect Player::getBounds() const
 
     void Player::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        std::for_each(m_activeEffects.begin(), m_activeEffects.end(),
-            [&](const VisualEffect& effect)
+        for (const auto& effect : m_activeEffects)
+        {
+            if (effect.duration > sf::Time::Zero)
             {
-                if (effect.duration > sf::Time::Zero)
-                {
-                    sf::Transform effectTransform;
-                    effectTransform.translate(m_position);
-                    effectTransform.scale(effect.scale, effect.scale);
-                    effectTransform.rotate(effect.rotation);
-                    effectTransform.translate(-m_position);
+                sf::Transform effectTransform;
+                effectTransform.translate(m_position);
+                effectTransform.scale(effect.scale, effect.scale);
+                effectTransform.rotate(effect.rotation);
+                effectTransform.translate(-m_position);
 
-                    states.transform *= effectTransform;
-                }
-            });
+                states.transform *= effectTransform;
+            }
+        }
 
         if (m_animator)
         {
@@ -687,12 +684,21 @@ sf::FloatRect Player::getBounds() const
         {
             float stageScale = 1.0f;
             const auto& cfg = m_spriteManager->getScaleConfig();
-            stageScale = FishSizeUtils::valueFromConfig(cfg, getCurrentFishSize());
-            if (getCurrentFishSize() == FishSize::Medium)
-                stageScale += 0.18f;
-            else if (getCurrentFishSize() == FishSize::Large)
-                stageScale += 0.4f;
-            
+            switch (getCurrentFishSize())
+            {
+            case FishSize::Small:
+                stageScale = cfg.small;
+                break;
+            case FishSize::Medium:
+                stageScale = (cfg.medium) + 0.18f;
+                break;
+            case FishSize::Large:
+                stageScale = (cfg.large) + 0.4f;
+                break;
+            default:
+                stageScale = 1.0f;
+                break;
+            }
             m_animator->setScale(sf::Vector2f(stageScale, stageScale));
         }
 

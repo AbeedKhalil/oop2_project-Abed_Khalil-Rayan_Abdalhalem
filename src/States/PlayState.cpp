@@ -20,7 +20,7 @@ namespace FishGame
         , m_entities()
         , m_bonusItems()
         , m_hazards()
-        , m_environmentSystem(std::make_unique<EnvironmentSystem>(getGame().getSpriteManager()))
+        , m_environmentSystem(std::make_unique<EnvironmentSystem>())
         , m_systems()
         , m_growthMeter(nullptr)
         , m_frenzySystem(nullptr)
@@ -206,10 +206,9 @@ namespace FishGame
         if (m_isPlayerStunned || getGame().getCurrentState<PauseState>())
             return;
 
-        // Handle controls reversal for key presses and releases
+        // Handle controls reversal
         sf::Event processedEvent = event;
-        if (m_hasControlsReversed &&
-            (event.type == sf::Event::KeyPressed || event.type == sf::Event::KeyReleased))
+        if (m_hasControlsReversed && event.type == sf::Event::KeyPressed)
         {
             static const std::unordered_map<sf::Keyboard::Key, sf::Keyboard::Key> reverseMap = {
                 {sf::Keyboard::W, sf::Keyboard::S}, {sf::Keyboard::S, sf::Keyboard::W},
@@ -227,7 +226,6 @@ namespace FishGame
         switch (processedEvent.type)
         {
         case sf::Event::KeyPressed:
-            m_player->onKeyPressed(processedEvent.key.code);
             switch (processedEvent.key.code)
             {
             case sf::Keyboard::Escape:
@@ -265,10 +263,6 @@ namespace FishGame
             default:
                 break;
             }
-            break;
-
-        case sf::Event::KeyReleased:
-            m_player->onKeyReleased(processedEvent.key.code);
             break;
 
         case sf::Event::MouseMoved:
@@ -470,15 +464,22 @@ namespace FishGame
 
     void PlayState::updateAllEntities(sf::Time deltaTime)
     {
-        // Update regular entity logic
+        // Update all entities with freeze effect
+        auto freezeModifier = m_isPlayerFrozen ? 0.1f : 1.0f;
+
         StateUtils::updateEntities(m_entities, deltaTime);
         StateUtils::updateEntities(m_bonusItems, deltaTime);
         StateUtils::updateEntities(m_hazards, deltaTime);
 
         // Apply specific AI updates and effects
-        StateUtils::applyToEntities(m_entities, [this, deltaTime](Entity& entity) {
+        StateUtils::applyToEntities(m_entities, [this, deltaTime, freezeModifier](Entity& entity) {
             if (auto* fish = dynamic_cast<Fish*>(&entity))
             {
+                if (m_isPlayerFrozen)
+                {
+                    fish->setVelocity(fish->getVelocity() * freezeModifier);
+                }
+
                 if (!fish->isStunned())
                 {
                     fish->updateAI(m_entities, m_player.get(), deltaTime);
@@ -499,7 +500,7 @@ namespace FishGame
                 StateUtils::applyToEntities(m_entities, [](Entity& entity) {
                     if (auto* fish = dynamic_cast<Fish*>(&entity))
                     {
-                        fish->setFrozen(false);
+                        fish->setVelocity(fish->getVelocity() * 10.0f);
                     }
                     });
             }
@@ -536,12 +537,8 @@ namespace FishGame
             m_player->setVelocity(m_player->getVelocity() + playerCurrent * deltaTime.asSeconds() * 0.3f);
         }
 
-        // Apply currents to non-fish entities only
+        // Apply currents to all entities
         StateUtils::applyToEntities(m_entities, [this, deltaTime](Entity& entity) {
-            // Skip fish so they keep their speed
-            if (dynamic_cast<Fish*>(&entity))
-                return;
-
             sf::Vector2f current = m_environmentSystem->getOceanCurrentForce(entity.getPosition());
             entity.setVelocity(entity.getVelocity() + current * deltaTime.asSeconds() * 0.1f);
             });
@@ -840,7 +837,6 @@ namespace FishGame
                 state->m_isPlayerStunned = true;
                 state->m_stunTimer = jelly->getStunDuration();
                 state->m_player->setVelocity(0.0f, 0.0f);
-                state->m_player->clearInput();
                 state->createParticleEffect(state->m_player->getPosition(), sf::Color(255, 255, 0, 150), 10);
             }
             break;
@@ -913,12 +909,12 @@ namespace FishGame
     void PlayState::applyFreeze()
     {
         m_isPlayerFrozen = true;
-        m_freezeTimer = sf::seconds(Constants::FREEZE_POWERUP_DURATION);
+        m_freezeTimer = sf::seconds(5.0f);
 
-        StateUtils::applyToEntities(m_entities, [](Entity& entity) {
+        StateUtils::applyToEntities(m_entities, [](Entity& entity) {    
             if (auto* fish = dynamic_cast<Fish*>(&entity))
             {
-                fish->setFrozen(true);
+                fish->setVelocity(fish->getVelocity() * 0.1f);
             }
             });
     }
@@ -992,6 +988,7 @@ namespace FishGame
     {
         m_gameState.currentLevel++;
         m_gameState.totalScore += m_scoreSystem->getCurrentScore();
+        m_scoreSystem->addToTotalScore(m_scoreSystem->getCurrentScore());
 
         if (m_gameState.currentLevel % 3 == 0)
         {

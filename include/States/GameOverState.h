@@ -156,8 +156,8 @@ namespace FishGame
 
         // Animation parameters
         static constexpr float m_fadeInDuration = 1.5f;
-        static constexpr float m_pulseSpeed = Constants::MENU_PULSE_SPEED;
-        static constexpr float m_pulseAmplitude = Constants::MENU_PULSE_AMPLITUDE;
+        static constexpr float m_pulseSpeed = 2.0f;
+        static constexpr float m_pulseAmplitude = 0.1f;
         static constexpr float m_transitionSpeed = 3.0f;
 
         // Random number generation

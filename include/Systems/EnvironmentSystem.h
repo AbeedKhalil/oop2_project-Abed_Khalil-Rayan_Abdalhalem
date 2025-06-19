@@ -4,7 +4,6 @@
 #include <memory>
 #include <vector>
 #include <random>
-#include "SpriteManager.h"
 
 namespace FishGame
 {
@@ -78,7 +77,7 @@ namespace FishGame
     class EnvironmentSystem : public sf::Drawable
     {
     public:
-        explicit EnvironmentSystem(SpriteManager& spriteManager);
+        EnvironmentSystem();
         ~EnvironmentSystem() = default;
 
         // Delete copy operations
@@ -96,6 +95,7 @@ namespace FishGame
         EnvironmentType getCurrentEnvironment() const { return m_currentEnvironment; }
         TimeOfDay getCurrentTimeOfDay() const { return m_currentTimeOfDay; }
 
+        float getPredatorAggressionMultiplier() const;
         sf::Color getAmbientLightColor() const;
         sf::Vector2f getOceanCurrentForce(const sf::Vector2f& position) const;
 
@@ -112,6 +112,11 @@ namespace FishGame
         void transitionEnvironment(EnvironmentType newType);
 
     private:
+        struct BackgroundFish
+        {
+            sf::CircleShape shape;
+            sf::Vector2f velocity;
+        };
 
         EnvironmentType m_currentEnvironment;
         TimeOfDay m_currentTimeOfDay;
@@ -120,8 +125,7 @@ namespace FishGame
         std::unique_ptr<BackgroundLayer> m_midLayer;
         std::unique_ptr<BackgroundLayer> m_nearLayer;
 
-
-        SpriteManager* m_spriteManager;
+        std::vector<BackgroundFish> m_backgroundFish;
 
         std::unique_ptr<OceanCurrentSystem> m_oceanCurrents;
 
@@ -129,6 +133,7 @@ namespace FishGame
         sf::Time m_dayNightTimer;
         sf::Time m_transitionTimer;
 
+        float m_predatorAggressionBase;
         bool m_isTransitioning;
         bool m_dayNightCyclePaused;
 

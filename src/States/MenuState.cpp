@@ -1,6 +1,5 @@
 #include "MenuState.h"
 #include "Game.h"
-#include "Animator.h"
 #include <cmath>
 #include <algorithm>
 #include <numeric>
@@ -99,23 +98,21 @@ namespace FishGame
         std::uniform_real_distribution<float> xDist(0.f, windowSize.x);
         std::uniform_real_distribution<float> yDist(0.f, windowSize.y);
         std::uniform_real_distribution<float> speedDist(20.f, 60.f);
-        std::uniform_real_distribution<float> scaleDist(0.3f, 0.6f);
+        std::uniform_real_distribution<float> radiusDist(5.f, 15.f);
         std::uniform_int_distribution<int> dirDist(0, 1);
 
         m_backgroundFish.resize(8);
-        const sf::Texture& fishTex =
-            getGame().getSpriteManager().getTexture(TextureID::SmallFish);
-        std::for_each(m_backgroundFish.begin(), m_backgroundFish.end(),
-            [&](BackgroundFish& fish)
-            {
-                float scale = scaleDist(m_randomEngine);
-                float dir = dirDist(m_randomEngine) ? 1.f : -1.f;
-                fish.animator = std::make_unique<Animator>(createSimpleFishAnimator(fishTex));
-                fish.animator->setScale({ scale, scale });
-                fish.animator->setPosition({ xDist(m_randomEngine), yDist(m_randomEngine) });
-                fish.animator->play(dir > 0.f ? "swimRight" : "swimLeft");
-                fish.velocity = sf::Vector2f(dir * speedDist(m_randomEngine), 0.f);
-            });
+        for (auto& fish : m_backgroundFish)
+        {
+            float r = radiusDist(m_randomEngine);
+            fish.shape.setRadius(r);
+            fish.shape.setOrigin(r, r);
+            fish.shape.setFillColor(sf::Color(255, 255, 255, 150));
+            fish.shape.setPosition(xDist(m_randomEngine), yDist(m_randomEngine));
+
+            float dir = dirDist(m_randomEngine) ? 1.f : -1.f;
+            fish.velocity = sf::Vector2f(dir * speedDist(m_randomEngine), 0.f);
+        }
     }
 
     void MenuState::handleEvent(const sf::Event& event)
@@ -270,12 +267,9 @@ namespace FishGame
     {
         auto& window = getGame().getWindow();
 
-    window.draw(m_backgroundSprite);
-    std::for_each(m_backgroundFish.begin(), m_backgroundFish.end(),
-        [&window](const BackgroundFish& fish)
-        {
-            window.draw(*fish.animator);
-        });
+        window.draw(m_backgroundSprite);
+        for (const auto& fish : m_backgroundFish)
+            window.draw(fish.shape);
 
         window.draw(m_titleSprite);
 
@@ -290,20 +284,17 @@ namespace FishGame
     {
         auto size = getGame().getWindow().getSize();
 
-    std::for_each(m_backgroundFish.begin(), m_backgroundFish.end(),
-        [&](BackgroundFish& fish)
+        for (auto& fish : m_backgroundFish)
         {
-            sf::Vector2f pos = fish.animator->getPosition();
-            pos += fish.velocity * deltaTime.asSeconds();
-            sf::FloatRect bounds = fish.animator->getGlobalBounds();
-            float halfWidth = bounds.width / 2.f;
-            if (fish.velocity.x > 0.f && pos.x - halfWidth > static_cast<float>(size.x))
-                pos.x = -halfWidth;
-            else if (fish.velocity.x < 0.f && pos.x + halfWidth < 0.f)
-                pos.x = static_cast<float>(size.x) + halfWidth;
-            fish.animator->setPosition(pos);
-            fish.animator->update(deltaTime);
-        });
+            fish.shape.move(fish.velocity * deltaTime.asSeconds());
+            sf::Vector2f pos = fish.shape.getPosition();
+            float r = fish.shape.getRadius();
+            if (fish.velocity.x > 0.f && pos.x - r > static_cast<float>(size.x))
+                pos.x = -r;
+            else if (fish.velocity.x < 0.f && pos.x + r < 0.f)
+                pos.x = static_cast<float>(size.x) + r;
+            fish.shape.setPosition(pos);
+        }
     }
 
     void MenuState::updateOptionText()

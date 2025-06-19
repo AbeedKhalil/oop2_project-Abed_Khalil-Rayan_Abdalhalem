@@ -71,7 +71,9 @@ namespace FishGame
 
         // Score tracking
         int getCurrentScore() const { return m_currentScore; }
+        int getTotalScore() const { return m_totalScore; }
         void setCurrentScore(int score) { m_currentScore = score; }
+        void addToTotalScore(int score) { m_totalScore += score; }
         void reset();
 
     private:
@@ -82,6 +84,7 @@ namespace FishGame
 
         // Score tracking
         int m_currentScore;
+        int m_totalScore;
 
         // Chain system
         int m_currentChain;
