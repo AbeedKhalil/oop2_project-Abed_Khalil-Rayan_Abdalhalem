@@ -148,23 +148,24 @@ namespace FishGame
             spawnConfig, sf::Vector2f(baseX, baseY), m_currentLevel);
 
         // Add each fish to the school
-        for (auto& fish : formation)
-        {
-            fish->initializeSprite(*m_spriteManager);
-
-            // Create school member using factory
-            auto member = SchoolingFishFactory<FishType>::createFromFish(*fish, m_currentLevel);
-            member->initializeSprite(*m_spriteManager);
-            member->setDirection(fromLeft ? 1.0f : -1.0f, 0.0f);
-            member->setWindowBounds(m_windowSize);
-
-            // Try to add to schooling system
-            if (!m_schoolingSystem->tryAddToSchool(std::move(member)))
+        std::for_each(formation.begin(), formation.end(),
+            [&](std::unique_ptr<FishType>& fish)
             {
-                // If school is full, add as regular fish
-                m_spawnedFish.push_back(std::move(fish));
-            }
-        }
+                fish->initializeSprite(*m_spriteManager);
+
+                // Create school member using factory
+                auto member = SchoolingFishFactory<FishType>::createFromFish(*fish, m_currentLevel);
+                member->initializeSprite(*m_spriteManager);
+                member->setDirection(fromLeft ? 1.0f : -1.0f, 0.0f);
+                member->setWindowBounds(m_windowSize);
+
+                // Try to add to schooling system
+                if (!m_schoolingSystem->tryAddToSchool(std::move(member)))
+                {
+                    // If school is full, add as regular fish
+                    m_spawnedFish.push_back(std::move(fish));
+                }
+            });
     }
 
     void EnhancedFishSpawner::configureSpecialSpawners(int level)

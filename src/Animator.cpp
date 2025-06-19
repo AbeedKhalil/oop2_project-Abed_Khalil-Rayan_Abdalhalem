@@ -1,4 +1,5 @@
 #include "Animator.h"
+#include <algorithm>
 
 using namespace sf;
 
@@ -22,13 +23,15 @@ void Animator::addClip(const std::string& name, const std::vector<IntRect>& fram
 void Animator::addClipRow(const std::string& name, int rowY, int startFrame, int count,
     Time frameTime, bool loop, bool reverse)
 {
-    std::vector<IntRect> frames;
-    frames.reserve(count);
-    for (int i = 0; i < count; ++i)
-    {
-        int idx = reverse ? startFrame + count - 1 - i : startFrame + i;
-        frames.emplace_back(m_startX + idx * m_frameW, rowY, m_frameW, m_frameH);
-    }
+    std::vector<IntRect> frames(count);
+    int index = 0;
+    std::generate(frames.begin(), frames.end(), [&, index]() mutable
+        {
+            int idx = reverse ? startFrame + count - 1 - index
+                               : startFrame + index;
+            ++index;
+            return IntRect(m_startX + idx * m_frameW, rowY, m_frameW, m_frameH);
+        });
     addClip(name, frames, frameTime, loop, false);
 }
 

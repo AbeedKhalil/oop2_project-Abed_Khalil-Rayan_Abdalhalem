@@ -635,19 +635,20 @@ sf::FloatRect Player::getBounds() const
 
     void Player::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        for (const auto& effect : m_activeEffects)
-        {
-            if (effect.duration > sf::Time::Zero)
+        std::for_each(m_activeEffects.begin(), m_activeEffects.end(),
+            [&](const VisualEffect& effect)
             {
-                sf::Transform effectTransform;
-                effectTransform.translate(m_position);
-                effectTransform.scale(effect.scale, effect.scale);
-                effectTransform.rotate(effect.rotation);
-                effectTransform.translate(-m_position);
+                if (effect.duration > sf::Time::Zero)
+                {
+                    sf::Transform effectTransform;
+                    effectTransform.translate(m_position);
+                    effectTransform.scale(effect.scale, effect.scale);
+                    effectTransform.rotate(effect.rotation);
+                    effectTransform.translate(-m_position);
 
-                states.transform *= effectTransform;
-            }
-        }
+                    states.transform *= effectTransform;
+                }
+            });
 
         if (m_animator)
         {
