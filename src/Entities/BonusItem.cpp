@@ -25,11 +25,10 @@ namespace FishGame
     {
     }
 
-    sf::FloatRect BonusItem::getBounds() const
-    {
-        return sf::FloatRect(m_position.x - m_radius, m_position.y - m_radius,
-            m_radius * 2.0f, m_radius * 2.0f);
-    }
+sf::FloatRect BonusItem::getBounds() const
+{
+    return EntityUtils::makeBounds(m_position, m_radius);
+}
 
     bool BonusItem::updateLifetime(sf::Time deltaTime)
     {

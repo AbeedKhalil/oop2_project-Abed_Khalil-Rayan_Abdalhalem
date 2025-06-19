@@ -294,11 +294,10 @@ namespace FishGame
         }
     }
 
-    sf::FloatRect Fish::getBounds() const
-    {
-        return sf::FloatRect(m_position.x - m_radius, m_position.y - m_radius,
-            m_radius * 2.0f, m_radius * 2.0f);
-    }
+sf::FloatRect Fish::getBounds() const
+{
+    return EntityUtils::makeBounds(m_position, m_radius);
+}
 
     void Fish::setDirection(float dirX, float dirY)
     {

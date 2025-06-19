@@ -138,5 +138,13 @@ namespace FishGame
                 entities.end()
             );
         }
+
+        // Utility to create a bounding rectangle for a circular entity
+        inline sf::FloatRect makeBounds(const sf::Vector2f& position,
+            float radius) noexcept
+        {
+            return { position.x - radius, position.y - radius,
+                radius * 2.f, radius * 2.f };
+        }
     }
 }

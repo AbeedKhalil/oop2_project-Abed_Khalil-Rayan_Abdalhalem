@@ -18,6 +18,19 @@ namespace FishGame
 
     }
 
+    void PowerUp::commonUpdate(sf::Time deltaTime, float pulseSpeed,
+        float freqMul, float ampMul)
+    {
+        if (!updateLifetime(deltaTime))
+            return;
+
+        m_pulseAnimation += deltaTime.asSeconds() * pulseSpeed;
+        m_position.y = m_baseY + computeBobbingOffset(freqMul, ampMul);
+
+        if (auto sprite = getSpriteComponent())
+            sprite->update(deltaTime);
+    }
+
     // Do NOT implement update() here - let derived classes handle it
 
     // ScoreDoublerPowerUp implementation
@@ -27,16 +40,10 @@ namespace FishGame
     {
     }
 
-    void ScoreDoublerPowerUp::update(sf::Time deltaTime)
-    {
-        if (!updateLifetime(deltaTime))
-            return;
-
-        m_pulseAnimation += deltaTime.asSeconds() * 3.0f;
-        m_position.y = m_baseY + computeBobbingOffset();
-        if (getSpriteComponent())
-            getSpriteComponent()->update(deltaTime);
-    }
+void ScoreDoublerPowerUp::update(sf::Time deltaTime)
+{
+    commonUpdate(deltaTime, 3.0f);
+}
 
     void ScoreDoublerPowerUp::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
@@ -50,17 +57,11 @@ namespace FishGame
     {
     }
 
-    void FrenzyStarterPowerUp::update(sf::Time deltaTime)
-    {
-        if (!updateLifetime(deltaTime))
-            return;
-
-        m_pulseAnimation += deltaTime.asSeconds() * 4.0f;
-        m_sparkAnimation += deltaTime.asSeconds() * 10.0f;
-        m_position.y = m_baseY + computeBobbingOffset(2.0f);
-        if (getSpriteComponent())
-            getSpriteComponent()->update(deltaTime);
-    }
+void FrenzyStarterPowerUp::update(sf::Time deltaTime)
+{
+    commonUpdate(deltaTime, 4.0f, 2.0f);
+    m_sparkAnimation += deltaTime.asSeconds() * 10.0f;
+}
 
     void FrenzyStarterPowerUp::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
