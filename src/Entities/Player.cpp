@@ -231,7 +231,7 @@ namespace FishGame
 
         sf::Vector2f inputDirection = std::accumulate(
             m_pressedKeys.begin(), m_pressedKeys.end(), sf::Vector2f{0.f, 0.f},
-            [&keyMap](sf::Vector2f sum, sf::Keyboard::Key key)
+            [](sf::Vector2f sum, sf::Keyboard::Key key)
             {
                 auto it = keyMap.find(key);
                 if (it != keyMap.end())
