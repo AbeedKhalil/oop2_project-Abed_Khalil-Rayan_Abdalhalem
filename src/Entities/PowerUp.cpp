@@ -45,10 +45,6 @@ void ScoreDoublerPowerUp::update(sf::Time deltaTime)
     commonUpdate(deltaTime, 3.0f);
 }
 
-void ScoreDoublerPowerUp::draw(sf::RenderTarget& target, sf::RenderStates states) const
-{
-    SpriteDrawable<ScoreDoublerPowerUp>::draw(target, states);
-}
 
 
     // FrenzyStarterPowerUp implementation
@@ -64,10 +60,6 @@ void FrenzyStarterPowerUp::update(sf::Time deltaTime)
     m_sparkAnimation += deltaTime.asSeconds() * 10.0f;
 }
 
-void FrenzyStarterPowerUp::draw(sf::RenderTarget& target, sf::RenderStates states) const
-{
-    SpriteDrawable<FrenzyStarterPowerUp>::draw(target, states);
-}
 
 
     // PowerUpManager implementation
