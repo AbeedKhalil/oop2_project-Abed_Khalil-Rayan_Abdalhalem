@@ -1,8 +1,7 @@
 #pragma once
 
 #include "BonusItem.h"
-#include <vector>
-#include <algorithm>
+#include "SpriteComponent.h"
 
 namespace FishGame
 {
@@ -34,9 +33,6 @@ namespace FishGame
         PowerUpType m_powerUpType;
         sf::Time m_duration;
 
-        // Shared visual components
-        sf::CircleShape m_iconBackground;
-        sf::CircleShape m_aura;
         float m_pulseAnimation;
     };
 
@@ -51,13 +47,10 @@ namespace FishGame
         void onCollect() override;
         sf::Color getAuraColor() const override { return sf::Color::Yellow; }
 
-        void setFont(const sf::Font& font) { m_icon.setFont(font); }
+        void setFont(const sf::Font& font) {}
 
     protected:
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
-
-    private:
-        sf::Text m_icon; // "2X" text
     };
 
     // Frenzy Starter - instantly activates Frenzy Mode
@@ -75,7 +68,6 @@ namespace FishGame
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
     private:
-        std::vector<sf::CircleShape> m_lightningBolts;
         float m_sparkAnimation;
     };
 

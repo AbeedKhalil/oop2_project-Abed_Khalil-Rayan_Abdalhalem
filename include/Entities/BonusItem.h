@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Entity.h"
+#include "SpriteComponent.h"
 #include <random>
 
 namespace FishGame
@@ -70,13 +71,10 @@ namespace FishGame
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
     private:
-        sf::CircleShape m_shape;
-        std::vector<sf::ConvexShape> m_arms;
         float m_rotation;
 
         static constexpr int m_starfishPoints = 25;
         static constexpr float m_rotationSpeed = 30.0f;
-        static constexpr int m_armCount = 5;
     };
 
     // Pearl Oyster - opens periodically with white/black pearls
@@ -95,16 +93,17 @@ namespace FishGame
     protected:
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
         void updateOpenState(sf::Time deltaTime);
+        void initializeSprite(SpriteManager& spriteManager);
 
     protected:
-        // Changed from private to protected for derived class access
-        sf::ConvexShape m_topShell;
-        sf::ConvexShape m_bottomShell;
-        sf::CircleShape m_pearl;
+        sf::Sprite m_pearlSprite;
+        const sf::Texture* m_openTexture{nullptr};
+        const sf::Texture* m_closedTexture{nullptr};
+        const sf::Texture* m_whitePearlTexture{nullptr};
+        const sf::Texture* m_blackPearlTexture{nullptr};
 
         bool m_isOpen;
         bool m_hasBlackPearl;
-        float m_openAngle;
 
         sf::Time m_stateTimer;
         sf::Time m_openDuration;
