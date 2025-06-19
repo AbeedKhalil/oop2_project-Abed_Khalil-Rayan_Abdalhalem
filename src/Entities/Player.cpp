@@ -222,27 +222,35 @@ namespace FishGame
 
     void Player::handleInput()
     {
-        sf::Vector2f inputDirection{ 0.f, 0.f };
+        static const std::unordered_map<sf::Keyboard::Key, sf::Vector2f> keyMap = {
+            {sf::Keyboard::W, {0.f, -1.f}}, {sf::Keyboard::Up, {0.f, -1.f}},
+            {sf::Keyboard::S, {0.f, 1.f}},  {sf::Keyboard::Down, {0.f, 1.f}},
+            {sf::Keyboard::A, {-1.f, 0.f}}, {sf::Keyboard::Left, {-1.f, 0.f}},
+            {sf::Keyboard::D, {1.f, 0.f}},  {sf::Keyboard::Right, {1.f, 0.f}}
+        };
 
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) ||
-            sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+        sf::Vector2f inputDirection{ 0.f, 0.f };
+        if (!m_pressedKeys.empty())
         {
-            inputDirection.y -= 1.f;
+            for (const auto& key : m_pressedKeys)
+            {
+                auto it = keyMap.find(key);
+                if (it != keyMap.end())
+                {
+                    inputDirection += it->second;
+                }
+            }
         }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) ||
-            sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+        else
         {
-            inputDirection.y += 1.f;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) ||
-            sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
-        {
-            inputDirection.x -= 1.f;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) ||
-            sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
-        {
-            inputDirection.x += 1.f;
+            // Fallback to real-time polling if no events were captured
+            for (const auto& [key, dir] : keyMap)
+            {
+                if (sf::Keyboard::isKeyPressed(key))
+                {
+                    inputDirection += dir;
+                }
+            }
         }
 
         if (m_controlsReversed)
