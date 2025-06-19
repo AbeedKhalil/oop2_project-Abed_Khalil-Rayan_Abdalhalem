@@ -42,13 +42,14 @@ namespace FishGame
     };
 
     // Score Doubler - doubles all points for duration
-    class ScoreDoublerPowerUp : public PowerUp, public AutoSpriteDrawable<ScoreDoublerPowerUp>
+    class ScoreDoublerPowerUp : public PowerUp, public SpriteDrawable<ScoreDoublerPowerUp>
     {
     public:
         ScoreDoublerPowerUp();
         ~ScoreDoublerPowerUp() override = default;
 
         void update(sf::Time deltaTime) override;
+        void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
         sf::Color getAuraColor() const override { return sf::Color::Yellow; }
 
         void setFont(const sf::Font& font) {}
@@ -56,13 +57,14 @@ namespace FishGame
     };
 
     // Frenzy Starter - instantly activates Frenzy Mode
-    class FrenzyStarterPowerUp : public PowerUp, public AutoSpriteDrawable<FrenzyStarterPowerUp>
+    class FrenzyStarterPowerUp : public PowerUp, public SpriteDrawable<FrenzyStarterPowerUp>
     {
     public:
         FrenzyStarterPowerUp();
         ~FrenzyStarterPowerUp() override = default;
 
         void update(sf::Time deltaTime) override;
+        void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
         sf::Color getAuraColor() const override { return sf::Color::Magenta; }
 
     private:

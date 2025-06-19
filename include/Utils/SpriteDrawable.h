@@ -17,17 +17,9 @@ namespace FishGame
         }
     };
 
-    // Helper base that automatically provides the required draw override
-    // for entity classes. This removes the need for each entity to
-    // implement a trivial draw method that simply delegates to
-    // SpriteDrawable.
-    template<class Derived>
-    class AutoSpriteDrawable : public SpriteDrawable<Derived>
-    {
-    protected:
-        void draw(sf::RenderTarget& target, sf::RenderStates states) const override
-        {
-            SpriteDrawable<Derived>::draw(target, states);
-        }
-    };
+    // Helper base that used to automatically provide the required draw
+    // override for entity classes. This approach caused multiple
+    // inheritance issues on some compilers, so each entity now provides
+    // its own draw implementation using the SpriteDrawable mixin
+    // directly.
 }

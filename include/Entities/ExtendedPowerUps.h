@@ -7,13 +7,14 @@
 namespace FishGame
 {
     // Freeze Power-up - freezes all enemy fish temporarily
-    class FreezePowerUp : public PowerUp, public AutoSpriteDrawable<FreezePowerUp>
+    class FreezePowerUp : public PowerUp, public SpriteDrawable<FreezePowerUp>
     {
     public:
         FreezePowerUp();
         ~FreezePowerUp() override = default;
 
         void update(sf::Time deltaTime) override;
+        void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
         sf::Color getAuraColor() const override { return sf::Color::Cyan; }
 
         void setFont(const sf::Font& font) {}
@@ -23,13 +24,14 @@ namespace FishGame
     };
 
     // Extra Life Power-up - grants an additional life
-    class ExtraLifePowerUp : public PowerUp, public AutoSpriteDrawable<ExtraLifePowerUp>
+    class ExtraLifePowerUp : public PowerUp, public SpriteDrawable<ExtraLifePowerUp>
     {
     public:
         ExtraLifePowerUp();
         ~ExtraLifePowerUp() override = default;
 
         void update(sf::Time deltaTime) override;
+        void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
         sf::Color getAuraColor() const override { return sf::Color::Green; }
 
     private:
@@ -38,13 +40,14 @@ namespace FishGame
     };
 
     // Speed Boost Power-up - increases player speed
-    class SpeedBoostPowerUp : public PowerUp, public AutoSpriteDrawable<SpeedBoostPowerUp>
+    class SpeedBoostPowerUp : public PowerUp, public SpriteDrawable<SpeedBoostPowerUp>
     {
     public:
         SpeedBoostPowerUp();
         ~SpeedBoostPowerUp() override = default;
 
         void update(sf::Time deltaTime) override;
+        void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
         sf::Color getAuraColor() const override { return sf::Color(0, 255, 255); }
 
     private:
