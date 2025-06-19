@@ -98,8 +98,8 @@ void BonusItem::onCollect()
         }
     }
 
-    void Starfish::update(sf::Time deltaTime)
-    {
+void Starfish::update(sf::Time deltaTime)
+{
         if (!updateLifetime(deltaTime))
             return;
 
@@ -116,6 +116,11 @@ void BonusItem::onCollect()
         m_position.y = m_baseY + computeBobbingOffset();
 
     }
+
+void Starfish::draw(sf::RenderTarget& target, sf::RenderStates states) const
+{
+    SpriteDrawable<Starfish>::draw(target, states);
+}
 
 
     // PearlOyster implementation

@@ -174,8 +174,8 @@ namespace FishGame
         void updatePowerUpSpawning(sf::Time deltaTime);
         std::unique_ptr<PowerUp> createRandomPowerUp();
 
-        template<typename T, typename Init = std::function<void(T&)>>
-        void spawnItem(Init init = {});
+        template<typename T>
+        void spawnItem(std::function<void(T&)> init = {});
 
         template<typename T>
         void addItem(std::unique_ptr<T> item);
@@ -208,8 +208,8 @@ namespace FishGame
     static constexpr float m_basePowerUpInterval = 20.0f;
     };
 
-    template<typename T, typename Init>
-    void BonusItemManager::spawnItem(Init init)
+    template<typename T>
+    void BonusItemManager::spawnItem(std::function<void(T&)> init)
     {
         auto item = std::make_unique<T>();
         if (init)

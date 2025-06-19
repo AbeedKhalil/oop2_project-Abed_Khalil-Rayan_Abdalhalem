@@ -49,6 +49,7 @@ namespace FishGame
         ~ScoreDoublerPowerUp() override = default;
 
         void update(sf::Time deltaTime) override;
+        void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
         sf::Color getAuraColor() const override { return sf::Color::Yellow; }
 
         void setFont(const sf::Font& font) {}
@@ -63,6 +64,7 @@ namespace FishGame
         ~FrenzyStarterPowerUp() override = default;
 
         void update(sf::Time deltaTime) override;
+        void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
         sf::Color getAuraColor() const override { return sf::Color::Magenta; }
 
     private:
