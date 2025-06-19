@@ -224,23 +224,24 @@ namespace FishGame
     {
         sf::Vector2f inputDirection{ 0.f, 0.f };
 
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) ||
-            sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+        auto keyActive = [this](sf::Keyboard::Key k)
+        {
+            return m_pressedKeys.contains(k) || sf::Keyboard::isKeyPressed(k);
+        };
+
+        if (keyActive(sf::Keyboard::W) || keyActive(sf::Keyboard::Up))
         {
             inputDirection.y -= 1.f;
         }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) ||
-            sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+        if (keyActive(sf::Keyboard::S) || keyActive(sf::Keyboard::Down))
         {
             inputDirection.y += 1.f;
         }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) ||
-            sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+        if (keyActive(sf::Keyboard::A) || keyActive(sf::Keyboard::Left))
         {
             inputDirection.x -= 1.f;
         }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) ||
-            sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+        if (keyActive(sf::Keyboard::D) || keyActive(sf::Keyboard::Right))
         {
             inputDirection.x += 1.f;
         }
