@@ -1,5 +1,6 @@
 #include "MenuState.h"
 #include "Game.h"
+#include "Animator.h"
 #include <cmath>
 #include <algorithm>
 #include <numeric>
@@ -98,20 +99,20 @@ namespace FishGame
         std::uniform_real_distribution<float> xDist(0.f, windowSize.x);
         std::uniform_real_distribution<float> yDist(0.f, windowSize.y);
         std::uniform_real_distribution<float> speedDist(20.f, 60.f);
-        std::uniform_real_distribution<float> radiusDist(5.f, 15.f);
+        std::uniform_real_distribution<float> scaleDist(0.3f, 0.6f);
         std::uniform_int_distribution<int> dirDist(0, 1);
 
         m_backgroundFish.resize(8);
+        const sf::Texture& tex = getGame().getSpriteManager().getTexture(TextureID::SmallFish);
         for (auto& fish : m_backgroundFish)
         {
-            float r = radiusDist(m_randomEngine);
-            fish.shape.setRadius(r);
-            fish.shape.setOrigin(r, r);
-            fish.shape.setFillColor(sf::Color(255, 255, 255, 150));
-            fish.shape.setPosition(xDist(m_randomEngine), yDist(m_randomEngine));
-
+            fish.animator = std::make_unique<Animator>(createSimpleFishAnimator(tex));
+            float scale = scaleDist(m_randomEngine);
             float dir = dirDist(m_randomEngine) ? 1.f : -1.f;
+            fish.animator->setScale({ scale, scale });
+            fish.animator->setPosition({ xDist(m_randomEngine), yDist(m_randomEngine) });
             fish.velocity = sf::Vector2f(dir * speedDist(m_randomEngine), 0.f);
+            fish.animator->play(dir > 0.f ? "swimRight" : "swimLeft");
         }
     }
 
@@ -269,7 +270,7 @@ namespace FishGame
 
         window.draw(m_backgroundSprite);
         for (const auto& fish : m_backgroundFish)
-            window.draw(fish.shape);
+            window.draw(*fish.animator);
 
         window.draw(m_titleSprite);
 
@@ -286,14 +287,17 @@ namespace FishGame
 
         for (auto& fish : m_backgroundFish)
         {
-            fish.shape.move(fish.velocity * deltaTime.asSeconds());
-            sf::Vector2f pos = fish.shape.getPosition();
-            float r = fish.shape.getRadius();
-            if (fish.velocity.x > 0.f && pos.x - r > static_cast<float>(size.x))
-                pos.x = -r;
-            else if (fish.velocity.x < 0.f && pos.x + r < 0.f)
-                pos.x = static_cast<float>(size.x) + r;
-            fish.shape.setPosition(pos);
+            sf::Vector2f pos = fish.animator->getPosition();
+            pos += fish.velocity * deltaTime.asSeconds();
+
+            const float buffer = 50.f;
+            if (fish.velocity.x > 0.f && pos.x > static_cast<float>(size.x) + buffer)
+                pos.x = -buffer;
+            else if (fish.velocity.x < 0.f && pos.x < -buffer)
+                pos.x = static_cast<float>(size.x) + buffer;
+
+            fish.animator->setPosition(pos);
+            fish.animator->update(deltaTime);
         }
     }
 

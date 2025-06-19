@@ -20,7 +20,7 @@ namespace FishGame
         , m_player(std::make_unique<Player>())
         , m_entities()
         , m_bonusItems()
-        , m_environment(std::make_unique<EnvironmentSystem>())
+        , m_environment(std::make_unique<EnvironmentSystem>(getGame().getSpriteManager()))
         , m_timeLimit(sf::Time::Zero)
         , m_timeElapsed(sf::Time::Zero)
         , m_objective()

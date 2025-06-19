@@ -20,7 +20,7 @@ namespace FishGame
         , m_entities()
         , m_bonusItems()
         , m_hazards()
-        , m_environmentSystem(std::make_unique<EnvironmentSystem>())
+        , m_environmentSystem(std::make_unique<EnvironmentSystem>(getGame().getSpriteManager()))
         , m_systems()
         , m_growthMeter(nullptr)
         , m_frenzySystem(nullptr)
