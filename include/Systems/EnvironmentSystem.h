@@ -95,7 +95,6 @@ namespace FishGame
         EnvironmentType getCurrentEnvironment() const { return m_currentEnvironment; }
         TimeOfDay getCurrentTimeOfDay() const { return m_currentTimeOfDay; }
 
-        float getPredatorAggressionMultiplier() const;
         sf::Color getAmbientLightColor() const;
         sf::Vector2f getOceanCurrentForce(const sf::Vector2f& position) const;
 
@@ -133,7 +132,6 @@ namespace FishGame
         sf::Time m_dayNightTimer;
         sf::Time m_transitionTimer;
 
-        float m_predatorAggressionBase;
         bool m_isTransitioning;
         bool m_dayNightCyclePaused;
 
