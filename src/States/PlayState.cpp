@@ -206,9 +206,10 @@ namespace FishGame
         if (m_isPlayerStunned || getGame().getCurrentState<PauseState>())
             return;
 
-        // Handle controls reversal
+        // Handle controls reversal for key presses and releases
         sf::Event processedEvent = event;
-        if (m_hasControlsReversed && event.type == sf::Event::KeyPressed)
+        if (m_hasControlsReversed &&
+            (event.type == sf::Event::KeyPressed || event.type == sf::Event::KeyReleased))
         {
             static const std::unordered_map<sf::Keyboard::Key, sf::Keyboard::Key> reverseMap = {
                 {sf::Keyboard::W, sf::Keyboard::S}, {sf::Keyboard::S, sf::Keyboard::W},
