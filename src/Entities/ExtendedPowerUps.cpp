@@ -17,10 +17,6 @@ void FreezePowerUp::update(sf::Time deltaTime)
     commonUpdate(deltaTime, 2.0f);
 }
 
-    void FreezePowerUp::draw(sf::RenderTarget& target, sf::RenderStates states) const
-    {
-        DrawUtils::drawSpriteIfPresent(*this, target, states);
-    }
 
     // ExtraLifePowerUp implementation
     ExtraLifePowerUp::ExtraLifePowerUp()
@@ -40,10 +36,6 @@ void ExtraLifePowerUp::update(sf::Time deltaTime)
     }
 }
 
-    void ExtraLifePowerUp::draw(sf::RenderTarget& target, sf::RenderStates states) const
-    {
-        DrawUtils::drawSpriteIfPresent(*this, target, states);
-    }
 
     // SpeedBoostPowerUp implementation
     SpeedBoostPowerUp::SpeedBoostPowerUp()
@@ -58,8 +50,4 @@ void SpeedBoostPowerUp::update(sf::Time deltaTime)
     m_lineAnimation += deltaTime.asSeconds() * 5.0f;
 }
 
-    void SpeedBoostPowerUp::draw(sf::RenderTarget& target, sf::RenderStates states) const
-    {
-        DrawUtils::drawSpriteIfPresent(*this, target, states);
-    }
 }

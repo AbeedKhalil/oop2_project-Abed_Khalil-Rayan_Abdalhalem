@@ -4,6 +4,7 @@
 #include "PowerUp.h"
 #include <vector>
 #include <algorithm>
+#include <functional>
 
 namespace FishGame
 {
@@ -173,6 +174,12 @@ namespace FishGame
         void updatePowerUpSpawning(sf::Time deltaTime);
         std::unique_ptr<PowerUp> createRandomPowerUp();
 
+        template<typename T, typename Init = std::function<void(T&)>>
+        void spawnItem(Init init = {});
+
+        template<typename T>
+        void addItem(std::unique_ptr<T> item);
+
     private:
         const sf::Font& m_font;
         sf::Vector2u m_windowSize;
@@ -198,6 +205,26 @@ namespace FishGame
         // Base spawn rates
         static constexpr float m_baseStarfishRate = 0.2f;
         static constexpr float m_baseOysterRate = 0.1f;
-        static constexpr float m_basePowerUpInterval = 20.0f;
+    static constexpr float m_basePowerUpInterval = 20.0f;
     };
+
+    template<typename T, typename Init>
+    void BonusItemManager::spawnItem(Init init)
+    {
+        auto item = std::make_unique<T>();
+        if (init)
+            init(*item);
+        addItem(std::move(item));
+    }
+
+    template<typename T>
+    void BonusItemManager::addItem(std::unique_ptr<T> item)
+    {
+        if (!item)
+            return;
+        float x = m_positionDist(m_randomEngine);
+        float y = m_positionDist(m_randomEngine);
+        item->setPosition(x, y);
+        m_spawnedItems.push_back(std::move(item));
+    }
 }

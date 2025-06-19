@@ -2,6 +2,7 @@
 
 #include "Entity.h"
 #include "SpriteComponent.h"
+#include "Utils/SpriteDrawable.h"
 #include <random>
 
 namespace FishGame
@@ -55,7 +56,7 @@ namespace FishGame
     };
 
     // Starfish bonus item - fixed points
-    class Starfish : public BonusItem
+    class Starfish : public BonusItem, public SpriteDrawable<Starfish>
     {
     public:
         Starfish();
@@ -65,9 +66,6 @@ namespace FishGame
         void initializeSprite(SpriteManager& spriteManager);
 
         void update(sf::Time deltaTime) override;
-
-    protected:
-        void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
     private:
         float m_rotation;

@@ -2,6 +2,7 @@
 
 #include "BonusItem.h"
 #include "SpriteComponent.h"
+#include "Utils/SpriteDrawable.h"
 
 namespace FishGame
 {
@@ -41,7 +42,7 @@ namespace FishGame
     };
 
     // Score Doubler - doubles all points for duration
-    class ScoreDoublerPowerUp : public PowerUp
+    class ScoreDoublerPowerUp : public PowerUp, public SpriteDrawable<ScoreDoublerPowerUp>
     {
     public:
         ScoreDoublerPowerUp();
@@ -52,12 +53,10 @@ namespace FishGame
 
         void setFont(const sf::Font& font) {}
 
-    protected:
-        void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
     };
 
     // Frenzy Starter - instantly activates Frenzy Mode
-    class FrenzyStarterPowerUp : public PowerUp
+    class FrenzyStarterPowerUp : public PowerUp, public SpriteDrawable<FrenzyStarterPowerUp>
     {
     public:
         FrenzyStarterPowerUp();
@@ -65,9 +64,6 @@ namespace FishGame
 
         void update(sf::Time deltaTime) override;
         sf::Color getAuraColor() const override { return sf::Color::Magenta; }
-
-    protected:
-        void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
     private:
         float m_sparkAnimation;
@@ -118,16 +114,22 @@ namespace FishGame
         std::vector<ActivePowerUp> m_activePowerUps;
 
         // Use template to find power-up in vector
+        template<typename Predicate, typename Container>
+        static auto findPowerUpImpl(Container& container, Predicate pred)
+        {
+            return std::find_if(container.begin(), container.end(), pred);
+        }
+
         template<typename Predicate>
         auto findPowerUp(Predicate pred)
         {
-            return std::find_if(m_activePowerUps.begin(), m_activePowerUps.end(), pred);
+            return findPowerUpImpl(m_activePowerUps, pred);
         }
 
         template<typename Predicate>
         auto findPowerUp(Predicate pred) const
         {
-            return std::find_if(m_activePowerUps.begin(), m_activePowerUps.end(), pred);
+            return findPowerUpImpl(m_activePowerUps, pred);
         }
     };
 }
