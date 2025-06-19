@@ -282,6 +282,11 @@ namespace FishGame
         m_pressedKeys.erase(key);
     }
 
+    void Player::clearInput()
+    {
+        m_pressedKeys.clear();
+    }
+
     void Player::followMouse(const sf::Vector2f& mousePosition)
     {
         m_targetPosition = mousePosition;
