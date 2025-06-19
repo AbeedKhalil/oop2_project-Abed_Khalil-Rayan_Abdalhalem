@@ -6,6 +6,7 @@
 #include "Animator.h"
 #include "CollisionDetector.h"
 #include "GenericFish.h"
+#include "Utils/FishSizeUtils.h"
 #include <SFML/Window.hpp>
 #include <cmath>
 #include <algorithm>
@@ -88,17 +89,11 @@ namespace FishGame
 
     TextureID Player::getTextureID() const
     {
-        switch (getCurrentFishSize())
-        {
-        case FishSize::Small:
-            return TextureID::PlayerSmall;
-        case FishSize::Medium:
-            return TextureID::PlayerMedium;
-        case FishSize::Large:
-            return TextureID::PlayerLarge;
-        default:
-            return TextureID::PlayerSmall;
-        }
+        return FishSizeUtils::selectBySize(
+            getCurrentFishSize(),
+            TextureID::PlayerSmall,
+            TextureID::PlayerMedium,
+            TextureID::PlayerLarge);
     }
 
     void Player::update(sf::Time deltaTime)
@@ -196,21 +191,11 @@ namespace FishGame
             if (m_spriteManager)
             {
                 const auto& cfg = m_spriteManager->getScaleConfig();
-                switch (getCurrentFishSize())
-                {
-                case FishSize::Small:
-                    stageScale = cfg.small;
-                    break;
-                case FishSize::Medium:
-                    stageScale = (cfg.medium) + 0.18f;
-                    break;
-                case FishSize::Large:
-                    stageScale = (cfg.large) + 0.4f;
-                    break;
-                default:
-                    stageScale = 1.0f;
-                    break;
-                }
+                stageScale = FishSizeUtils::valueFromConfig(cfg, getCurrentFishSize());
+                if (getCurrentFishSize() == FishSize::Medium)
+                    stageScale += 0.18f;
+                else if (getCurrentFishSize() == FishSize::Large)
+                    stageScale += 0.4f;
             }
 
             m_animator->setScale(sf::Vector2f(stageScale * m_eatAnimationScale,
@@ -684,21 +669,12 @@ namespace FishGame
         {
             float stageScale = 1.0f;
             const auto& cfg = m_spriteManager->getScaleConfig();
-            switch (getCurrentFishSize())
-            {
-            case FishSize::Small:
-                stageScale = cfg.small;
-                break;
-            case FishSize::Medium:
-                stageScale = (cfg.medium) + 0.18f;
-                break;
-            case FishSize::Large:
-                stageScale = (cfg.large) + 0.4f;
-                break;
-            default:
-                stageScale = 1.0f;
-                break;
-            }
+            stageScale = FishSizeUtils::valueFromConfig(cfg, getCurrentFishSize());
+            if (getCurrentFishSize() == FishSize::Medium)
+                stageScale += 0.18f;
+            else if (getCurrentFishSize() == FishSize::Large)
+                stageScale += 0.4f;
+            
             m_animator->setScale(sf::Vector2f(stageScale, stageScale));
         }
 
