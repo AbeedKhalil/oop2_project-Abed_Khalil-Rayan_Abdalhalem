@@ -117,12 +117,6 @@ void Starfish::update(sf::Time deltaTime)
 
     }
 
-void Starfish::draw(sf::RenderTarget& target, sf::RenderStates states) const
-{
-    SpriteDrawable<Starfish>::draw(target, states);
-}
-
-
     // PearlOyster implementation
     PearlOyster::PearlOyster()
         : BonusItem(BonusType::PearlOyster, 0)
