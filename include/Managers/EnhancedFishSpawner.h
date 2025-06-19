@@ -15,11 +15,11 @@ namespace FishGame
     // Special fish spawn configuration
     struct SpecialFishConfig
     {
-        float barracudaSpawnRate = 0.1f;
-        float pufferfishSpawnRate = 0.15f;
-        float angelfishSpawnRate = 0.2f;
-        float poisonFishSpawnRate = 0.12f;
-        float schoolSpawnChance = 0.3f;
+        float barracudaSpawnRate = Constants::BARRACUDA_SPAWN_RATE;
+        float pufferfishSpawnRate = Constants::PUFFERFISH_SPAWN_RATE;
+        float angelfishSpawnRate = Constants::ANGELFISH_SPAWN_RATE;
+        float poisonFishSpawnRate = Constants::POISONFISH_SPAWN_RATE;
+        float schoolSpawnChance = Constants::SCHOOL_SPAWN_CHANCE;
     };
 
     class EnhancedFishSpawner : public FishSpawner
