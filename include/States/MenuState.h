@@ -71,7 +71,7 @@ namespace FishGame
     private:
         struct BackgroundFish
         {
-            sf::CircleShape shape;
+            sf::Sprite sprite;
             sf::Vector2f velocity;
         };
         // UI elements

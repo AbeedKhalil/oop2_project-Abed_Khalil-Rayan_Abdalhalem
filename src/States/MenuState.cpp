@@ -98,19 +98,19 @@ namespace FishGame
         std::uniform_real_distribution<float> xDist(0.f, windowSize.x);
         std::uniform_real_distribution<float> yDist(0.f, windowSize.y);
         std::uniform_real_distribution<float> speedDist(20.f, 60.f);
-        std::uniform_real_distribution<float> radiusDist(5.f, 15.f);
+        std::uniform_real_distribution<float> scaleDist(0.3f, 0.6f);
         std::uniform_int_distribution<int> dirDist(0, 1);
 
         m_backgroundFish.resize(8);
         for (auto& fish : m_backgroundFish)
         {
-            float r = radiusDist(m_randomEngine);
-            fish.shape.setRadius(r);
-            fish.shape.setOrigin(r, r);
-            fish.shape.setFillColor(sf::Color(255, 255, 255, 150));
-            fish.shape.setPosition(xDist(m_randomEngine), yDist(m_randomEngine));
-
+            fish.sprite.setTexture(getGame().getSpriteManager().getTexture(TextureID::SmallFish));
+            sf::FloatRect b = fish.sprite.getLocalBounds();
+            fish.sprite.setOrigin(b.width / 2.f, b.height / 2.f);
+            float scale = scaleDist(m_randomEngine);
             float dir = dirDist(m_randomEngine) ? 1.f : -1.f;
+            fish.sprite.setScale(scale * dir, scale);
+            fish.sprite.setPosition(xDist(m_randomEngine), yDist(m_randomEngine));
             fish.velocity = sf::Vector2f(dir * speedDist(m_randomEngine), 0.f);
         }
     }
@@ -269,7 +269,7 @@ namespace FishGame
 
         window.draw(m_backgroundSprite);
         for (const auto& fish : m_backgroundFish)
-            window.draw(fish.shape);
+            window.draw(fish.sprite);
 
         window.draw(m_titleSprite);
 
@@ -286,14 +286,15 @@ namespace FishGame
 
         for (auto& fish : m_backgroundFish)
         {
-            fish.shape.move(fish.velocity * deltaTime.asSeconds());
-            sf::Vector2f pos = fish.shape.getPosition();
-            float r = fish.shape.getRadius();
-            if (fish.velocity.x > 0.f && pos.x - r > static_cast<float>(size.x))
-                pos.x = -r;
-            else if (fish.velocity.x < 0.f && pos.x + r < 0.f)
-                pos.x = static_cast<float>(size.x) + r;
-            fish.shape.setPosition(pos);
+            fish.sprite.move(fish.velocity * deltaTime.asSeconds());
+            sf::Vector2f pos = fish.sprite.getPosition();
+            sf::FloatRect bounds = fish.sprite.getGlobalBounds();
+            float halfWidth = bounds.width / 2.f;
+            if (fish.velocity.x > 0.f && pos.x - halfWidth > static_cast<float>(size.x))
+                pos.x = -halfWidth;
+            else if (fish.velocity.x < 0.f && pos.x + halfWidth < 0.f)
+                pos.x = static_cast<float>(size.x) + halfWidth;
+            fish.sprite.setPosition(pos);
         }
     }
 

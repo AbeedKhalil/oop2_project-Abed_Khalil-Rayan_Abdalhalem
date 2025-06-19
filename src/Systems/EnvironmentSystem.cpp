@@ -203,7 +203,7 @@ namespace FishGame
     }
 
     // EnvironmentSystem implementation
-    EnvironmentSystem::EnvironmentSystem()
+    EnvironmentSystem::EnvironmentSystem(SpriteManager& spriteManager)
         : m_currentEnvironment(EnvironmentType::OpenOcean)
         , m_currentTimeOfDay(TimeOfDay::Day)
         , m_farLayer(std::make_unique<BackgroundLayer>(10.0f, sf::Color(0, 50, 100, 50)))
@@ -218,25 +218,25 @@ namespace FishGame
         , m_dayNightCyclePaused(true)  // Start paused by default
         , m_randomEngine(std::chrono::steady_clock::now().time_since_epoch().count())
         , m_timeDist(0, 3)
+        , m_spriteManager(&spriteManager)
     {
         m_lightingOverlay.setFillColor(sf::Color(0, 0, 0, 0));
-        // Initialize simple background fish
         std::uniform_real_distribution<float> xDist(0.0f, static_cast<float>(Constants::WINDOW_WIDTH));
         std::uniform_real_distribution<float> yDist(100.0f, static_cast<float>(Constants::WINDOW_HEIGHT) - 80.0f);
         std::uniform_real_distribution<float> speedDist(20.0f, 60.0f);
-        std::uniform_real_distribution<float> radiusDist(5.0f, 15.0f);
+        std::uniform_real_distribution<float> scaleDist(0.3f, 0.6f);
         std::uniform_int_distribution<int> dirDist(0, 1);
 
         m_backgroundFish.resize(10);
         for (auto& fish : m_backgroundFish)
         {
-            float radius = radiusDist(m_randomEngine);
-            fish.shape.setRadius(radius);
-            fish.shape.setOrigin(radius, radius);
-            fish.shape.setFillColor(sf::Color(255, 255, 255, 100));
-            fish.shape.setPosition(xDist(m_randomEngine), yDist(m_randomEngine));
-
+            fish.sprite.setTexture(m_spriteManager->getTexture(TextureID::SmallFish));
+            sf::FloatRect b = fish.sprite.getLocalBounds();
+            fish.sprite.setOrigin(b.width / 2.f, b.height / 2.f);
+            float scale = scaleDist(m_randomEngine);
             float dir = dirDist(m_randomEngine) ? 1.f : -1.f;
+            fish.sprite.setScale(scale * dir, scale); // flip horizontally when dir < 0
+            fish.sprite.setPosition(xDist(m_randomEngine), yDist(m_randomEngine));
             fish.velocity = sf::Vector2f(dir * speedDist(m_randomEngine), 0.f);
         }
     }
@@ -254,14 +254,15 @@ namespace FishGame
         // Update background fish
         for (auto& fish : m_backgroundFish)
         {
-            fish.shape.move(fish.velocity * deltaTime.asSeconds());
-            sf::Vector2f pos = fish.shape.getPosition();
-            float radius = fish.shape.getRadius();
-            if (fish.velocity.x > 0.f && pos.x - radius > static_cast<float>(Constants::WINDOW_WIDTH))
-                pos.x = -radius;
-            else if (fish.velocity.x < 0.f && pos.x + radius < 0.f)
-                pos.x = static_cast<float>(Constants::WINDOW_WIDTH) + radius;
-            fish.shape.setPosition(pos);
+            fish.sprite.move(fish.velocity * deltaTime.asSeconds());
+            sf::Vector2f pos = fish.sprite.getPosition();
+            sf::FloatRect bounds = fish.sprite.getGlobalBounds();
+            float halfWidth = bounds.width / 2.f;
+            if (fish.velocity.x > 0.f && pos.x - halfWidth > static_cast<float>(Constants::WINDOW_WIDTH))
+                pos.x = -halfWidth;
+            else if (fish.velocity.x < 0.f && pos.x + halfWidth < 0.f)
+                pos.x = static_cast<float>(Constants::WINDOW_WIDTH) + halfWidth;
+            fish.sprite.setPosition(pos);
         }
 
         // Update day/night cycle only if not paused
@@ -344,7 +345,7 @@ namespace FishGame
         // Draw background fish behind near layer
         for (const auto& fish : m_backgroundFish)
         {
-            target.draw(fish.shape, states);
+            target.draw(fish.sprite, states);
         }
 
         m_midLayer->draw(target);
