@@ -1,5 +1,6 @@
 #include "MenuState.h"
 #include "Game.h"
+#include "Animator.h"
 #include <cmath>
 #include <algorithm>
 #include <numeric>
@@ -102,15 +103,16 @@ namespace FishGame
         std::uniform_int_distribution<int> dirDist(0, 1);
 
         m_backgroundFish.resize(8);
+        const sf::Texture& fishTex =
+            getGame().getSpriteManager().getTexture(TextureID::SmallFish);
         for (auto& fish : m_backgroundFish)
         {
-            fish.sprite.setTexture(getGame().getSpriteManager().getTexture(TextureID::SmallFish));
-            sf::FloatRect b = fish.sprite.getLocalBounds();
-            fish.sprite.setOrigin(b.width / 2.f, b.height / 2.f);
             float scale = scaleDist(m_randomEngine);
             float dir = dirDist(m_randomEngine) ? 1.f : -1.f;
-            fish.sprite.setScale(scale * dir, scale);
-            fish.sprite.setPosition(xDist(m_randomEngine), yDist(m_randomEngine));
+            fish.animator = std::make_unique<Animator>(createSimpleFishAnimator(fishTex));
+            fish.animator->setScale({ scale, scale });
+            fish.animator->setPosition({ xDist(m_randomEngine), yDist(m_randomEngine) });
+            fish.animator->play(dir > 0.f ? "swimRight" : "swimLeft");
             fish.velocity = sf::Vector2f(dir * speedDist(m_randomEngine), 0.f);
         }
     }
@@ -267,9 +269,9 @@ namespace FishGame
     {
         auto& window = getGame().getWindow();
 
-        window.draw(m_backgroundSprite);
-        for (const auto& fish : m_backgroundFish)
-            window.draw(fish.sprite);
+    window.draw(m_backgroundSprite);
+    for (const auto& fish : m_backgroundFish)
+        window.draw(*fish.animator);
 
         window.draw(m_titleSprite);
 
@@ -284,18 +286,19 @@ namespace FishGame
     {
         auto size = getGame().getWindow().getSize();
 
-        for (auto& fish : m_backgroundFish)
-        {
-            fish.sprite.move(fish.velocity * deltaTime.asSeconds());
-            sf::Vector2f pos = fish.sprite.getPosition();
-            sf::FloatRect bounds = fish.sprite.getGlobalBounds();
-            float halfWidth = bounds.width / 2.f;
-            if (fish.velocity.x > 0.f && pos.x - halfWidth > static_cast<float>(size.x))
-                pos.x = -halfWidth;
-            else if (fish.velocity.x < 0.f && pos.x + halfWidth < 0.f)
-                pos.x = static_cast<float>(size.x) + halfWidth;
-            fish.sprite.setPosition(pos);
-        }
+    for (auto& fish : m_backgroundFish)
+    {
+        sf::Vector2f pos = fish.animator->getPosition();
+        pos += fish.velocity * deltaTime.asSeconds();
+        sf::FloatRect bounds = fish.animator->getGlobalBounds();
+        float halfWidth = bounds.width / 2.f;
+        if (fish.velocity.x > 0.f && pos.x - halfWidth > static_cast<float>(size.x))
+            pos.x = -halfWidth;
+        else if (fish.velocity.x < 0.f && pos.x + halfWidth < 0.f)
+            pos.x = static_cast<float>(size.x) + halfWidth;
+        fish.animator->setPosition(pos);
+        fish.animator->update(deltaTime);
+    }
     }
 
     void MenuState::updateOptionText()
