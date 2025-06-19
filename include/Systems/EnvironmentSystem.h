@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 #include <random>
+#include "SpriteManager.h"
 
 namespace FishGame
 {
@@ -77,7 +78,7 @@ namespace FishGame
     class EnvironmentSystem : public sf::Drawable
     {
     public:
-        EnvironmentSystem();
+        explicit EnvironmentSystem(SpriteManager& spriteManager);
         ~EnvironmentSystem() = default;
 
         // Delete copy operations
@@ -113,7 +114,7 @@ namespace FishGame
     private:
         struct BackgroundFish
         {
-            sf::CircleShape shape;
+            sf::Sprite sprite;
             sf::Vector2f velocity;
         };
 
@@ -125,6 +126,8 @@ namespace FishGame
         std::unique_ptr<BackgroundLayer> m_nearLayer;
 
         std::vector<BackgroundFish> m_backgroundFish;
+
+        SpriteManager* m_spriteManager;
 
         std::unique_ptr<OceanCurrentSystem> m_oceanCurrents;
 
