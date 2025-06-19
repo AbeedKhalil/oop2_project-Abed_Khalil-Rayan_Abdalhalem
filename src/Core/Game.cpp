@@ -1,5 +1,6 @@
 #include "Game.h"
-#include "SpriteManager.h" 
+#include "SpriteManager.h"
+#include "IntroState.h"
 #include "MenuState.h"
 #include "PlayState.h"
 #include "GameOverState.h"
@@ -38,7 +39,7 @@ namespace FishGame
         initializeGraphics();
 
         registerStates();
-        pushState(StateID::Menu);
+        pushState(StateID::Intro);
     }
 
     void Game::run()
@@ -221,6 +222,7 @@ namespace FishGame
     void Game::registerStates()
     {
         // Register all game states using template method
+        registerState<IntroState>(StateID::Intro);
         registerState<MenuState>(StateID::Menu);
         registerState<PlayState>(StateID::Play);
         // Register bonus stage

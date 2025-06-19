@@ -56,7 +56,9 @@ namespace FishGame
         {TextureID::GameOptions, "GameOptions.png"},
         {TextureID::GameOptionsHover, "GameOptionsHover.png"},
         {TextureID::Exit, "Exit.png"},
-        {TextureID::ExitHover, "ExitHover.png"}
+        {TextureID::ExitHover, "ExitHover.png"},
+        { TextureID::Intro1, "Intro1.png" },
+        {TextureID::Intro2, "Intro2.png"}
     };
 
     SpriteManager::SpriteManager(ResourceHolder<sf::Texture, TextureID>& textureHolder)
