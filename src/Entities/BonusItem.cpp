@@ -169,12 +169,14 @@ namespace FishGame
         m_pearlSprite.setPosition(m_position);
         if (m_isOpen)
         {
-            getSpriteComponent()->getSprite().setTexture(*m_openTexture);
+            // swap to the open oyster texture and update the pearl color
+            getSpriteComponent()->setTexture(*m_openTexture);
             m_pearlSprite.setTexture(m_hasBlackPearl ? *m_blackPearlTexture : *m_whitePearlTexture);
         }
         else
         {
-            getSpriteComponent()->getSprite().setTexture(*m_closedTexture);
+            // revert to the closed oyster texture
+            getSpriteComponent()->setTexture(*m_closedTexture);
         }
     }
 
