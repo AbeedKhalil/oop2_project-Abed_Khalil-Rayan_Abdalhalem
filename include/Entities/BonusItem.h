@@ -56,7 +56,7 @@ namespace FishGame
     };
 
     // Starfish bonus item - fixed points
-    class Starfish : public BonusItem, public AutoSpriteDrawable<Starfish>
+    class Starfish : public BonusItem, public SpriteDrawable<Starfish>
     {
     public:
         Starfish();
@@ -66,6 +66,7 @@ namespace FishGame
         void initializeSprite(SpriteManager& spriteManager);
 
         void update(sf::Time deltaTime) override;
+        void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
     private:
         float m_rotation;
