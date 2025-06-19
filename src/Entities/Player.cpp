@@ -11,6 +11,7 @@
 #include <cmath>
 #include <algorithm>
 #include <unordered_map>
+#include <array>
 #include <numeric>
 
 namespace FishGame
@@ -229,21 +230,22 @@ namespace FishGame
             return m_pressedKeys.contains(k) || sf::Keyboard::isKeyPressed(k);
         };
 
-        if (keyActive(sf::Keyboard::W) || keyActive(sf::Keyboard::Up))
+        static const std::array<std::pair<sf::Keyboard::Key, sf::Vector2f>, 8>
+            keyMap{{
+                {sf::Keyboard::W, {0.f, -1.f}},
+                {sf::Keyboard::Up, {0.f, -1.f}},
+                {sf::Keyboard::S, {0.f, 1.f}},
+                {sf::Keyboard::Down, {0.f, 1.f}},
+                {sf::Keyboard::A, {-1.f, 0.f}},
+                {sf::Keyboard::Left, {-1.f, 0.f}},
+                {sf::Keyboard::D, {1.f, 0.f}},
+                {sf::Keyboard::Right, {1.f, 0.f}},
+            }};
+
+        for (const auto& [key, vec] : keyMap)
         {
-            inputDirection.y -= 1.f;
-        }
-        if (keyActive(sf::Keyboard::S) || keyActive(sf::Keyboard::Down))
-        {
-            inputDirection.y += 1.f;
-        }
-        if (keyActive(sf::Keyboard::A) || keyActive(sf::Keyboard::Left))
-        {
-            inputDirection.x -= 1.f;
-        }
-        if (keyActive(sf::Keyboard::D) || keyActive(sf::Keyboard::Right))
-        {
-            inputDirection.x += 1.f;
+            if (keyActive(key))
+                inputDirection += vec;
         }
 
         if (m_controlsReversed)
