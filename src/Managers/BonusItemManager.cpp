@@ -108,37 +108,23 @@ namespace FishGame
 
     void BonusItemManager::spawnStarfish()
     {
-        auto starfish = std::make_unique<Starfish>();
-
-        float x = m_positionDist(m_randomEngine);
-        float y = m_positionDist(m_randomEngine);
-        starfish->setPosition(x, y);
-        if (m_spriteManager)
-            starfish->initializeSprite(*m_spriteManager);
-
-        m_spawnedItems.push_back(std::move(starfish));
+        spawnItem<Starfish>([this](Starfish& s)
+            {
+                if (m_spriteManager)
+                    s.initializeSprite(*m_spriteManager);
+            });
     }
 
     void BonusItemManager::spawnOyster()
     {
-        auto oyster = std::make_unique<PearlOyster>();
-
-        float x = m_positionDist(m_randomEngine);
-        float y = m_positionDist(m_randomEngine);
-        oyster->setPosition(x, y);
-
-        m_spawnedItems.push_back(std::move(oyster));
+        spawnItem<PearlOyster>();
     }
 
     void BonusItemManager::spawnRandomPowerUp()
     {
         if (auto powerUp = createRandomPowerUp())
         {
-            float x = m_positionDist(m_randomEngine);
-            float y = m_positionDist(m_randomEngine);
-            powerUp->setPosition(x, y);
-
-            m_spawnedItems.push_back(std::move(powerUp));
+            addItem(std::move(powerUp));
         }
     }
 

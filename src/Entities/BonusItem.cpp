@@ -117,10 +117,6 @@ void BonusItem::onCollect()
 
     }
 
-    void Starfish::draw(sf::RenderTarget& target, sf::RenderStates states) const
-    {
-        DrawUtils::drawSpriteIfPresent(*this, target, states);
-    }
 
     // PearlOyster implementation
     PearlOyster::PearlOyster()
