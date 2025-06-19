@@ -16,14 +16,12 @@ namespace FishGame
         void onCollect() override;
         sf::Color getAuraColor() const override { return sf::Color::Cyan; }
 
-        void setFont(const sf::Font& font) { m_icon.setFont(font); }
+        void setFont(const sf::Font& font) {}
 
     protected:
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
     private:
-        sf::Text m_icon;
-        std::vector<sf::RectangleShape> m_iceShards;
         static constexpr float m_freezeDuration = Constants::FREEZE_POWERUP_DURATION;
     };
 
@@ -42,7 +40,6 @@ namespace FishGame
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
     private:
-        sf::CircleShape m_heart;
         float m_heartbeatAnimation;
         static constexpr float m_heartbeatSpeed = Constants::EXTRA_LIFE_HEARTBEAT_SPEED;
     };
@@ -62,7 +59,6 @@ namespace FishGame
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
     private:
-        std::vector<sf::ConvexShape> m_speedLines;
         float m_lineAnimation;
         static constexpr float m_boostDuration = Constants::SPEEDBOOST_POWERUP_DURATION;
         static constexpr float m_speedMultiplier = Constants::SPEED_BOOST_MULTIPLIER;
