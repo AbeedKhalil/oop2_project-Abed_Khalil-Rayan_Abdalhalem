@@ -32,7 +32,7 @@ namespace FishGame
         // Setup title sprite
         m_titleSprite.setTexture(
             getGame().getSpriteManager().getTexture(TextureID::GameTitle));
-        float scaleFactor = 4.0f; // scale image to reasonable size
+        float scaleFactor = 0.85f;
         m_titleSprite.setScale(scaleFactor, scaleFactor);
 
         // Center title sprite
