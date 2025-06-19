@@ -44,9 +44,7 @@ namespace FishGame
         void addPoints(int points);
         void resetSize();
         void fullReset();
-        int getCurrentStage() const { return m_currentStage; }
         int getScore() const { return m_score; }
-        float getGrowthProgress() const { return m_growthProgress; }
 
         void enableMouseControl(bool enable);
         void setMousePosition(const sf::Vector2f& screenPos);
@@ -85,9 +83,6 @@ namespace FishGame
         void setWindowBounds(const sf::Vector2u& windowSize);
 
         // Statistics tracking
-        int getTotalFishEaten() const { return m_totalFishEaten; }
-        int getDamageTaken() const { return m_damageTaken; }
-        bool hasTakenDamage() const { return m_damageTaken > 0; }
 
         // Visual effects
         void triggerEatEffect();
