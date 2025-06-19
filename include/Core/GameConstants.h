@@ -84,7 +84,7 @@ namespace FishGame
         constexpr float MENU_START_Y = 500.0f;
         constexpr float MENU_ITEM_SPACING = 180.0f;
         // Scale factor applied to menu button sprites
-        constexpr float MENU_BUTTON_SCALE = 1.75f;
+        constexpr float MENU_BUTTON_SCALE = 0.875f;
 
         // ==================== Animation Constants ====================
         constexpr float MENU_PULSE_SPEED = 2.0f;
