@@ -22,9 +22,12 @@ namespace FishGame
         void onActivate() override;
 
     private:
-        static constexpr float DISPLAY_DURATION = 3.0f;
+        static constexpr float DISPLAY_DURATION = 2.5f;
+        static constexpr float FADE_DURATION = 0.5f;
         std::array<sf::Sprite, 2> m_sprites;
         std::size_t m_currentIndex;
         sf::Time m_elapsed;
+        float m_fadeTime;
+        bool m_isFading;
     };
 }
