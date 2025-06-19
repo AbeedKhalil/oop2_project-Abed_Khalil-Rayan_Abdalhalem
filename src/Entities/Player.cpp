@@ -229,15 +229,15 @@ namespace FishGame
             {sf::Keyboard::D, {1.f, 0.f}},  {sf::Keyboard::Right, {1.f, 0.f}}
         };
 
-        sf::Vector2f inputDirection = std::accumulate(
-            m_pressedKeys.begin(), m_pressedKeys.end(), sf::Vector2f{0.f, 0.f},
-            [](sf::Vector2f sum, sf::Keyboard::Key key)
+        sf::Vector2f inputDirection{ 0.f, 0.f };
+        for (const auto& key : m_pressedKeys)
+        {
+            auto it = keyMap.find(key);
+            if (it != keyMap.end())
             {
-                auto it = keyMap.find(key);
-                if (it != keyMap.end())
-                    sum += it->second;
-                return sum;
-            });
+                inputDirection += it->second;
+            }
+        }
 
         if (m_controlsReversed)
         {
