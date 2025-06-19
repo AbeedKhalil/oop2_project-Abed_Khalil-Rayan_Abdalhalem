@@ -14,6 +14,7 @@ namespace FishGame
     enum class StateID
     {
         None,
+        Intro,
         Menu,
         Play,
         Pause,

@@ -63,6 +63,8 @@ namespace FishGame
         , GameOptionsHover
         , Exit
         , ExitHover
+        , Intro1
+        , Intro2
     };
 
     // Sprite scale configurations
