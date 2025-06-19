@@ -840,6 +840,7 @@ namespace FishGame
                 state->m_isPlayerStunned = true;
                 state->m_stunTimer = jelly->getStunDuration();
                 state->m_player->setVelocity(0.0f, 0.0f);
+                state->m_player->clearInput();
                 state->createParticleEffect(state->m_player->getPosition(), sf::Color(255, 255, 0, 150), 10);
             }
             break;

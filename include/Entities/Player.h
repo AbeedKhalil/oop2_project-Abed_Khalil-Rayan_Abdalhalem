@@ -33,6 +33,8 @@ namespace FishGame
         void handleInput();
         void onKeyPressed(sf::Keyboard::Key key);
         void onKeyReleased(sf::Keyboard::Key key);
+        // Clear any cached input states
+        void clearInput();
         void followMouse(const sf::Vector2f& mousePosition);
         sf::Vector2f getTargetPosition() const { return m_targetPosition; }
         bool isUsingMouseControl() const { return m_useMouseControl; }
