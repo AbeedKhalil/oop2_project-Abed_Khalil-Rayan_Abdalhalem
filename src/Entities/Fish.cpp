@@ -5,6 +5,7 @@
 #include "GameConstants.h"
 #include "Player.h"
 #include "SpecialFish.h"
+#include "Utils/FishSizeUtils.h"
 #include <cmath>
 #include <algorithm>
 
@@ -31,18 +32,11 @@ namespace FishGame
         , m_damageFlashTimer(sf::Time::Zero)
     {
         // Set radius based on size
-        switch (m_size)
-        {
-        case FishSize::Small:
-            m_radius = SMALL_FISH_RADIUS;
-            break;
-        case FishSize::Medium:
-            m_radius = MEDIUM_FISH_RADIUS;
-            break;
-        case FishSize::Large:
-            m_radius = LARGE_FISH_RADIUS;
-            break;
-        }
+        m_radius = FishSizeUtils::selectBySize(
+            m_size,
+            SMALL_FISH_RADIUS,
+            MEDIUM_FISH_RADIUS,
+            LARGE_FISH_RADIUS);
 
         // Set point value based on size and level
         m_pointValue = getPointValue(m_size, m_currentLevel);
@@ -145,12 +139,7 @@ namespace FishGame
 
         float scale = 1.f;
         const auto& cfg = spriteManager.getScaleConfig();
-        switch (m_size)
-        {
-        case FishSize::Small: scale = cfg.small; break;
-        case FishSize::Medium: scale = cfg.medium; break;
-        case FishSize::Large: scale = cfg.large; break;
-        }
+        scale = FishSizeUtils::valueFromConfig(cfg, m_size);
 
         if (id == TextureID::SmallFish || id == TextureID::PoisonFish ||
             id == TextureID::Angelfish)
@@ -185,17 +174,11 @@ namespace FishGame
     TextureID Fish::getTextureID() const
     {
         // Default implementation - override in derived classes
-        switch (m_size)
-        {
-        case FishSize::Small:
-            return TextureID::SmallFish;
-        case FishSize::Medium:
-            return TextureID::MediumFish;
-        case FishSize::Large:
-            return TextureID::LargeFish;
-        default:
-            return TextureID::SmallFish;
-        }
+        return FishSizeUtils::selectBySize(
+            m_size,
+            TextureID::SmallFish,
+            TextureID::MediumFish,
+            TextureID::LargeFish);
     }
 
     void Fish::setFrozen(bool frozen)
