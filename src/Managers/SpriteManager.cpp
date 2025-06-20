@@ -46,7 +46,7 @@ namespace FishGame
 
         // Environment
         {TextureID::Background, "Background1.png"},
-        {TextureID::CoralReef, "Grass.png"},
+        {TextureID::Progress, "Progress.png"},
         {TextureID::KelpForest, "kelp_forest.png"},
         {TextureID::GameTitle, "GameTitle.png"},
 
