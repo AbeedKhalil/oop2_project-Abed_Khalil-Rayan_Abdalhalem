@@ -120,7 +120,7 @@ Animator createFishAnimator(const sf::Texture& tex)
     makeClip("idleLeft", IDLE_Y, 0, 6, milliseconds(120));
     makeClip("swimLeft", SWIM_Y, 0, 14, milliseconds(80));
     makeClip("turnLeftToRight", TURN_Y, 0, 5, milliseconds(90), false);
-    makeClip("turnRightToLeft", TURN_Y, 0, 5, milliseconds(90), false, true);
+    makeClip("turnRightToLeft", TURN_Y, 0, 5, milliseconds(60), false, true);
 
     a.copyFlip("eatLeft", "eatRight");
     a.copyFlip("idleLeft", "idleRight");
@@ -146,7 +146,7 @@ Animator createBarracudaAnimator(const sf::Texture& tex)
     makeClip("eatLeft", EAT_Y, 0, 6, milliseconds(100));
     makeClip("swimLeft", SWIM_Y, 0, 14, milliseconds(80));
     makeClip("turnLeftToRight", TURN_Y, 0, 5, milliseconds(90), false);
-    makeClip("turnRightToLeft", TURN_Y, 0, 5, milliseconds(90), false, true);
+    makeClip("turnRightToLeft", TURN_Y, 0, 5, milliseconds(70), false, true);
 
     a.copyFlip("eatLeft", "eatRight");
     a.copyFlip("swimLeft", "swimRight");
@@ -168,8 +168,8 @@ Animator createSimpleFishAnimator(const sf::Texture& tex)
     const int TURN_Y = 45;
 
     makeClip("swimLeft", SWIM_Y, 0, 15, milliseconds(80));
-    makeClip("turnLeftToRight", TURN_Y, 0, 5, milliseconds(90), false);
-    makeClip("turnRightToLeft", TURN_Y, 0, 5, milliseconds(90), false, true);
+    makeClip("turnLeftToRight", TURN_Y, 0, 5, milliseconds(80), false);
+    makeClip("turnRightToLeft", TURN_Y, 0, 5, milliseconds(70), false, true);
 
     a.copyFlip("swimLeft", "swimRight");
 
@@ -190,10 +190,10 @@ Animator createMediumFishAnimator(const sf::Texture& tex)
     const int SWIM_Y = 109;
     const int TURN_Y = 217;
 
-    makeClip("eatLeft", EAT_Y, 0, 5, milliseconds(100), false);
+    makeClip("eatLeft", EAT_Y, 0, 5, milliseconds(95), false);
     makeClip("swimLeft", SWIM_Y, 0, 14, milliseconds(80));
     makeClip("turnLeftToRight", TURN_Y, 0, 5, milliseconds(90), false);
-    makeClip("turnRightToLeft", TURN_Y, 0, 5, milliseconds(90), false, true);
+    makeClip("turnRightToLeft", TURN_Y, 0, 5, milliseconds(60), false, true);
 
     a.copyFlip("eatLeft", "eatRight");
     a.copyFlip("swimLeft", "swimRight");
