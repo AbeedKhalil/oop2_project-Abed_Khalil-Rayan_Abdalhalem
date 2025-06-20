@@ -103,11 +103,9 @@ namespace FishGame
             fish.setWindowBounds(m_windowSize);
             fish.initializeSprite(*m_spriteManager);
 
-            static const std::array<sf::Color, 4> colors = {
-                MEDIUM_FISH_COLOR, // OG
-                sf::Color::Red,
-                sf::Color::Cyan,
-                sf::Color(200, 255, 255) // Very Pale Cyan
+            static const std::array<sf::Color, 2> colors = {
+                sf::Color(255, 255, 255, 255),           // Original (no tint)
+                sf::Color(255, 180, 180, 255)              // Warm red
             };
             std::uniform_int_distribution<int> dist(0, colors.size() - 1);
             fish.setBaseColor(colors[dist(m_randomEngine)]);
