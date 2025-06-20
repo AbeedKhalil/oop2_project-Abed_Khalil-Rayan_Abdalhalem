@@ -1,4 +1,5 @@
 #include "ScoreSystem.h"
+#include "GameConstants.h"
 #include <algorithm>
 #include <sstream>
 #include <iomanip>
@@ -43,7 +44,7 @@ namespace FishGame
         }
         else
         {
-            m_text.setCharacterSize(24);
+            m_text.setCharacterSize(Constants::HUD_FONT_SIZE);
             m_text.setFillColor(sf::Color::White);
             m_text.setOutlineThickness(1.0f);
         }

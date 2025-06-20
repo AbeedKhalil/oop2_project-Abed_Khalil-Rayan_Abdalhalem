@@ -44,7 +44,7 @@ namespace FishGame
         m_objectiveText.setPosition(50.0f, 50.0f);
 
         m_timerText.setFont(font);
-        m_timerText.setCharacterSize(24);
+        m_timerText.setCharacterSize(Constants::HUD_FONT_SIZE);
         m_timerText.setFillColor(sf::Color::White);
         m_timerText.setPosition(50.0f, 100.0f);
 
