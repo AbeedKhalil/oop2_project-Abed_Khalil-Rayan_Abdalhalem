@@ -464,22 +464,14 @@ namespace FishGame
 
     void PlayState::updateAllEntities(sf::Time deltaTime)
     {
-        // Update all entities with freeze effect
-        auto freezeModifier = m_isPlayerFrozen ? 0.1f : 1.0f;
-
         StateUtils::updateEntities(m_entities, deltaTime);
         StateUtils::updateEntities(m_bonusItems, deltaTime);
         StateUtils::updateEntities(m_hazards, deltaTime);
 
-        // Apply specific AI updates and effects
-        StateUtils::applyToEntities(m_entities, [this, deltaTime, freezeModifier](Entity& entity) {
+        // Apply specific AI updates
+        StateUtils::applyToEntities(m_entities, [this, deltaTime](Entity& entity) {
             if (auto* fish = dynamic_cast<Fish*>(&entity))
             {
-                if (m_isPlayerFrozen)
-                {
-                    fish->setVelocity(fish->getVelocity() * freezeModifier);
-                }
-
                 if (!fish->isStunned())
                 {
                     fish->updateAI(m_entities, m_player.get(), deltaTime);
@@ -500,7 +492,7 @@ namespace FishGame
                 StateUtils::applyToEntities(m_entities, [](Entity& entity) {
                     if (auto* fish = dynamic_cast<Fish*>(&entity))
                     {
-                        fish->setVelocity(fish->getVelocity() * 10.0f);
+                        fish->setFrozen(false);
                     }
                     });
             }
@@ -902,10 +894,10 @@ namespace FishGame
         m_isPlayerFrozen = true;
         m_freezeTimer = sf::seconds(5.0f);
 
-        StateUtils::applyToEntities(m_entities, [](Entity& entity) {    
+        StateUtils::applyToEntities(m_entities, [](Entity& entity) {
             if (auto* fish = dynamic_cast<Fish*>(&entity))
             {
-                fish->setVelocity(fish->getVelocity() * 0.1f);
+                fish->setFrozen(true);
             }
             });
     }
