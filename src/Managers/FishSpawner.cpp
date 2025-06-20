@@ -2,6 +2,7 @@
 #include "GameConstants.h"
 #include "SpriteManager.h"
 #include <algorithm>
+#include <array>
 
 namespace FishGame
 {
@@ -101,6 +102,15 @@ namespace FishGame
             fish.setDirection(mediumConfig.fromLeft ? 1.0f : -1.0f, 0.0f);
             fish.setWindowBounds(m_windowSize);
             fish.initializeSprite(*m_spriteManager);
+
+            static const std::array<sf::Color, 4> colors = {
+                sf::Color::White,
+                sf::Color::Red,
+                sf::Color::Cyan,
+                sf::Color(200, 255, 255)
+            };
+            std::uniform_int_distribution<int> dist(0, colors.size() - 1);
+            fish.setBaseColor(colors[dist(m_randomEngine)]);
             };
 
         m_mediumSpawner.setConfig(mediumSpawnerConfig);

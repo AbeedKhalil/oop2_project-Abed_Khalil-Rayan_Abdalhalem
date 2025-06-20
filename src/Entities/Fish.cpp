@@ -29,6 +29,7 @@ namespace FishGame
         , m_isFrozen(false)
         , m_velocityBeforeFreeze(0.0f, 0.0f)
         , m_damageFlashTimer(sf::Time::Zero)
+        , m_baseColor(sf::Color::White)
         , m_eating(false)
         , m_eatTimer(sf::Time::Zero)
     {
@@ -111,7 +112,7 @@ namespace FishGame
         if (m_sprite)
         {
             // Update sprite color based on state
-            sf::Color spriteColor = sf::Color::White;
+            sf::Color spriteColor = m_baseColor;
 
             if (m_isPoisoned)
             {
@@ -565,5 +566,14 @@ namespace FishGame
             }
         }
         return 1; // Default
+    }
+
+    void Fish::setBaseColor(const sf::Color& color)
+    {
+        m_baseColor = color;
+        if (m_sprite)
+        {
+            m_sprite->setColor(color);
+        }
     }
 }
