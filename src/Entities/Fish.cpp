@@ -29,6 +29,8 @@ namespace FishGame
         , m_isFrozen(false)
         , m_velocityBeforeFreeze(0.0f, 0.0f)
         , m_damageFlashTimer(sf::Time::Zero)
+        , m_eating(false)
+        , m_eatTimer(sf::Time::Zero)
     {
         // Set radius based on size
         switch (m_size)
@@ -142,6 +144,8 @@ namespace FishGame
         std::string eat = m_facingRight ? "eatRight" : "eatLeft";
         m_animator->play(eat);
         m_currentAnimation = eat;
+        m_eating = true;
+        m_eatTimer = sf::seconds(m_eatDuration);
     }
 
     void Fish::initializeAnimation(SpriteManager& spriteManager)
@@ -298,7 +302,7 @@ namespace FishGame
         if (m_animator && m_renderMode == RenderMode::Sprite)
         {
             bool newFacingRight = m_velocity.x > 0.f;
-            if (std::abs(m_velocity.x) > 1.f && newFacingRight != m_facingRight)
+            if (!m_eating && std::abs(m_velocity.x) > 1.f && newFacingRight != m_facingRight)
             {
                 m_facingRight = newFacingRight;
                 std::string turn = m_facingRight ? "turnLeftToRight" : "turnRightToLeft";
@@ -309,6 +313,18 @@ namespace FishGame
             }
 
             m_animator->update(deltaTime);
+
+            if (m_eating)
+            {
+                m_eatTimer -= deltaTime;
+                if (m_eatTimer <= sf::Time::Zero)
+                {
+                    std::string swim = m_facingRight ? "swimRight" : "swimLeft";
+                    m_animator->play(swim);
+                    m_currentAnimation = swim;
+                    m_eating = false;
+                }
+            }
 
             if (m_turning)
             {

@@ -122,5 +122,10 @@ namespace FishGame
         bool m_turning{ false };
         sf::Time m_turnTimer{ sf::Time::Zero };
         static constexpr float m_turnDuration = 0.45f;
+
+        // Eat animation state
+        bool m_eating{ false };
+        sf::Time m_eatTimer{ sf::Time::Zero };
+        static constexpr float m_eatDuration = 0.5f;
     };
 }
