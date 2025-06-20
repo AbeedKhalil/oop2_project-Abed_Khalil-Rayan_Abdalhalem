@@ -1,4 +1,5 @@
 #include "FrenzySystem.h"
+#include "GameConstants.h"
 #include <algorithm>
 #include <sstream>
 #include <iomanip>
@@ -28,7 +29,7 @@ namespace FishGame
 
         // Setup multiplier text
         m_multiplierText.setFont(font);
-        m_multiplierText.setCharacterSize(24);
+        m_multiplierText.setCharacterSize(Constants::HUD_FONT_SIZE);
         m_multiplierText.setFillColor(sf::Color::White);
 
         // Setup timer text

@@ -40,7 +40,7 @@ namespace FishGame
     {
         // Setup "2X" icon text - font will be set later
         m_icon.setString("2X");
-        m_icon.setCharacterSize(24);
+        m_icon.setCharacterSize(Constants::HUD_FONT_SIZE);
         m_icon.setStyle(sf::Text::Bold);
         m_icon.setFillColor(sf::Color::Yellow);
 
