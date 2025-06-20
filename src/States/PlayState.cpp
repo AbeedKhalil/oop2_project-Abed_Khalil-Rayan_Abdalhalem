@@ -654,10 +654,7 @@ namespace FishGame
                         fish1->setPoisoned(poison->getPoisonDuration());
                         createParticleEffect(fish1->getPosition(), sf::Color::Magenta, 10);
                     }
-                    if (auto* barracuda = dynamic_cast<Barracuda*>(fish1))
-                    {
-                        barracuda->playEatAnimation();
-                    }
+                    fish1->playEatAnimation();
                     fish2->destroy();
                     createParticleEffect(fish2->getPosition(), Constants::DEATH_PARTICLE_COLOR);
                 }
@@ -668,10 +665,7 @@ namespace FishGame
                         fish2->setPoisoned(poison->getPoisonDuration());
                         createParticleEffect(fish2->getPosition(), sf::Color::Magenta, 10);
                     }
-                    if (auto* barracuda = dynamic_cast<Barracuda*>(fish2))
-                    {
-                        barracuda->playEatAnimation();
-                    }
+                    fish2->playEatAnimation();
                     fish1->destroy();
                     createParticleEffect(fish1->getPosition(), Constants::DEATH_PARTICLE_COLOR);
                 }
@@ -776,10 +770,7 @@ namespace FishGame
             }
             else if (fishCanEatPlayer && !state->m_player->hasRecentlyTakenDamage())
             {
-                if (auto* barracuda = dynamic_cast<Barracuda*>(regularFish))
-                {
-                    barracuda->playEatAnimation();
-                }
+                regularFish->playEatAnimation();
                 state->m_player->takeDamage();
                 state->createParticleEffect(state->m_player->getPosition(), Constants::DAMAGE_PARTICLE_COLOR);
                 state->handlePlayerDeath();

@@ -72,6 +72,7 @@ namespace FishGame
         void initializeSprite(SpriteManager& spriteManager);
         void initializeAnimation(SpriteManager& spriteManager);
         void updateVisualState();
+        void playEatAnimation();
 
     protected:
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;

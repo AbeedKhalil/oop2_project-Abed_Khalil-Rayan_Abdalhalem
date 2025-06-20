@@ -79,10 +79,7 @@ namespace FishGame
                 {
                     fish1.setPoisoned(poisonFish->getPoisonDuration());
                 }
-                if (auto* barracuda = dynamic_cast<Barracuda*>(&fish1))
-                {
-                    barracuda->playEatAnimation();
-                }
+                fish1.playEatAnimation();
                 fish2.destroy();
             }
             else if (fish2.canEat(fish1))
@@ -92,10 +89,7 @@ namespace FishGame
                 {
                     fish2.setPoisoned(poisonFish->getPoisonDuration());
                 }
-                if (auto* barracuda = dynamic_cast<Barracuda*>(&fish2))
-                {
-                    barracuda->playEatAnimation();
-                }
+                fish2.playEatAnimation();
                 fish1.destroy();
             }
         }
