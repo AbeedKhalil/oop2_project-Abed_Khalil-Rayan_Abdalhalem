@@ -175,3 +175,28 @@ Animator createSimpleFishAnimator(const sf::Texture& tex)
 
     return a;
 }
+
+Animator createMediumFishAnimator(const sf::Texture& tex)
+{
+    Animator a(tex, 172, 108);
+
+    auto makeClip = [&](const std::string& name, int rowY, int start, int count,
+        Time dur, bool loop = true, bool reverse = false)
+        {
+            a.addClipRow(name, rowY, start, count, dur, loop, reverse);
+        };
+
+    const int EAT_Y = 1;
+    const int SWIM_Y = 109;
+    const int TURN_Y = 217;
+
+    makeClip("eatLeft", EAT_Y, 0, 5, milliseconds(100), false);
+    makeClip("swimLeft", SWIM_Y, 0, 14, milliseconds(80));
+    makeClip("turnLeftToRight", TURN_Y, 0, 5, milliseconds(90), false);
+    makeClip("turnRightToLeft", TURN_Y, 0, 5, milliseconds(90), false, true);
+
+    a.copyFlip("eatLeft", "eatRight");
+    a.copyFlip("swimLeft", "swimRight");
+
+    return a;
+}

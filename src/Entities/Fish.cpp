@@ -137,11 +137,21 @@ namespace FishGame
     void Fish::initializeAnimation(SpriteManager& spriteManager)
     {
         TextureID id = getTextureID();
-        if (id != TextureID::SmallFish && id != TextureID::PoisonFish && id != TextureID::Angelfish)
-            return;
-
         const sf::Texture& tex = spriteManager.getTexture(id);
-        m_animator = std::make_unique<Animator>(createSimpleFishAnimator(tex));
+
+        switch (id)
+        {
+        case TextureID::SmallFish:
+        case TextureID::PoisonFish:
+        case TextureID::Angelfish:
+            m_animator = std::make_unique<Animator>(createSimpleFishAnimator(tex));
+            break;
+        case TextureID::MediumFish:
+            m_animator = std::make_unique<Animator>(createMediumFishAnimator(tex));
+            break;
+        default:
+            return;
+        }
 
         float scale = 1.f;
         const auto& cfg = spriteManager.getScaleConfig();
