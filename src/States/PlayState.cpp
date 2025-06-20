@@ -704,7 +704,7 @@ namespace FishGame
 
     void PlayState::FishCollisionHandler::operator()(Entity& fish) const
     {
-        if (state->m_player->isInvulnerable())
+        if (state->m_player->isInvulnerable() || state->m_isPlayerStunned)
             return;
 
         if (auto* puffer = dynamic_cast<Pufferfish*>(&fish))

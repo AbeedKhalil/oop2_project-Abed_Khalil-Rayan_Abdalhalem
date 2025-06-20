@@ -54,7 +54,6 @@ namespace FishGame
 
         // Environment
         Background,
-        Progress,
         KelpForest,
         GameTitle
         , NewGame
