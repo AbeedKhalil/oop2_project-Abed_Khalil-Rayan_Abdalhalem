@@ -109,9 +109,9 @@ namespace FishGame
 
     void Fish::updateVisualState()
     {
-        if (m_sprite)
+        if (m_sprite || m_animator)
         {
-            // Update sprite color based on state
+            // Update sprite/animator color based on state
             sf::Color spriteColor = m_baseColor;
 
             if (m_isPoisoned)
@@ -127,10 +127,17 @@ namespace FishGame
                 spriteColor = sf::Color(150, 200, 255); // Blue tint
             }
 
-            m_sprite->setColor(spriteColor);
+            if (m_sprite)
+            {
+                m_sprite->setColor(spriteColor);
+            }
+            if (m_animator)
+            {
+                m_animator->setColor(spriteColor);
+            }
 
             // Apply effects
-            if (m_isFleeing)
+            if (m_isFleeing && m_sprite)
             {
                 m_sprite->applyPulseEffect(0.1f, 5.0f);
             }
@@ -574,6 +581,10 @@ namespace FishGame
         if (m_sprite)
         {
             m_sprite->setColor(color);
+        }
+        if (m_animator)
+        {
+            m_animator->setColor(color);
         }
     }
 }
