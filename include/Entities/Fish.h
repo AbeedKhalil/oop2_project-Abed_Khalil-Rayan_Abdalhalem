@@ -74,6 +74,10 @@ namespace FishGame
         void updateVisualState();
         void playEatAnimation();
 
+        // Base color for sprite
+        void setBaseColor(const sf::Color& color);
+        const sf::Color& getBaseColor() const { return m_baseColor; }
+
     protected:
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
         void updateMovement(sf::Time deltaTime);
@@ -114,6 +118,9 @@ namespace FishGame
 
         // Additional member for damage flash effect
         sf::Time m_damageFlashTimer;
+
+        // Base color used when no special state is active
+        sf::Color m_baseColor;
 
         // Animation support
         std::unique_ptr<Animator> m_animator;
