@@ -134,6 +134,16 @@ namespace FishGame
         }
     }
 
+    void Fish::playEatAnimation()
+    {
+        if (!m_animator)
+            return;
+
+        std::string eat = m_facingRight ? "eatRight" : "eatLeft";
+        m_animator->play(eat);
+        m_currentAnimation = eat;
+    }
+
     void Fish::initializeAnimation(SpriteManager& spriteManager)
     {
         TextureID id = getTextureID();
