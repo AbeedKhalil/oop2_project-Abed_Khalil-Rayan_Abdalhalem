@@ -5,6 +5,7 @@
 #include "PlayState.h"
 #include "GameOverState.h"
 #include "PauseState.h"
+#include "GameOptionsState.h"
 #include <algorithm>
 #include <stdexcept>
 
@@ -233,6 +234,7 @@ namespace FishGame
             };
 
         // TODO: Register additional states as they are implemented
+        registerState<GameOptionsState>(StateID::GameOptions);
         registerState<PauseState>(StateID::Pause);
         registerState<GameOverState>(StateID::GameOver);
         // registerState<SettingsState>(StateID::Settings);
