@@ -46,15 +46,12 @@ namespace FishGame
         Jellyfish,
 
         // Power-ups
-        PowerUpScoreDoubler,
-        PowerUpFrenzyStarter,
         PowerUpSpeedBoost,
-        PowerUpFreeze,
+        PowerUpAddTime,
         PowerUpExtraLife,
 
         // Environment
         Background,
-        KelpForest,
         GameTitle
         , NewGame
         , NewGameHover
