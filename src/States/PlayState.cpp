@@ -555,6 +555,7 @@ namespace FishGame
         {
         case 0:
             hazard = std::make_unique<Bomb>();
+            static_cast<Bomb*>(hazard.get())->initializeSprite(getGame().getSpriteManager());
             break;
         case 1:
             hazard = std::make_unique<Jellyfish>();
