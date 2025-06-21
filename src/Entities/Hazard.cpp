@@ -89,11 +89,16 @@ namespace FishGame
         case State::IdleBomb:
             break;
         case State::Explode:
-            m_explosionRadius = 100.f;
-            m_isExploding = m_stateTimer.asSeconds() <= m_explosionDuration;
+        {
+            float progress = m_stateTimer.asSeconds() / m_explosionDuration;
+            progress = std::clamp(progress, 0.f, 1.f);
+            m_explosionRadius = m_baseRadius +
+                (m_maxExplosionRadius - m_baseRadius) * progress;
+            m_isExploding = progress < 1.f;
             if (m_sprite->isFinished())
                 advanceState();
             break;
+        }
         case State::Puffs:
             if (m_sprite->isFinished())
             {

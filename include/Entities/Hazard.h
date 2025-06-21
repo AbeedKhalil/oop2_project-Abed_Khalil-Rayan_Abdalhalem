@@ -75,6 +75,7 @@ namespace FishGame
         float m_explosionRadius;
 
         static constexpr float m_baseRadius = 20.0f;
+        static constexpr float m_maxExplosionRadius = 100.0f;
         static constexpr float m_explosionDuration = 0.4f; // 5 frames * 0.08s
         static constexpr int m_maxPuffLoops = 3;
         static constexpr float m_puffFrameTime = 0.1f;
