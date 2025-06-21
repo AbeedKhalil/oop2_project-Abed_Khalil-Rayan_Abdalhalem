@@ -2,6 +2,7 @@
 #include "Player.h"
 #include "GameConstants.h"
 #include "SpriteManager.h"
+#include "Utils/AnimatedSprite.h"
 #include <cmath>
 #include <numeric>
 #include <algorithm>
@@ -22,78 +23,92 @@ namespace FishGame
     // Bomb implementation
     Bomb::Bomb()
         : Hazard(HazardType::Bomb, 1.0f)
-        , m_bombShape(m_baseRadius)
-        , m_fuseGlow(m_baseRadius * 1.5f)
-        , m_explosionParticles()
+        , m_sprite(nullptr)
+        , m_state(State::IdleBomb)
+        , m_puffLoops(0)
         , m_isExploding(false)
-        , m_explosionTimer(sf::Time::Zero)
-        , m_explosionRadius(0.0f)
-        , m_pulseAnimation(0.0f)
+        , m_stateTimer(sf::Time::Zero)
+        , m_explosionRadius(0.f)
     {
         m_radius = m_baseRadius;
+    }
 
-        // Setup bomb appearance
-        m_bombShape.setFillColor(sf::Color(50, 50, 50));
-        m_bombShape.setOutlineColor(sf::Color::Red);
-        m_bombShape.setOutlineThickness(2.0f);
-        m_bombShape.setOrigin(m_baseRadius, m_baseRadius);
+    void Bomb::initializeSprite(SpriteManager& spriteManager)
+    {
+        const sf::Texture& tex = spriteManager.getTexture(TextureID::Bomb);
+        m_sprite = std::make_unique<AnimatedSprite>(tex);
 
-        // Setup fuse glow
-        m_fuseGlow.setFillColor(sf::Color(255, 100, 0, 100));
-        m_fuseGlow.setOrigin(m_baseRadius * 1.5f, m_baseRadius * 1.5f);
+        AnimatedSprite::Animation idle;
+        idle.frames.push_back(sf::IntRect(1, 1, 69, 69));
+        idle.frameTime = sf::seconds(0.1f);
 
-        // Pre-allocate explosion particles
-        m_explosionParticles.reserve(16);
+        AnimatedSprite::Animation explode;
+        explode.frames = {
+            {1, 70, 164, 146},
+            {165, 70, 164, 146},
+            {329, 70, 164, 146},
+            {493, 70, 164, 146},
+            {657, 70, 164, 146}
+        };
+        explode.frameTime = sf::seconds(0.08f);
+        explode.loop = false;
+
+        AnimatedSprite::Animation puffs;
+        puffs.frames = {
+            {1, 216, 86, 84},
+            {87, 216, 86, 84}
+        };
+        puffs.frameTime = sf::seconds(m_puffFrameTime);
+
+        AnimatedSprite::Animation smoke;
+        smoke.frames.push_back(sf::IntRect(1, 300, 122, 121));
+        smoke.frameTime = sf::seconds(0.2f);
+        smoke.loop = false;
+
+        m_sprite->addAnimation("idle", idle);
+        m_sprite->addAnimation("explode", explode);
+        m_sprite->addAnimation("puffs", puffs);
+        m_sprite->addAnimation("smoke", smoke);
+        m_sprite->play("idle");
+        m_sprite->setPosition(m_position);
     }
 
     void Bomb::update(sf::Time deltaTime)
     {
-        if (!m_isAlive)
+        if (!m_isAlive || !m_sprite)
             return;
 
-        if (!m_isExploding)
+        m_sprite->setPosition(m_position);
+        m_sprite->update(deltaTime);
+
+        m_stateTimer += deltaTime;
+
+        switch (m_state)
         {
-            // Fuse animation
-            m_pulseAnimation += deltaTime.asSeconds() * 5.0f;
-            float pulse = 1.0f + 0.3f * std::sin(m_pulseAnimation);
-
-            m_bombShape.setPosition(m_position);
-            m_fuseGlow.setPosition(m_position);
-            m_fuseGlow.setScale(pulse, pulse);
-
-            // Auto-explode after fuse duration
-            m_explosionTimer += deltaTime;
-            if (m_explosionTimer.asSeconds() >= m_fuseDuration)
+        case State::IdleBomb:
+            break;
+        case State::Explode:
+            m_explosionRadius = 100.f;
+            m_isExploding = m_stateTimer.asSeconds() <= m_explosionDuration;
+            if (m_sprite->isFinished())
+                advanceState();
+            break;
+        case State::Puffs:
+            if (m_sprite->isFinished())
             {
-                m_isExploding = true;
-                m_explosionTimer = sf::Time::Zero;
-                createExplosion();
+                ++m_puffLoops;
+                if (m_puffLoops >= m_maxPuffLoops)
+                    advanceState();
+                else
+                    m_sprite->play("puffs");
             }
-        }
-        else
-        {
-            // Explosion animation
-            m_explosionTimer += deltaTime;
-            float explosionProgress = m_explosionTimer.asSeconds() / 0.5f;
-
-            if (explosionProgress >= 1.0f)
-            {
-                destroy();
-                return;
-            }
-
-            m_explosionRadius = m_maxExplosionRadius * explosionProgress;
-
-            // Update explosion particles
-            std::for_each(m_explosionParticles.begin(), m_explosionParticles.end(),
-                [this, explosionProgress](sf::CircleShape& particle) {
-                    float scale = (1.0f - explosionProgress) * 2.0f;
-                    particle.setScale(scale, scale);
-
-                    sf::Color color = particle.getFillColor();
-                    color.a = static_cast<sf::Uint8>(255 * (1.0f - explosionProgress));
-                    particle.setFillColor(color);
-                });
+            break;
+        case State::Smoke:
+            if (m_sprite->isFinished())
+                advanceState();
+            break;
+        default:
+            break;
         }
     }
 
@@ -101,56 +116,59 @@ namespace FishGame
     {
         float effectiveRadius = m_isExploding ? m_explosionRadius : m_radius;
         return sf::FloatRect(m_position.x - effectiveRadius, m_position.y - effectiveRadius,
-            effectiveRadius * 2.0f, effectiveRadius * 2.0f);
+            effectiveRadius * 2.f, effectiveRadius * 2.f);
     }
 
     void Bomb::onContact(Entity& entity)
     {
-        if (!m_isExploding)
-        {
-            m_isExploding = true;
-            m_explosionTimer = sf::Time::Zero;
-            createExplosion();
-        }
+        trigger();
     }
 
     void Bomb::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        if (!m_isExploding)
+        if (m_sprite)
+            target.draw(*m_sprite, states);
+    }
+
+    void Bomb::advanceState()
+    {
+        m_stateTimer = sf::Time::Zero;
+
+        switch (m_state)
         {
-            target.draw(m_fuseGlow, states);
-            target.draw(m_bombShape, states);
-        }
-        else
-        {
-            std::for_each(m_explosionParticles.begin(), m_explosionParticles.end(),
-                [&target, &states](const sf::CircleShape& particle) {
-                    target.draw(particle, states);
-                });
+        case State::IdleBomb:
+            m_state = State::Explode;
+            m_sprite->play("explode");
+            m_isExploding = true;
+            break;
+        case State::Explode:
+            m_state = State::Puffs;
+            m_sprite->play("puffs");
+            m_isExploding = false;
+            m_puffLoops = 0;
+            break;
+        case State::Puffs:
+            m_state = State::Smoke;
+            m_sprite->play("smoke");
+            break;
+        case State::Smoke:
+            m_state = State::Done;
+            destroy();
+            break;
+        default:
+            break;
         }
     }
 
-    void Bomb::createExplosion()
+    void Bomb::trigger()
     {
-        m_explosionParticles.clear();
+        if (m_state == State::IdleBomb)
+            advanceState();
+    }
 
-        std::generate_n(std::back_inserter(m_explosionParticles), 16,
-            [this, i = 0]() mutable {
-                sf::CircleShape particle(5.0f);
-
-                float angle = (360.0f / 16.0f) * i * Constants::DEG_TO_RAD;
-                float radius = 30.0f;
-
-                particle.setPosition(
-                    m_position.x + std::cos(angle) * radius,
-                    m_position.y + std::sin(angle) * radius);
-
-                particle.setFillColor(sf::Color(255, 200, 0));
-                particle.setOrigin(5.0f, 5.0f);
-
-                ++i;
-                return particle;
-            });
+    bool Bomb::isFinished() const
+    {
+        return m_state == State::Done;
     }
 
     // Jellyfish implementation

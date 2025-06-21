@@ -3,6 +3,8 @@
 #include "Entity.h"
 #include <vector>
 #include <random>
+#include <memory>
+#include "Utils/AnimatedSprite.h"
 
 namespace FishGame
 {
@@ -40,10 +42,18 @@ namespace FishGame
         Bomb();
         ~Bomb() override = default;
 
+        // Sprite setup
+        void initializeSprite(SpriteManager& spriteManager);
+
         void update(sf::Time deltaTime) override;
         sf::FloatRect getBounds() const override;
         void onContact(Entity& entity) override;
 
+        // Control the explosion sequence
+        void trigger();
+        bool isFinished() const;
+
+        // Compatibility with old systems
         bool isExploding() const { return m_isExploding; }
         float getExplosionRadius() const { return m_explosionRadius; }
 
@@ -51,21 +61,23 @@ namespace FishGame
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
     private:
-        void createExplosion();
+        enum class State { IdleBomb, Explode, Puffs, Smoke, Done };
 
-    private:
-        sf::CircleShape m_bombShape;
-        sf::CircleShape m_fuseGlow;
-        std::vector<sf::CircleShape> m_explosionParticles;
+        void advanceState();
+
+        // Animation
+        std::unique_ptr<class AnimatedSprite> m_sprite;
+        State m_state;
+        int m_puffLoops;
 
         bool m_isExploding;
-        sf::Time m_explosionTimer;
+        sf::Time m_stateTimer;
         float m_explosionRadius;
-        float m_pulseAnimation;
 
         static constexpr float m_baseRadius = 20.0f;
-        static constexpr float m_maxExplosionRadius = 100.0f;
-        static constexpr float m_fuseDuration = 3.0f;
+        static constexpr float m_explosionDuration = 0.4f; // 5 frames * 0.08s
+        static constexpr int m_maxPuffLoops = 3;
+        static constexpr float m_puffFrameTime = 0.1f;
     };
 
     // Jellyfish - stuns on contact
