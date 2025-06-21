@@ -13,7 +13,8 @@ namespace FishGame
         FrenzyStarter,
         SpeedBoost,
         Freeze,
-        ExtraLife
+        ExtraLife,
+        AddTime
     };
 
     // Base class for all power-ups

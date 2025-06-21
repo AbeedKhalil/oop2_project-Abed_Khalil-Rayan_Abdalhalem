@@ -4,6 +4,7 @@
 #include "SpecialFish.h"
 #include "CollisionDetector.h"
 #include "GameConstants.h"
+#include "ExtendedPowerUps.h"
 #include "OysterManager.h"
 #include <algorithm>
 #include <sstream>
@@ -148,6 +149,14 @@ namespace FishGame
             break;
         }
 
+        // Spawn time extension power-up periodically
+        m_timePowerUpTimer += deltaTime;
+        if (m_timePowerUpTimer.asSeconds() > 8.0f && m_bonusItems.size() < 10)
+        {
+            m_timePowerUpTimer = sf::Time::Zero;
+            spawnTimePowerUp();
+        }
+
         // Update entities
         std::for_each(m_entities.begin(), m_entities.end(),
             [deltaTime, this](auto& entity) {
@@ -165,6 +174,19 @@ namespace FishGame
         std::for_each(m_bonusItems.begin(), m_bonusItems.end(),
             [deltaTime](auto& item) {
                 item->update(deltaTime);
+            });
+
+        // Handle collisions with time power-ups
+        std::for_each(m_bonusItems.begin(), m_bonusItems.end(),
+            [this](auto& item) {
+                if (auto* timePU = dynamic_cast<AddTimePowerUp*>(item.get()))
+                {
+                    if (CollisionDetector::checkCircleCollision(*m_player, *timePU))
+                    {
+                        timePU->onCollect();
+                        m_timeLimit += sf::seconds(3.f);
+                    }
+                }
             });
 
         // Remove dead entities
@@ -436,6 +458,17 @@ namespace FishGame
             ++i;
             return barracuda;
             });
+    }
+
+    void BonusStageState::spawnTimePowerUp()
+    {
+        auto power = std::make_unique<AddTimePowerUp>();
+        float x = m_xDist(m_randomEngine);
+        float y = m_yDist(m_randomEngine);
+        power->setPosition(x, y);
+        power->m_baseY = y;
+        power->initializeSprite(getGame().getSpriteManager());
+        m_bonusItems.push_back(std::move(power));
     }
 
     void BonusStageState::checkCompletion()

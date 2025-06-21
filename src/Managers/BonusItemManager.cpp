@@ -138,6 +138,14 @@ namespace FishGame
             float y = m_positionDist(m_randomEngine);
             powerUp->setPosition(x, y);
 
+            if (m_spriteManager)
+            {
+                if (auto* life = dynamic_cast<ExtraLifePowerUp*>(powerUp.get()))
+                    life->initializeSprite(*m_spriteManager);
+                else if (auto* speed = dynamic_cast<SpeedBoostPowerUp*>(powerUp.get()))
+                    speed->initializeSprite(*m_spriteManager);
+            }
+
             m_spawnedItems.push_back(std::move(powerUp));
         }
     }
