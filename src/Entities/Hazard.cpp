@@ -59,6 +59,7 @@ namespace FishGame
             {87, 216, 86, 84}
         };
         puffs.frameTime = sf::seconds(m_puffFrameTime);
+        puffs.loop = false;
 
         AnimatedSprite::Animation smoke;
         smoke.frames.push_back(sf::IntRect(1, 300, 122, 121));
