@@ -138,6 +138,8 @@ namespace FishGame
             float y = m_positionDist(m_randomEngine);
             powerUp->setPosition(x, y);
 
+            powerUp->m_baseY = y;
+
             if (m_spriteManager)
             {
                 if (auto* life = dynamic_cast<ExtraLifePowerUp*>(powerUp.get()))
