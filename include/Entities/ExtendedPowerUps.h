@@ -5,6 +5,7 @@
 
 namespace FishGame
 {
+    class SpriteManager;
     // Freeze Power-up - freezes all enemy fish temporarily
     class FreezePowerUp : public PowerUp
     {
@@ -38,6 +39,8 @@ namespace FishGame
         void onCollect() override;
         sf::Color getAuraColor() const override { return sf::Color::Green; }
 
+        void initializeSprite(SpriteManager& spriteManager);
+
     protected:
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
@@ -58,6 +61,8 @@ namespace FishGame
         void onCollect() override;
         sf::Color getAuraColor() const override { return sf::Color(0, 255, 255); }
 
+        void initializeSprite(SpriteManager& spriteManager);
+
     protected:
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
@@ -66,5 +71,25 @@ namespace FishGame
         float m_lineAnimation;
         static constexpr float m_boostDuration = Constants::SPEEDBOOST_POWERUP_DURATION;
         static constexpr float m_speedMultiplier = Constants::SPEED_BOOST_MULTIPLIER;
+    };
+
+    // Add Time Power-up - extends stage timer
+    class AddTimePowerUp : public PowerUp
+    {
+    public:
+        AddTimePowerUp();
+        ~AddTimePowerUp() override = default;
+
+        void update(sf::Time deltaTime) override;
+        void onCollect() override;
+        sf::Color getAuraColor() const override { return sf::Color::White; }
+
+        void initializeSprite(SpriteManager& spriteManager);
+
+    protected:
+        void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+
+    private:
+        // No custom visuals when using sprite
     };
 }

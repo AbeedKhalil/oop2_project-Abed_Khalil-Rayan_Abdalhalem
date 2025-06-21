@@ -3,6 +3,7 @@
 #include <cmath>
 #include <iterator>
 #include "Utils/DrawHelpers.h"
+#include "SpriteManager.h"
 
 namespace FishGame
 {
@@ -107,6 +108,9 @@ namespace FishGame
         if (!updateLifetime(deltaTime))
             return;
 
+        if (getRenderMode() == RenderMode::Sprite && getSpriteComponent())
+            getSpriteComponent()->update(deltaTime);
+
         // Update animations
         m_heartbeatAnimation += deltaTime.asSeconds() * m_heartbeatSpeed;
         float heartbeat = 1.0f + 0.2f * std::sin(m_heartbeatAnimation);
@@ -134,9 +138,29 @@ namespace FishGame
 
     void ExtraLifePowerUp::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        target.draw(m_aura, states);
-        target.draw(m_iconBackground, states);
-        target.draw(m_heart, states);
+        if (getRenderMode() == RenderMode::Sprite && getSpriteComponent())
+        {
+            target.draw(*getSpriteComponent(), states);
+        }
+        else
+        {
+            target.draw(m_aura, states);
+            target.draw(m_iconBackground, states);
+            target.draw(m_heart, states);
+        }
+    }
+
+    void ExtraLifePowerUp::initializeSprite(SpriteManager& spriteManager)
+    {
+        auto sprite = spriteManager.createSpriteComponent(
+            static_cast<Entity*>(this), TextureID::PowerUpExtraLife);
+        if (sprite)
+        {
+            auto config = spriteManager.getSpriteConfig<Entity>(TextureID::PowerUpExtraLife);
+            sprite->configure(config);
+            setSpriteComponent(std::move(sprite));
+            setRenderMode(RenderMode::Sprite);
+        }
     }
 
     // SpeedBoostPowerUp implementation
@@ -166,6 +190,9 @@ namespace FishGame
         // DO NOT call base class update - implement everything here
         if (!updateLifetime(deltaTime))
             return;
+
+        if (getRenderMode() == RenderMode::Sprite && getSpriteComponent())
+            getSpriteComponent()->update(deltaTime);
 
         // Update animations
         m_lineAnimation += deltaTime.asSeconds() * 5.0f;
@@ -208,9 +235,74 @@ namespace FishGame
 
     void SpeedBoostPowerUp::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        target.draw(m_aura, states);
-        target.draw(m_iconBackground, states);
+        if (getRenderMode() == RenderMode::Sprite && getSpriteComponent())
+        {
+            target.draw(*getSpriteComponent(), states);
+        }
+        else
+        {
+            target.draw(m_aura, states);
+            target.draw(m_iconBackground, states);
 
-        DrawUtils::drawContainer(m_speedLines, target, states);
+            DrawUtils::drawContainer(m_speedLines, target, states);
+        }
+    }
+
+    void SpeedBoostPowerUp::initializeSprite(SpriteManager& spriteManager)
+    {
+        auto sprite = spriteManager.createSpriteComponent(
+            static_cast<Entity*>(this), TextureID::PowerUpSpeedBoost);
+        if (sprite)
+        {
+            auto config = spriteManager.getSpriteConfig<Entity>(TextureID::PowerUpSpeedBoost);
+            sprite->configure(config);
+            setSpriteComponent(std::move(sprite));
+            setRenderMode(RenderMode::Sprite);
+        }
+    }
+
+    // AddTimePowerUp implementation
+    AddTimePowerUp::AddTimePowerUp()
+        : PowerUp(PowerUpType::AddTime, sf::Time::Zero)
+    {
+    }
+
+    void AddTimePowerUp::update(sf::Time deltaTime)
+    {
+        if (!updateLifetime(deltaTime))
+            return;
+
+        if (getRenderMode() == RenderMode::Sprite && getSpriteComponent())
+            getSpriteComponent()->update(deltaTime);
+
+        m_position.y = m_baseY + computeBobbingOffset();
+        if (getRenderMode() == RenderMode::Sprite && getSpriteComponent())
+            getSpriteComponent()->syncWithOwner();
+    }
+
+    void AddTimePowerUp::onCollect()
+    {
+        destroy();
+    }
+
+    void AddTimePowerUp::draw(sf::RenderTarget& target, sf::RenderStates states) const
+    {
+        if (getRenderMode() == RenderMode::Sprite && getSpriteComponent())
+        {
+            target.draw(*getSpriteComponent(), states);
+        }
+    }
+
+    void AddTimePowerUp::initializeSprite(SpriteManager& spriteManager)
+    {
+        auto sprite = spriteManager.createSpriteComponent(
+            static_cast<Entity*>(this), TextureID::PowerUpAddTime);
+        if (sprite)
+        {
+            auto config = spriteManager.getSpriteConfig<Entity>(TextureID::PowerUpAddTime);
+            sprite->configure(config);
+            setSpriteComponent(std::move(sprite));
+            setRenderMode(RenderMode::Sprite);
+        }
     }
 }

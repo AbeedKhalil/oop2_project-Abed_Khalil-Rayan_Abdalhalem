@@ -53,6 +53,7 @@ namespace FishGame
         void spawnTreasureItems();
         void spawnBonusFish();
         void spawnPredatorWave();
+        void spawnTimePowerUp();
 
         // Completion handling
         void checkCompletion();
@@ -97,6 +98,8 @@ namespace FishGame
         std::mt19937 m_randomEngine;
         std::uniform_real_distribution<float> m_xDist;
         std::uniform_real_distribution<float> m_yDist;
+
+        sf::Time m_timePowerUpTimer{ sf::Time::Zero };
 
         // Stage configuration
         static constexpr float m_treasureHuntDuration = 30.0f;
