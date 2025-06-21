@@ -585,9 +585,17 @@ namespace FishGame
             break;
         case 1:
             powerUp = std::make_unique<ExtraLifePowerUp>();
+            if (auto* life = dynamic_cast<ExtraLifePowerUp*>(powerUp.get()))
+            {
+                life->initializeSprite(getGame().getSpriteManager());
+            }
             break;
         case 2:
             powerUp = std::make_unique<SpeedBoostPowerUp>();
+            if (auto* speed = dynamic_cast<SpeedBoostPowerUp*>(powerUp.get()))
+            {
+                speed->initializeSprite(getGame().getSpriteManager());
+            }
             break;
         }
 
