@@ -13,6 +13,10 @@ configure_file ("Pufferfish.png" ${CMAKE_BINARY_DIR} COPYONLY)
 configure_file ("SmallFish.png" ${CMAKE_BINARY_DIR} COPYONLY)
 configure_file ("StarFish.png" ${CMAKE_BINARY_DIR} COPYONLY)
 
+configure_file ("PowerupSpeed.png" ${CMAKE_BINARY_DIR} COPYONLY)
+configure_file ("PowerupTime.png" ${CMAKE_BINARY_DIR} COPYONLY)
+configure_file ("PowerupLife.png" ${CMAKE_BINARY_DIR} COPYONLY)
+
 configure_file ("Background1.png" ${CMAKE_BINARY_DIR} COPYONLY)
 configure_file ("GameTitle.png" ${CMAKE_BINARY_DIR} COPYONLY)
 
