@@ -147,12 +147,6 @@ namespace FishGame
             config.scaleMultiplier = getScaleForSize(size) * 1.3f;
             break;
 
-        case TextureID::PowerUpExtraLife:
-        case TextureID::PowerUpSpeedBoost:
-            // Power-up sprites appear small by default, scale them up
-            config.scaleMultiplier = 2.0f;
-            break;
-
         case TextureID::Starfish:
             config.baseSize = sf::Vector2f(50.0f, 50.0f);
             config.rotationOffset = 0.0f; // Will be animated
