@@ -4,11 +4,12 @@
 #include "SpriteManager.h"
 #include <array>
 #include <algorithm>
+#include <random>
 
 namespace FishGame
 {
-    // Enhanced PearlOyster that can damage entities while closing
-    class PermanentOyster : public PearlOyster
+    // Oyster using sprite-based animation
+    class PermanentOyster : public BonusItem
     {
     public:
         PermanentOyster();
@@ -30,6 +31,7 @@ namespace FishGame
         int getGrowthPoints() const { return m_hasBlackPearl ? 30 : 15; }
         bool hasBlackPearl() const { return m_hasBlackPearl; }
         bool hasPearl() const { return m_hasPearlSprite; }
+        bool isOpen() const { return m_isOpen; }
 
     private:
         enum class State { Closed, Opening, Open, Closing };
@@ -37,6 +39,19 @@ namespace FishGame
         bool m_recentlyCollected;
         sf::Time m_collectionCooldown;
         static constexpr float m_cooldownDuration = 5.0f;
+
+        bool m_isOpen{ false };
+        bool m_hasBlackPearl{ false };
+        float m_openAngle{ 0.f };
+        sf::Time m_stateTimer{ sf::Time::Zero };
+        sf::Time m_openDuration{ sf::seconds(2.0f) };
+        sf::Time m_closedDuration{ sf::seconds(3.0f) };
+
+        static constexpr int m_whitePearlPoints = 100;
+        static constexpr int m_blackPearlPoints = 500;
+        static constexpr float m_maxOpenAngle = 45.0f;
+        static std::mt19937 s_randomEngine;
+        static std::uniform_real_distribution<float> s_pearlChance;
 
         // Animation
         State m_state{ State::Closed };
