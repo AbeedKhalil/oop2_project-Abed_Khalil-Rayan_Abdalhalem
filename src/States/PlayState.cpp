@@ -554,13 +554,19 @@ namespace FishGame
         switch (m_hazardTypeDist(m_randomEngine))
         {
         case 0:
-            hazard = std::make_unique<Bomb>();
-            static_cast<Bomb*>(hazard.get())->initializeSprite(getGame().getSpriteManager());
+            if (m_gameState.currentLevel >= 6)
+            {
+                hazard = std::make_unique<Bomb>();
+                static_cast<Bomb*>(hazard.get())->initializeSprite(getGame().getSpriteManager());
+            }
             break;
         case 1:
-            hazard = std::make_unique<Jellyfish>();
-            static_cast<Jellyfish*>(hazard.get())->initializeSprite(getGame().getSpriteManager());
-            hazard->setVelocity(0.0f, 20.0f);
+            if (m_gameState.currentLevel >= 4)
+            {
+                hazard = std::make_unique<Jellyfish>();
+                static_cast<Jellyfish*>(hazard.get())->initializeSprite(getGame().getSpriteManager());
+                hazard->setVelocity(0.0f, 20.0f);
+            }
             break;
         }
 

@@ -33,25 +33,30 @@ namespace FishGame
         FishSpawner::update(deltaTime, currentLevel);
 
         // Update special fish spawning
-        if (currentLevel >= 2)  // Special fish start appearing from level 2
-        {
-            // Update spawn timers
-            std::for_each(m_specialSpawnTimers.begin(), m_specialSpawnTimers.end(),
-                [deltaTime](auto& pair)
-                {
-                    pair.second += deltaTime;
-                });
-
-            // Spawn special fish types
-            spawnSpecialFish<Barracuda>(m_specialConfig.barracudaSpawnRate, deltaTime);
-            spawnSpecialFish<Pufferfish>(m_specialConfig.pufferfishSpawnRate, deltaTime);
-
-            // Angelfish and PoisonFish only appear starting from level 3
-            if (currentLevel >= 3)
+        // Timers are updated regardless of level
+        std::for_each(m_specialSpawnTimers.begin(), m_specialSpawnTimers.end(),
+            [deltaTime](auto& pair)
             {
-                spawnSpecialFish<Angelfish>(m_specialConfig.angelfishSpawnRate, deltaTime);
-                spawnSpecialFish<PoisonFish>(m_specialConfig.poisonFishSpawnRate, deltaTime);
-            }
+                pair.second += deltaTime;
+            });
+
+        // Barracuda appear from level 6 onwards
+        if (currentLevel >= 6)
+        {
+            spawnSpecialFish<Barracuda>(m_specialConfig.barracudaSpawnRate, deltaTime);
+        }
+
+        // Pufferfish appear from level 4 onwards
+        if (currentLevel >= 4)
+        {
+            spawnSpecialFish<Pufferfish>(m_specialConfig.pufferfishSpawnRate, deltaTime);
+        }
+
+        // Angelfish and PoisonFish retain their level 3 requirement
+        if (currentLevel >= 3)
+        {
+            spawnSpecialFish<Angelfish>(m_specialConfig.angelfishSpawnRate, deltaTime);
+            spawnSpecialFish<PoisonFish>(m_specialConfig.poisonFishSpawnRate, deltaTime);
         }
 
         // Check for school spawning - ONLY FOR SMALL FISH
