@@ -21,6 +21,7 @@
 #include <vector>
 #include <random>
 #include <unordered_map>
+#include <unordered_set>
 #include <optional>
 #include <algorithm>
 #include <numeric>
@@ -232,6 +233,11 @@ namespace FishGame
         std::uniform_int_distribution<int> m_powerUpTypeDist;
 
         bool m_initialized;
+
+        // Allowed entity types for the current level
+        std::unordered_set<std::string> m_allowedFishTypes;
+        std::unordered_set<std::string> m_allowedHazardTypes;
+        std::unordered_set<std::string> m_allowedPowerUpTypes;
 
         // Constants
         static constexpr float m_hazardSpawnInterval = 8.0f;
