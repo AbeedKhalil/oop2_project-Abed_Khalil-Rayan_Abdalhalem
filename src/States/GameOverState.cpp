@@ -3,6 +3,8 @@
 #include <iomanip>
 #include <sstream>
 #include <cmath>
+#include <algorithm>
+#include <iterator>
 
 namespace FishGame
 {
@@ -194,12 +196,13 @@ namespace FishGame
 
     void GameOverState::initializeParticles()
     {
-        // Initialize some particles
+        // Initialize some particles using STL
         size_t initialParticles = m_maxParticles / 2;
-        for (size_t i = 0; i < initialParticles; ++i)
-        {
-            spawnParticle(m_randomEngine);
-        }
+        std::for_each_n(std::counting_iterator<size_t>(0), initialParticles,
+            [this](size_t)
+            {
+                spawnParticle(m_randomEngine);
+            });
     }
 
     void GameOverState::createStatText(const std::string& label, const std::string& value, float yPos)
@@ -391,26 +394,28 @@ namespace FishGame
 
     void GameOverState::updateMenuVisuals()
     {
-        // Use index-based loop with STL transform would be overkill here
-        for (size_t i = 0; i < m_menuItems.size(); ++i)
-        {
-            auto& item = m_menuItems[i];
-            bool isSelected = (i == static_cast<size_t>(m_selectedOption));
+        // Update menu visuals using STL
+        size_t index = 0;
+        std::for_each(m_menuItems.begin(), m_menuItems.end(),
+            [this, &index](auto& item)
+            {
+                bool isSelected = (index == static_cast<size_t>(m_selectedOption));
 
-            // Update text appearance
-            if (isSelected)
-            {
-                item.textObject.setFillColor(sf::Color::Yellow);
-                item.textObject.setScale(1.1f, 1.1f);
-                item.background.setFillColor(sf::Color(255, 255, 255, 30));
-            }
-            else
-            {
-                item.textObject.setFillColor(sf::Color::White);
-                item.textObject.setScale(1.0f, 1.0f);
-                item.background.setFillColor(sf::Color(0, 0, 0, 0));
-            }
-        }
+                if (isSelected)
+                {
+                    item.textObject.setFillColor(sf::Color::Yellow);
+                    item.textObject.setScale(1.1f, 1.1f);
+                    item.background.setFillColor(sf::Color(255, 255, 255, 30));
+                }
+                else
+                {
+                    item.textObject.setFillColor(sf::Color::White);
+                    item.textObject.setScale(1.0f, 1.0f);
+                    item.background.setFillColor(sf::Color(0, 0, 0, 0));
+                }
+
+                ++index;
+            });
     }
 
     void GameOverState::renderBackground()
