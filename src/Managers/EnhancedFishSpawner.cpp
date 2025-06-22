@@ -40,8 +40,8 @@ namespace FishGame
                 pair.second += deltaTime;
             });
 
-        // Barracuda appear from level 6 onwards
-        if (currentLevel >= 6)
+        // Barracuda appear from level 5 onwards
+        if (currentLevel >= 5)
         {
             spawnSpecialFish<Barracuda>(m_specialConfig.barracudaSpawnRate, deltaTime);
         }
