@@ -475,7 +475,8 @@ namespace FishGame
 
     void BonusStageState::checkCompletion()
     {
-        if (m_timeElapsed >= m_timeLimit || m_objective.currentCount >= m_requiredPearlCount)
+        if (m_timeElapsed >= m_timeLimit ||
+            m_objective.currentCount >= m_objective.targetCount)
         {
             completeStage();
         }
