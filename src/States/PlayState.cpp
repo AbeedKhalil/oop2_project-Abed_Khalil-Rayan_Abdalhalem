@@ -417,6 +417,9 @@ namespace FishGame
         auto newItems = m_bonusItemManager->collectSpawnedItems();
         for (auto& item : newItems)
         {
+
+            bool allowed = true;
+
             if (auto* pu = dynamic_cast<PowerUp*>(item.get()))
             {
                 std::string name;
@@ -428,10 +431,23 @@ namespace FishGame
                 else if (dynamic_cast<AddTimePowerUp*>(pu)) name = "Add-Time";
 
                 if (!m_allowedPowerUpTypes.empty() && !m_allowedPowerUpTypes.count(name))
-                    continue;
+
+                    allowed = false;
+            }
+            else if (dynamic_cast<Starfish*>(item.get()))
+            {
+                if (!m_allowedPowerUpTypes.empty() && !m_allowedPowerUpTypes.count("Star"))
+                    allowed = false;
+            }
+            else if (dynamic_cast<PearlOyster*>(item.get()))
+            {
+                if (!m_allowedFishTypes.empty() && !m_allowedFishTypes.count("Oyster"))
+                    allowed = false;
             }
 
-            m_bonusItems.push_back(std::move(item));
+            if (allowed)
+                m_bonusItems.push_back(std::move(item));
+
         }
 
         // Update particles with parallel execution
@@ -1135,8 +1151,12 @@ namespace FishGame
         m_freezeTimer = sf::Time::Zero;
         m_stunTimer = sf::Time::Zero;
 
-        m_bonusItemManager->setStarfishEnabled(true);
-        m_bonusItemManager->setPowerUpsEnabled(true);
+        m_bonusItemManager->setStarfishEnabled(
+            m_allowedPowerUpTypes.empty() ? true : m_allowedPowerUpTypes.count("Star") > 0);
+        m_bonusItemManager->setOysterEnabled(
+            m_allowedFishTypes.empty() ? false : m_allowedFishTypes.count("Oyster") > 0);
+        m_bonusItemManager->setPowerUpsEnabled(
+            m_allowedPowerUpTypes.empty() ? false : true);
     }
 
     void PlayState::gameOver()
