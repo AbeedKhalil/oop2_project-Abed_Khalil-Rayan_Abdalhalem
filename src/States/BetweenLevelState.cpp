@@ -1,12 +1,34 @@
 #include "BetweenLevelState.h"
 #include "Game.h"
 #include "Levels/LevelTable.h"
+#include "SpriteManager.h"
+#include <optional>
 
 namespace FishGame
 {
     namespace
     {
         LevelDef g_upcomingDef;
+
+        std::optional<TextureID> textureFromName(const std::string& name)
+        {
+            if (name == "SmallFish") return TextureID::SmallFish;
+            if (name == "MediumFish") return TextureID::MediumFish;
+            if (name == "LargeFish") return TextureID::LargeFish;
+            if (name == "Fish") return TextureID::SmallFish;
+            if (name == "Barracuda") return TextureID::Barracuda;
+            if (name == "Pufferfish") return TextureID::Pufferfish;
+            if (name == "Angelfish") return TextureID::Angelfish;
+            if (name == "PoisonFish") return TextureID::PoisonFish;
+            if (name == "Bomb") return TextureID::Bomb;
+            if (name == "Jellyfish") return TextureID::Jellyfish;
+            if (name == "Oyster") return TextureID::PearlOysterClosed;
+            if (name == "Life") return TextureID::PowerUpExtraLife;
+            if (name == "Speed") return TextureID::PowerUpSpeedBoost;
+            if (name == "Add-Time") return TextureID::PowerUpAddTime;
+            // Power-ups without textures are skipped
+            return std::nullopt;
+        }
     }
 
     void setUpcomingLevelDef(LevelDef def)
@@ -27,7 +49,7 @@ namespace FishGame
         , m_def(std::move(upcoming))
         , m_headerText()
         , m_continueText()
-        , m_entityTexts()
+        , m_items()
         , m_background()
     {
     }
@@ -56,33 +78,61 @@ namespace FishGame
         m_continueText.setOrigin(cb.width / 2.f, cb.height / 2.f);
         m_continueText.setPosition(window.getSize().x / 2.f, window.getSize().y - 150.f);
 
+        auto& spriteMgr = getGame().getSpriteManager();
+
         float y = 250.f;
         for (const auto& info : m_def.enemies)
         {
-            sf::Text text;
-            text.setFont(font);
-            text.setString(info.type + " x" + std::to_string(info.count));
-            text.setCharacterSize(32);
-            text.setFillColor(sf::Color::Yellow);
-            sf::FloatRect tb = text.getLocalBounds();
-            text.setOrigin(tb.width / 2.f, tb.height / 2.f);
-            text.setPosition(window.getSize().x / 2.f, y);
-            y += 40.f;
-            m_entityTexts.push_back(text);
+            DisplayItem item;
+            item.text.setFont(font);
+            item.text.setCharacterSize(32);
+            item.text.setFillColor(sf::Color::Yellow);
+            item.text.setString("x" + std::to_string(info.count));
+
+            if (auto texId = textureFromName(info.type))
+            {
+                item.sprite.setTexture(spriteMgr.getTexture(*texId));
+                item.sprite.setScale(0.5f, 0.5f);
+                sf::FloatRect sb = item.sprite.getLocalBounds();
+                item.sprite.setOrigin(sb.width / 2.f, sb.height / 2.f);
+                item.hasSprite = true;
+            }
+            else
+            {
+                item.text.setString(info.type + " x" + std::to_string(info.count));
+            }
+
+            item.sprite.setPosition(window.getSize().x / 2.f - 40.f, y);
+            item.text.setPosition(window.getSize().x / 2.f + 40.f, y - 10.f);
+            y += 60.f;
+            m_items.push_back(std::move(item));
         }
 
         for (const auto& name : m_def.powerUps)
         {
-            sf::Text text;
-            text.setFont(font);
-            text.setString(name);
-            text.setCharacterSize(32);
-            text.setFillColor(sf::Color::Cyan);
-            sf::FloatRect tb = text.getLocalBounds();
-            text.setOrigin(tb.width / 2.f, tb.height / 2.f);
-            text.setPosition(window.getSize().x / 2.f, y);
-            y += 40.f;
-            m_entityTexts.push_back(text);
+            DisplayItem item;
+            item.text.setFont(font);
+            item.text.setCharacterSize(32);
+            item.text.setFillColor(sf::Color::Cyan);
+            item.text.setString(name);
+
+            if (auto texId = textureFromName(name))
+            {
+                item.sprite.setTexture(spriteMgr.getTexture(*texId));
+                item.sprite.setScale(0.5f, 0.5f);
+                sf::FloatRect sb = item.sprite.getLocalBounds();
+                item.sprite.setOrigin(sb.width / 2.f, sb.height / 2.f);
+                item.hasSprite = true;
+                item.text.setPosition(window.getSize().x / 2.f + 40.f, y - 10.f);
+                item.sprite.setPosition(window.getSize().x / 2.f - 40.f, y);
+            }
+            else
+            {
+                item.text.setPosition(window.getSize().x / 2.f, y);
+            }
+
+            y += 60.f;
+            m_items.push_back(std::move(item));
         }
     }
 
@@ -106,9 +156,11 @@ namespace FishGame
         auto& window = getGame().getWindow();
         window.draw(m_background);
         window.draw(m_headerText);
-        for (const auto& t : m_entityTexts)
+        for (const auto& item : m_items)
         {
-            window.draw(t);
+            if (item.hasSprite)
+                window.draw(item.sprite);
+            window.draw(item.text);
         }
         window.draw(m_continueText);
     }

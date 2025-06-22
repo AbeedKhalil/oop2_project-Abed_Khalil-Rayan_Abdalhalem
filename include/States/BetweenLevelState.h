@@ -27,7 +27,14 @@ namespace FishGame
         LevelDef m_def;
         sf::Text m_headerText;
         sf::Text m_continueText;
-        std::vector<sf::Text> m_entityTexts;
+        struct DisplayItem
+        {
+            sf::Sprite sprite;
+            sf::Text text;
+            bool hasSprite{false};
+        };
+
+        std::vector<DisplayItem> m_items;
         sf::RectangleShape m_background;
     };
 }
