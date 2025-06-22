@@ -21,7 +21,6 @@
 #include <vector>
 #include <random>
 #include <unordered_map>
-#include <unordered_set>
 #include <optional>
 #include <algorithm>
 #include <numeric>
@@ -120,9 +119,6 @@ namespace FishGame
         void spawnRandomHazard();
         void spawnRandomPowerUp();
         sf::Vector2f generateRandomPosition();
-        void spawnLevelEntities();
-        std::unique_ptr<Entity> createEntityFromName(const std::string& type);
-        std::unique_ptr<PowerUp> createPowerUpFromName(const std::string& name);
 
         // Effect helpers
         void createParticleEffect(const sf::Vector2f& position, const sf::Color& color,
@@ -236,11 +232,6 @@ namespace FishGame
         std::uniform_int_distribution<int> m_powerUpTypeDist;
 
         bool m_initialized;
-
-        // Allowed entity types for the current level
-        std::unordered_set<std::string> m_allowedFishTypes;
-        std::unordered_set<std::string> m_allowedHazardTypes;
-        std::unordered_set<std::string> m_allowedPowerUpTypes;
 
         // Constants
         static constexpr float m_hazardSpawnInterval = 8.0f;

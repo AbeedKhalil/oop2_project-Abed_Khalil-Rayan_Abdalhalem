@@ -1,17 +1,10 @@
 ﻿#include "PlayState.h"
 #include "Game.h"
 #include "CollisionDetector.h"
-#include "Levels/Level.h"
-#include "Levels/LevelTable.h"
-#include "BetweenLevelState.h"
 #include "Fish.h"
-#include "GenericFish.h"
-#include "SpecialFish.h"
 #include "ExtendedPowerUps.h"
 #include "GameOverState.h"
 #include "PauseState.h"
-#include "BonusItem.h"
-#include "Hazard.h"
 #include <algorithm>
 #include <sstream>
 #include <iomanip>
@@ -376,32 +369,7 @@ namespace FishGame
         {
             m_fishSpawner->update(deltaTime, m_gameState.currentLevel);
             auto& spawnedFish = m_fishSpawner->getSpawnedFish();
-            for (auto& f : spawnedFish)
-            {
-                bool allow = true;
-                if (auto* fish = dynamic_cast<Fish*>(f.get()))
-                {
-                    std::string name;
-                    if (dynamic_cast<Barracuda*>(fish)) name = "Barracuda";
-                    else if (dynamic_cast<Pufferfish*>(fish)) name = "Pufferfish";
-                    else if (dynamic_cast<Angelfish*>(fish)) name = "AngelFish";
-                    else if (dynamic_cast<PoisonFish*>(fish)) name = "PoisonFish";
-                    else if (dynamic_cast<SmallFish*>(fish)) name = "SmallFish";
-                    else if (dynamic_cast<MediumFish*>(fish)) name = "MediumFish";
-                    else if (dynamic_cast<LargeFish*>(fish)) name = "LargeFish";
-
-                    if (!m_allowedFishTypes.empty() &&
-                        !m_allowedFishTypes.count("All") &&
-                        !m_allowedFishTypes.count(name) &&
-                        !(m_allowedFishTypes.count("Fish") &&
-                        (name=="SmallFish"||name=="MediumFish"||name=="LargeFish")))
-                    {
-                        allow = false;
-                    }
-                }
-                if (allow)
-                    m_entities.push_back(std::move(f));
-            }
+            std::move(spawnedFish.begin(), spawnedFish.end(), std::back_inserter(m_entities));
             spawnedFish.clear();
 
             if (shouldSpawnSpecialEntity(m_hazardSpawnTimer, m_hazardSpawnInterval))
@@ -418,40 +386,7 @@ namespace FishGame
         // Update bonus items
         m_bonusItemManager->update(deltaTime);
         auto newItems = m_bonusItemManager->collectSpawnedItems();
-        for (auto& item : newItems)
-        {
-
-            bool allowed = true;
-
-            if (auto* pu = dynamic_cast<PowerUp*>(item.get()))
-            {
-                std::string name;
-                if (dynamic_cast<FreezePowerUp*>(pu)) name = "Freeze";
-                else if (dynamic_cast<ExtraLifePowerUp*>(pu)) name = "Life";
-                else if (dynamic_cast<SpeedBoostPowerUp*>(pu)) name = "Speed";
-                else if (dynamic_cast<ScoreDoublerPowerUp*>(pu)) name = "x2";
-                else if (dynamic_cast<FrenzyStarterPowerUp*>(pu)) name = "Frenzy";
-                else if (dynamic_cast<AddTimePowerUp*>(pu)) name = "Add-Time";
-
-                if (!m_allowedPowerUpTypes.empty() && !m_allowedPowerUpTypes.count(name))
-
-                    allowed = false;
-            }
-            else if (dynamic_cast<Starfish*>(item.get()))
-            {
-                if (!m_allowedPowerUpTypes.empty() && !m_allowedPowerUpTypes.count("Star"))
-                    allowed = false;
-            }
-            else if (dynamic_cast<PearlOyster*>(item.get()))
-            {
-                if (!m_allowedFishTypes.empty() && !m_allowedFishTypes.count("Oyster"))
-                    allowed = false;
-            }
-
-            if (allowed)
-                m_bonusItems.push_back(std::move(item));
-
-        }
+        std::move(newItems.begin(), newItems.end(), std::back_inserter(m_bonusItems));
 
         // Update particles with parallel execution
         std::for_each(m_particles.begin(), m_particles.end(),
@@ -614,20 +549,9 @@ namespace FishGame
 
     void PlayState::spawnRandomHazard()
     {
-        std::vector<int> options;
-        if (m_allowedHazardTypes.empty() || m_allowedHazardTypes.count("Bomb"))
-            options.push_back(0);
-        if (m_allowedHazardTypes.empty() || m_allowedHazardTypes.count("Jellyfish"))
-            options.push_back(1);
-
-        if (options.empty())
-            return;
-
-        int choice = options[std::uniform_int_distribution<int>(0, options.size() - 1)(m_randomEngine)];
-
         std::unique_ptr<Hazard> hazard;
 
-        switch (choice)
+        switch (m_hazardTypeDist(m_randomEngine))
         {
         case 0:
             hazard = std::make_unique<Bomb>();
@@ -649,22 +573,9 @@ namespace FishGame
 
     void PlayState::spawnRandomPowerUp()
     {
-        std::vector<int> options;
-        if (m_allowedPowerUpTypes.empty() || m_allowedPowerUpTypes.count("Freeze"))
-            options.push_back(0);
-        if (m_allowedPowerUpTypes.empty() || m_allowedPowerUpTypes.count("Life"))
-            options.push_back(1);
-        if (m_allowedPowerUpTypes.empty() || m_allowedPowerUpTypes.count("Speed"))
-            options.push_back(2);
-
-        if (options.empty())
-            return;
-
-        int choice = options[std::uniform_int_distribution<int>(0, options.size() - 1)(m_randomEngine)];
-
         std::unique_ptr<PowerUp> powerUp;
 
-        switch (choice)
+        switch (m_powerUpTypeDist(m_randomEngine))
         {
         case 0:
             powerUp = std::make_unique<FreezePowerUp>();
@@ -702,149 +613,6 @@ namespace FishGame
     {
         return sf::Vector2f(m_positionDist(m_randomEngine),
             std::uniform_real_distribution<float>(100.0f, 980.0f)(m_randomEngine));
-    }
-
-    std::unique_ptr<Entity> PlayState::createEntityFromName(const std::string& type)
-    {
-        int lvl = m_gameState.currentLevel;
-        if (type == "SmallFish")
-            return std::make_unique<SmallFish>(lvl);
-        if (type == "MediumFish")
-            return std::make_unique<MediumFish>(lvl);
-        if (type == "LargeFish")
-            return std::make_unique<LargeFish>(lvl);
-        if (type == "Barracuda")
-            return std::make_unique<Barracuda>(lvl);
-        if (type == "Pufferfish")
-            return std::make_unique<Pufferfish>(lvl);
-        if (type == "Angelfish")
-            return std::make_unique<Angelfish>(lvl);
-        if (type == "PoisonFish")
-            return std::make_unique<PoisonFish>(lvl);
-        if (type == "Bomb")
-            return std::make_unique<Bomb>();
-        if (type == "Jellyfish")
-            return std::make_unique<Jellyfish>();
-        if (type == "Fish") {
-            int r = std::uniform_int_distribution<int>(0,2)(m_randomEngine);
-            if (r==0) return std::make_unique<SmallFish>(lvl);
-            if (r==1) return std::make_unique<MediumFish>(lvl);
-            return std::make_unique<LargeFish>(lvl);
-        }
-        if (type == "All") {
-            int r = std::uniform_int_distribution<int>(0,4)(m_randomEngine);
-            switch(r) {
-                case 0: return std::make_unique<SmallFish>(lvl);
-                case 1: return std::make_unique<MediumFish>(lvl);
-                case 2: return std::make_unique<LargeFish>(lvl);
-                case 3: return std::make_unique<Barracuda>(lvl);
-                default: return std::make_unique<Pufferfish>(lvl);
-            }
-        }
-        return nullptr;
-    }
-
-    std::unique_ptr<PowerUp> PlayState::createPowerUpFromName(const std::string& name)
-    {
-        if (name == "Freeze")
-            return std::make_unique<FreezePowerUp>();
-        if (name == "Life")
-            return std::make_unique<ExtraLifePowerUp>();
-        if (name == "Speed")
-            return std::make_unique<SpeedBoostPowerUp>();
-        if (name == "x2")
-            return std::make_unique<ScoreDoublerPowerUp>();
-        if (name == "Frenzy")
-            return std::make_unique<FrenzyStarterPowerUp>();
-        if (name == "Add-Time")
-            return std::make_unique<AddTimePowerUp>();
-        return nullptr;
-    }
-
-    void PlayState::spawnLevelEntities()
-    {
-        if (auto it = LEVELS.find(m_gameState.currentLevel); it != LEVELS.end())
-        {
-            const LevelDef& def = it->second;
-            for (const auto& info : def.enemies)
-            {
-                for (unsigned i = 0; i < info.count; ++i)
-                {
-                    if (info.type == "Oyster")
-                    {
-                        m_bonusItemManager->spawnOyster();
-                        auto items = m_bonusItemManager->collectSpawnedItems();
-                        std::move(items.begin(), items.end(), std::back_inserter(m_bonusItems));
-                        continue;
-                    }
-
-                    auto entity = createEntityFromName(info.type);
-                    if (!entity)
-                        continue;
-
-                    entity->setPosition(generateRandomPosition());
-
-                    if (auto* fish = dynamic_cast<Fish*>(entity.get()))
-                    {
-                        bool fromLeft = m_randomEngine() % 2 == 0;
-                        fish->setDirection(fromLeft ? 1.f : -1.f, 0.f);
-                        // m_worldSize stores floating point dimensions of the
-                        // game world which originate from the window size.
-                        // Fish::setWindowBounds however expects an unsigned
-                        // integer vector (sf::Vector2u). Convert the value to
-                        // avoid the implicit sf::Vector2f -> sf::Vector2u
-                        // conversion error that caused a build failure on
-                        // MSVC.
-                        fish->setWindowBounds(static_cast<sf::Vector2u>(m_worldSize));
-                        fish->initializeSprite(getGame().getSpriteManager());
-                        m_entities.push_back(std::move(entity));
-                    }
-                    else if (auto* hazard = dynamic_cast<Hazard*>(entity.get()))
-                    {
-                        if (auto* bomb = dynamic_cast<Bomb*>(hazard))
-                            bomb->initializeSprite(getGame().getSpriteManager());
-                        else if (auto* jelly = dynamic_cast<Jellyfish*>(hazard))
-                        {
-                            jelly->initializeSprite(getGame().getSpriteManager());
-                            jelly->setVelocity(0.f, 20.f);
-                        }
-                        hazard->setPosition(generateRandomPosition());
-                        m_hazards.push_back(std::unique_ptr<Hazard>(hazard));
-                        entity.release();
-                    }
-                }
-            }
-
-            for (const auto& name : def.powerUps)
-            {
-                if (name == "Star")
-                {
-                    auto star = std::make_unique<Starfish>();
-                    star->setPosition(generateRandomPosition());
-                    star->initializeSprite(getGame().getSpriteManager());
-                    m_bonusItems.push_back(std::move(star));
-                    continue;
-                }
-
-                auto power = createPowerUpFromName(name);
-                if (!power)
-                    continue;
-
-                if (auto* freeze = dynamic_cast<FreezePowerUp*>(power.get()))
-                    freeze->setFont(getGame().getFonts().get(Fonts::Main));
-                if (auto* life = dynamic_cast<ExtraLifePowerUp*>(power.get()))
-                    life->initializeSprite(getGame().getSpriteManager());
-                if (auto* speed = dynamic_cast<SpeedBoostPowerUp*>(power.get()))
-                    speed->initializeSprite(getGame().getSpriteManager());
-                if (auto* add = dynamic_cast<AddTimePowerUp*>(power.get()))
-                    add->initializeSprite(getGame().getSpriteManager());
-
-                sf::Vector2f pos = generateRandomPosition();
-                power->setPosition(pos);
-                power->m_baseY = pos.y;
-                m_bonusItems.push_back(std::move(power));
-            }
-        }
     }
 
     void PlayState::checkCollisions()
@@ -1223,51 +991,15 @@ namespace FishGame
 
         m_environmentSystem->setRandomTimeOfDay();
 
-        if (auto it = LEVELS.find(m_gameState.currentLevel); it != LEVELS.end())
-        {
-            const LevelDef& def = it->second;
-            m_hud.messageText.setString(def.goal);
-            if (!def.enemies.empty() || !def.powerUps.empty())
-            {
-                setUpcomingLevelDef(def);
-                deferAction([this]() { requestStackPush(StateID::BetweenLevel); });
-            }
-        }
-        else
-        {
-            m_hud.messageText.setString("");
-        }
-
         resetLevel();
         updateLevelDifficulty();
 
+        m_hud.messageText.setString("");
         m_bonusStageTriggered = false;
     }
 
     void PlayState::resetLevel()
     {
-        // Configure allowed entities for this level
-        m_allowedFishTypes.clear();
-        m_allowedHazardTypes.clear();
-        m_allowedPowerUpTypes.clear();
-
-        if (auto it = LEVELS.find(m_gameState.currentLevel); it != LEVELS.end())
-        {
-            const LevelDef& def = it->second;
-            for (const auto& info : def.enemies)
-            {
-                // Store enemy type strings directly
-                m_allowedFishTypes.insert(info.type);
-                if (info.type == "Bomb" || info.type == "Jellyfish")
-                    m_allowedHazardTypes.insert(info.type);
-            }
-
-            for (const auto& name : def.powerUps)
-            {
-                m_allowedPowerUpTypes.insert(name);
-            }
-        }
-
         m_player->fullReset();
 
         // Start player in the middle of the world
@@ -1297,14 +1029,8 @@ namespace FishGame
         m_freezeTimer = sf::Time::Zero;
         m_stunTimer = sf::Time::Zero;
 
-        m_bonusItemManager->setStarfishEnabled(
-            m_allowedPowerUpTypes.empty() ? true : m_allowedPowerUpTypes.count("Star") > 0);
-        m_bonusItemManager->setOysterEnabled(
-            m_allowedFishTypes.empty() ? false : m_allowedFishTypes.count("Oyster") > 0);
-        m_bonusItemManager->setPowerUpsEnabled(
-            m_allowedPowerUpTypes.empty() ? false : true);
-
-        spawnLevelEntities();
+        m_bonusItemManager->setStarfishEnabled(true);
+        m_bonusItemManager->setPowerUpsEnabled(true);
     }
 
     void PlayState::gameOver()

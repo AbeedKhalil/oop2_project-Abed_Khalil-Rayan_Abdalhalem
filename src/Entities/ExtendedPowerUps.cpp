@@ -52,22 +52,20 @@ namespace FishGame
         m_aura.setPosition(m_position);
         m_icon.setPosition(m_position);
 
-        // Update ice shards using STL algorithm
-        std::for_each(m_iceShards.begin(), m_iceShards.end(),
-            [this, index = 0u](auto& shard) mutable
-            {
-                float angle = (60.0f * index + m_pulseAnimation * 30.0f) * Constants::DEG_TO_RAD;
-                float radius = 20.0f + 5.0f * std::sin(m_pulseAnimation);
+        // Update ice shards
+        for (size_t i = 0; i < m_iceShards.size(); ++i)
+        {
+            float angle = (60.0f * i + m_pulseAnimation * 30.0f) * Constants::DEG_TO_RAD;
+            float radius = 20.0f + 5.0f * std::sin(m_pulseAnimation);
 
-                sf::Vector2f shardPos(
-                    m_position.x + std::cos(angle) * radius,
-                    m_position.y + std::sin(angle) * radius
-                );
+            sf::Vector2f shardPos(
+                m_position.x + std::cos(angle) * radius,
+                m_position.y + std::sin(angle) * radius
+            );
 
-                shard.setPosition(shardPos);
-                shard.setRotation(angle * Constants::RAD_TO_DEG);
-                ++index;
-            });
+            m_iceShards[i].setPosition(shardPos);
+            m_iceShards[i].setRotation(angle * Constants::RAD_TO_DEG);
+        }
 
         // Update aura glow
         sf::Color auraColor = getAuraColor();
@@ -209,22 +207,20 @@ namespace FishGame
         m_iconBackground.setScale(pulse, pulse);
         m_aura.setPosition(m_position);
 
-        // Update speed lines using STL algorithm
-        std::for_each(m_speedLines.begin(), m_speedLines.end(),
-            [this, index = 0u](auto& line) mutable
-            {
-                float angle = (90.0f * index) * Constants::DEG_TO_RAD;
-                float offset = 10.0f + 10.0f * std::sin(m_lineAnimation + index);
+        // Update speed lines
+        for (size_t i = 0; i < m_speedLines.size(); ++i)
+        {
+            float angle = (90.0f * i) * Constants::DEG_TO_RAD;
+            float offset = 10.0f + 10.0f * std::sin(m_lineAnimation + i);
 
-                sf::Vector2f linePos(
-                    m_position.x + std::cos(angle) * offset,
-                    m_position.y + std::sin(angle) * offset
-                );
+            sf::Vector2f linePos(
+                m_position.x + std::cos(angle) * offset,
+                m_position.y + std::sin(angle) * offset
+            );
 
-                line.setPosition(linePos);
-                line.setRotation(angle * Constants::RAD_TO_DEG);
-                ++index;
-            });
+            m_speedLines[i].setPosition(linePos);
+            m_speedLines[i].setRotation(angle * Constants::RAD_TO_DEG);
+        }
 
         // Update aura
         sf::Color auraColor = getAuraColor();
