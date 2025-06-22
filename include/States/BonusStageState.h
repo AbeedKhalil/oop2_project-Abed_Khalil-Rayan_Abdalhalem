@@ -101,7 +101,11 @@ namespace FishGame
 
         sf::Time m_timePowerUpTimer{ sf::Time::Zero };
 
+        // Short grace period after collecting a pearl to avoid instant failure
+        sf::Time m_oysterSafetyTimer{ sf::Time::Zero };
+
         // Stage configuration
+        static constexpr int m_requiredPearlCount = 10;
         static constexpr float m_treasureHuntDuration = 30.0f;
         static constexpr float m_feedingFrenzyDuration = 45.0f;
         static constexpr float m_survivalDuration = 60.0f;
