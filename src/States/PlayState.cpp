@@ -1,7 +1,10 @@
 ﻿#include "PlayState.h"
 #include "Game.h"
 #include "CollisionDetector.h"
+#include "Levels/Level.h"
+#include "BetweenLevelState.h"
 #include "Fish.h"
+#include "GenericFish.h"
 #include "ExtendedPowerUps.h"
 #include "GameOverState.h"
 #include "PauseState.h"
@@ -990,6 +993,15 @@ namespace FishGame
         }
 
         m_environmentSystem->setRandomTimeOfDay();
+
+        Level<SmallFish, ExtraLifePowerUp> level;
+        LevelConfig config;
+        config.enemyPositions.push_back({ 300.f, 300.f });
+        config.powerUpPositions.push_back({ 600.f, 400.f });
+        level.load(config);
+
+        setBetweenLevelEntities({ "SmallFish", "ExtraLife" });
+        deferAction([this]() { requestStackPush(StateID::BetweenLevel); });
 
         resetLevel();
         updateLevelDifficulty();

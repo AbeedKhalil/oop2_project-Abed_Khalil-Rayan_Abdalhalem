@@ -3,6 +3,7 @@
 #include "IntroState.h"
 #include "MenuState.h"
 #include "PlayState.h"
+#include "BetweenLevelState.h"
 #include "GameOverState.h"
 #include "PauseState.h"
 #include "GameOptionsState.h"
@@ -226,6 +227,7 @@ namespace FishGame
         registerState<IntroState>(StateID::Intro);
         registerState<MenuState>(StateID::Menu);
         registerState<PlayState>(StateID::Play);
+        registerState<BetweenLevelState>(StateID::BetweenLevel);
         // Register bonus stage
         m_stateFactories[StateID::BonusStage] = [this]() -> std::unique_ptr<State>
             {
