@@ -150,7 +150,7 @@ namespace FishGame
         case TextureID::PowerUpExtraLife:
         case TextureID::PowerUpSpeedBoost:
         case TextureID::PowerUpAddTime:
-            config.scaleMultiplier = 0.7f;
+            config.scaleMultiplier = 0.7f; //scale the power ups
             break;
 
         case TextureID::Starfish:
