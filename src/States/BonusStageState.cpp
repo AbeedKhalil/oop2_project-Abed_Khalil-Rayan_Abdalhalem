@@ -321,30 +321,25 @@ namespace FishGame
         // Check collisions with oysters
         std::for_each(m_bonusItems.begin(), m_bonusItems.end(),
             [this](auto& item) {
-                if (auto* oyster = dynamic_cast<PearlOyster*>(item.get()))
+                if (auto* perm = dynamic_cast<PermanentOyster*>(item.get()))
                 {
-                    if (oyster->isOpen() && CollisionDetector::checkCircleCollision(*m_player, *oyster))
+                    if (perm->isOpen() && CollisionDetector::checkCircleCollision(*m_player, *perm))
                     {
-                        oyster->onCollect();
+                        perm->onCollect();
                         m_objective.currentCount++;
                         m_bonusScore += m_objective.pointsPerItem;
                         m_oysterSafetyTimer = sf::seconds(1.0f);
 
-                        // Update objective text
                         std::ostringstream objStream;
                         objStream << m_objective.description << " (" << m_objective.currentCount
                             << "/" << m_objective.targetCount << ")";
                         m_objectiveText.setString(objStream.str());
                     }
-                    else if (auto* perm = dynamic_cast<PermanentOyster*>(oyster))
+                    else if (m_oysterSafetyTimer <= sf::Time::Zero && perm->canDamagePlayer() &&
+                        CollisionDetector::checkCircleCollision(*m_player, *perm))
                     {
-                        if (m_oysterSafetyTimer <= sf::Time::Zero && perm->canDamagePlayer() &&
-                            CollisionDetector::checkCircleCollision(*m_player, *perm))
-                        {
-                            // Player caught by closing oyster - stage failed
-                            m_objective.currentCount = 0;
-                            completeStage();
-                        }
+                        m_objective.currentCount = 0;
+                        completeStage();
                     }
                 }
             });
@@ -426,11 +421,12 @@ namespace FishGame
     void BonusStageState::spawnTreasureItems()
     {
         std::generate_n(std::back_inserter(m_bonusItems), 3, [this] {
-            auto oyster = std::make_unique<PearlOyster>();
+            auto oyster = std::make_unique<PermanentOyster>();
             float x = m_xDist(m_randomEngine);
             float y = static_cast<float>(getGame().getWindow().getSize().y) - 80.0f;
             oyster->setPosition(x, y);
             oyster->m_baseY = y;
+            oyster->initializeSprites(getGame().getSpriteManager());
             return oyster;
             });
     }

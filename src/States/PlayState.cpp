@@ -158,7 +158,6 @@ namespace FishGame
 
         // Configure initial state
         m_fishSpawner->setLevel(m_gameState.currentLevel);
-        m_bonusItemManager->setOysterEnabled(false);
 
         updateHUD();
     }
@@ -788,12 +787,6 @@ namespace FishGame
 
     void PlayState::BonusItemCollisionHandler::operator()(BonusItem& item) const
     {
-        if (auto* oyster = dynamic_cast<PearlOyster*>(&item))
-        {
-            if (!oyster->isOpen())
-                return;
-        }
-
         item.onCollect();
 
         if (auto* powerUp = dynamic_cast<PowerUp*>(&item))
@@ -1057,7 +1050,6 @@ namespace FishGame
     void PlayState::updateLevelDifficulty()
     {
         m_bonusItemManager->setLevel(m_gameState.currentLevel);
-        m_bonusItemManager->setOysterEnabled(m_gameState.currentLevel >= 2);
 
         SpecialFishConfig config;
         float levelMultiplier = 1.0f + (m_gameState.currentLevel - 1) * Constants::DIFFICULTY_INCREMENT;

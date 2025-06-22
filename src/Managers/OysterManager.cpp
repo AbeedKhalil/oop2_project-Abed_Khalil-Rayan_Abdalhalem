@@ -4,12 +4,15 @@
 
 namespace FishGame
 {
+    std::mt19937 PermanentOyster::s_randomEngine(std::random_device{}());
+    std::uniform_real_distribution<float> PermanentOyster::s_pearlChance(0.0f, 1.0f);
+
     PermanentOyster::PermanentOyster()
-        : PearlOyster()
+        : BonusItem(BonusType::PearlOyster, 0)
         , m_recentlyCollected(false)
         , m_collectionCooldown(sf::Time::Zero)
     {
-        // Permanent oysters never expire
+        m_radius = 30.0f;   
         m_lifetime = sf::seconds(999999.0f);
     }
 

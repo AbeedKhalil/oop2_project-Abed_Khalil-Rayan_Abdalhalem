@@ -13,7 +13,6 @@ namespace FishGame
         , m_spriteManager(&spriteManager)
         , m_currentLevel(1)
         , m_starfishSpawner(std::make_unique<EnhancedBonusSpawner<Starfish>>(m_baseStarfishRate, windowSize))
-        , m_oysterSpawner(std::make_unique<EnhancedBonusSpawner<PearlOyster>>(m_baseOysterRate, windowSize))
         , m_powerUpSpawnTimer(sf::Time::Zero)
         , m_powerUpSpawnInterval(m_basePowerUpInterval)
         , m_powerUpsEnabled(true)
@@ -46,7 +45,6 @@ namespace FishGame
     {
         // Update spawners
         m_starfishSpawner->update(deltaTime);
-        m_oysterSpawner->update(deltaTime);
 
         // Spawn starfish
         if (auto starfish = m_starfishSpawner->spawn())
@@ -54,12 +52,6 @@ namespace FishGame
             if (m_spriteManager)
                 static_cast<Starfish*>(starfish.get())->initializeSprite(*m_spriteManager);
             m_spawnedItems.push_back(std::move(starfish));
-        }
-
-        // Spawn oysters
-        if (auto oyster = m_oysterSpawner->spawn())
-        {
-            m_spawnedItems.push_back(std::move(oyster));
         }
 
         // Update power-up spawning
@@ -85,7 +77,6 @@ namespace FishGame
         float difficultyMultiplier = 1.0f + (m_currentLevel - 1) * 0.2f;
 
         m_starfishSpawner->setSpawnRate(m_baseStarfishRate * difficultyMultiplier);
-        m_oysterSpawner->setSpawnRate(m_baseOysterRate * difficultyMultiplier);
 
         // Decrease power-up spawn interval for higher levels
         m_powerUpSpawnInterval = m_basePowerUpInterval / (1.0f + (m_currentLevel - 1) * 0.1f);
@@ -94,11 +85,6 @@ namespace FishGame
     void BonusItemManager::setStarfishEnabled(bool enabled)
     {
         m_starfishSpawner->setEnabled(enabled);
-    }
-
-    void BonusItemManager::setOysterEnabled(bool enabled)
-    {
-        m_oysterSpawner->setEnabled(enabled);
     }
 
     void BonusItemManager::setPowerUpsEnabled(bool enabled)
@@ -117,17 +103,6 @@ namespace FishGame
             starfish->initializeSprite(*m_spriteManager);
 
         m_spawnedItems.push_back(std::move(starfish));
-    }
-
-    void BonusItemManager::spawnOyster()
-    {
-        auto oyster = std::make_unique<PearlOyster>();
-
-        float x = m_positionDist(m_randomEngine);
-        float y = m_positionDist(m_randomEngine);
-        oyster->setPosition(x, y);
-
-        m_spawnedItems.push_back(std::move(oyster));
     }
 
     void BonusItemManager::spawnRandomPowerUp()

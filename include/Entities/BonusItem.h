@@ -78,45 +78,4 @@ namespace FishGame
         static constexpr float m_rotationSpeed = 30.0f;
         static constexpr int m_armCount = 5;
     };
-
-    // Pearl Oyster - opens periodically with white/black pearls
-    class PearlOyster : public BonusItem
-    {
-    public:
-        PearlOyster();
-        ~PearlOyster() override = default;
-
-        void update(sf::Time deltaTime) override;
-        void onCollect() override;
-
-        bool isOpen() const { return m_isOpen; }
-        bool hasBlackPearl() const { return m_hasBlackPearl; }
-
-    protected:
-        void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
-        void updateOpenState(sf::Time deltaTime);
-
-    protected:
-        // Changed from private to protected for derived class access
-        sf::ConvexShape m_topShell;
-        sf::ConvexShape m_bottomShell;
-        sf::CircleShape m_pearl;
-
-        bool m_isOpen;
-        bool m_hasBlackPearl;
-        float m_openAngle;
-
-        sf::Time m_stateTimer;
-        sf::Time m_openDuration;
-        sf::Time m_closedDuration;
-
-        static constexpr int m_whitePearlPoints = 100;
-        static constexpr int m_blackPearlPoints = 500;
-        static constexpr float m_maxOpenAngle = 45.0f;
-        static constexpr float m_blackPearlChance = 0.05f;
-
-        // Random number generation
-        static std::mt19937 s_randomEngine;
-        static std::uniform_real_distribution<float> s_pearlChance;
-    };
 }

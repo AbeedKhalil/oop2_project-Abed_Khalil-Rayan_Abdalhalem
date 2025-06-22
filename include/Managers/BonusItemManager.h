@@ -83,12 +83,6 @@ namespace FishGame
                 float x = m_xDistribution(m_randomEngine);
                 float y = m_yDistribution(m_randomEngine);
 
-                // Special positioning for oysters - place at bottom
-                if (dynamic_cast<PearlOyster*>(item.get()))
-                {
-                    y = static_cast<float>(m_windowSize.y) - 50.0f; // Near bottom
-                }
-
                 item->setPosition(x, y);
 
                 // Store base Y position for bobbing animation
@@ -161,12 +155,10 @@ namespace FishGame
 
         // Enable/disable specific spawners
         void setStarfishEnabled(bool enabled);
-        void setOysterEnabled(bool enabled);
         void setPowerUpsEnabled(bool enabled);
 
         // Force spawn specific items
         void spawnStarfish();
-        void spawnOyster();
         void spawnRandomPowerUp();
 
     private:
@@ -181,7 +173,6 @@ namespace FishGame
 
         // Spawners for different item types
         std::unique_ptr<EnhancedBonusSpawner<Starfish>> m_starfishSpawner;
-        std::unique_ptr<EnhancedBonusSpawner<PearlOyster>> m_oysterSpawner;
 
         // Power-up spawning
         sf::Time m_powerUpSpawnTimer;
@@ -197,7 +188,6 @@ namespace FishGame
 
         // Base spawn rates
         static constexpr float m_baseStarfishRate = 0.2f;
-        static constexpr float m_baseOysterRate = 0.1f;
         static constexpr float m_basePowerUpInterval = 20.0f;
     };
 }
