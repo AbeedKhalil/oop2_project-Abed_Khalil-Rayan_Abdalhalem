@@ -995,24 +995,19 @@ namespace FishGame
 
         m_environmentSystem->setRandomTimeOfDay();
 
-        std::vector<std::string> upcoming;
         if (auto it = LEVELS.find(m_gameState.currentLevel); it != LEVELS.end())
         {
             const LevelDef& def = it->second;
-            for (const auto& e : def.enemies)
-                upcoming.push_back(e.type);
-            upcoming.insert(upcoming.end(), def.powerUps.begin(), def.powerUps.end());
             m_hud.messageText.setString(def.goal);
+            if (!def.enemies.empty() || !def.powerUps.empty())
+            {
+                setUpcomingLevelDef(def);
+                deferAction([this]() { requestStackPush(StateID::BetweenLevel); });
+            }
         }
         else
         {
             m_hud.messageText.setString("");
-        }
-
-        if (!upcoming.empty())
-        {
-            setBetweenLevelEntities(upcoming);
-            deferAction([this]() { requestStackPush(StateID::BetweenLevel); });
         }
 
         resetLevel();
