@@ -45,8 +45,13 @@ namespace FishGame
             // Spawn special fish types
             spawnSpecialFish<Barracuda>(m_specialConfig.barracudaSpawnRate, deltaTime);
             spawnSpecialFish<Pufferfish>(m_specialConfig.pufferfishSpawnRate, deltaTime);
-            spawnSpecialFish<Angelfish>(m_specialConfig.angelfishSpawnRate, deltaTime);
-            spawnSpecialFish<PoisonFish>(m_specialConfig.poisonFishSpawnRate, deltaTime);
+
+            // Angelfish and PoisonFish only appear starting from level 3
+            if (currentLevel >= 3)
+            {
+                spawnSpecialFish<Angelfish>(m_specialConfig.angelfishSpawnRate, deltaTime);
+                spawnSpecialFish<PoisonFish>(m_specialConfig.poisonFishSpawnRate, deltaTime);
+            }
         }
 
         // Check for school spawning - ONLY FOR SMALL FISH
