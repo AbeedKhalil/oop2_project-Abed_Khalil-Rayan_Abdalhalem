@@ -20,8 +20,7 @@ namespace FishGame
         Pause,
         GameOver,
 		GameOptions,
-        BonusStage,
-        BetweenLevel
+        BonusStage
     };
 
     // State stack actions
