@@ -788,7 +788,14 @@ namespace FishGame
                     {
                         bool fromLeft = m_randomEngine() % 2 == 0;
                         fish->setDirection(fromLeft ? 1.f : -1.f, 0.f);
-                        fish->setWindowBounds(m_worldSize);
+                        // m_worldSize stores floating point dimensions of the
+                        // game world which originate from the window size.
+                        // Fish::setWindowBounds however expects an unsigned
+                        // integer vector (sf::Vector2u). Convert the value to
+                        // avoid the implicit sf::Vector2f -> sf::Vector2u
+                        // conversion error that caused a build failure on
+                        // MSVC.
+                        fish->setWindowBounds(static_cast<sf::Vector2u>(m_worldSize));
                         fish->initializeSprite(getGame().getSpriteManager());
                         m_entities.push_back(std::move(entity));
                     }
