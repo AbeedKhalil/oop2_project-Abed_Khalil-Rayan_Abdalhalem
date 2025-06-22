@@ -198,11 +198,10 @@ namespace FishGame
     {
         // Initialize some particles using STL
         size_t initialParticles = m_maxParticles / 2;
-        std::for_each_n(std::counting_iterator<size_t>(0), initialParticles,
-            [this](size_t)
-            {
-                spawnParticle(m_randomEngine);
-            });
+        for (size_t i = 0; i < initialParticles; ++i)
+        {
+            spawnParticle(m_randomEngine);
+        }
     }
 
     void GameOverState::createStatText(const std::string& label, const std::string& value, float yPos)
