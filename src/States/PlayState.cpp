@@ -575,7 +575,11 @@ namespace FishGame
     {
         std::unique_ptr<PowerUp> powerUp;
 
-        switch (m_powerUpTypeDist(m_randomEngine))
+        int type = m_powerUpTypeDist(m_randomEngine);
+        if (m_gameState.currentLevel < 2 && (type == 0 || type == 2))
+            type = 1; // Freeze and SpeedBoost unlocked from level 2
+
+        switch (type)
         {
         case 0:
             powerUp = std::make_unique<FreezePowerUp>();

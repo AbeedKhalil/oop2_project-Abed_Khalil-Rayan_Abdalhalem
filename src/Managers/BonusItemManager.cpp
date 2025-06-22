@@ -141,7 +141,14 @@ namespace FishGame
     std::unique_ptr<PowerUp> BonusItemManager::createRandomPowerUp()
     {
         // Extended to include new power-ups
-        int type = std::uniform_int_distribution<int>(0, 4)(m_randomEngine);
+        std::vector<int> types;
+        if (m_currentLevel >= 2)
+            types = {0, 1, 2, 3, 4};
+        else
+            types = {0, 1, 3}; // Freeze and SpeedBoost unlocked from level 2
+
+        int index = std::uniform_int_distribution<int>(0, static_cast<int>(types.size()) - 1)(m_randomEngine);
+        int type = types[index];
 
         switch (type)
         {
