@@ -2,6 +2,7 @@
 #include "Game.h"
 #include "CollisionDetector.h"
 #include "Levels/Level.h"
+#include "Levels/LevelTable.h"
 #include "BetweenLevelState.h"
 #include "Fish.h"
 #include "GenericFish.h"
@@ -994,19 +995,29 @@ namespace FishGame
 
         m_environmentSystem->setRandomTimeOfDay();
 
-        Level<SmallFish, ExtraLifePowerUp> level;
-        LevelConfig config;
-        config.enemyPositions.push_back({ 300.f, 300.f });
-        config.powerUpPositions.push_back({ 600.f, 400.f });
-        level.load(config);
+        std::vector<std::string> upcoming;
+        if (auto it = LEVELS.find(m_gameState.currentLevel); it != LEVELS.end())
+        {
+            const LevelDef& def = it->second;
+            for (const auto& e : def.enemies)
+                upcoming.push_back(e.type);
+            upcoming.insert(upcoming.end(), def.powerUps.begin(), def.powerUps.end());
+            m_hud.messageText.setString(def.goal);
+        }
+        else
+        {
+            m_hud.messageText.setString("");
+        }
 
-        setBetweenLevelEntities({ "SmallFish", "ExtraLife" });
-        deferAction([this]() { requestStackPush(StateID::BetweenLevel); });
+        if (!upcoming.empty())
+        {
+            setBetweenLevelEntities(upcoming);
+            deferAction([this]() { requestStackPush(StateID::BetweenLevel); });
+        }
 
         resetLevel();
         updateLevelDifficulty();
 
-        m_hud.messageText.setString("");
         m_bonusStageTriggered = false;
     }
 
