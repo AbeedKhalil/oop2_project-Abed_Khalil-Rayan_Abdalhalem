@@ -417,6 +417,7 @@ namespace FishGame
         auto newItems = m_bonusItemManager->collectSpawnedItems();
         for (auto& item : newItems)
         {
+
             bool allowed = true;
 
             if (auto* pu = dynamic_cast<PowerUp*>(item.get()))
@@ -430,6 +431,7 @@ namespace FishGame
                 else if (dynamic_cast<AddTimePowerUp*>(pu)) name = "Add-Time";
 
                 if (!m_allowedPowerUpTypes.empty() && !m_allowedPowerUpTypes.count(name))
+
                     allowed = false;
             }
             else if (dynamic_cast<Starfish*>(item.get()))
@@ -445,6 +447,7 @@ namespace FishGame
 
             if (allowed)
                 m_bonusItems.push_back(std::move(item));
+
         }
 
         // Update particles with parallel execution
