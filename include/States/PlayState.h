@@ -120,6 +120,9 @@ namespace FishGame
         void spawnRandomHazard();
         void spawnRandomPowerUp();
         sf::Vector2f generateRandomPosition();
+        void spawnLevelEntities();
+        std::unique_ptr<Entity> createEntityFromName(const std::string& type);
+        std::unique_ptr<PowerUp> createPowerUpFromName(const std::string& name);
 
         // Effect helpers
         void createParticleEffect(const sf::Vector2f& position, const sf::Color& color,
