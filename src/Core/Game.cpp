@@ -237,7 +237,6 @@ namespace FishGame
         registerState<GameOptionsState>(StateID::GameOptions);
         registerState<PauseState>(StateID::Pause);
         registerState<GameOverState>(StateID::GameOver);
-        // registerState<SettingsState>(StateID::Settings);
         // registerState<CreditsState>(StateID::Credits);
     }
 

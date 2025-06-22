@@ -1116,8 +1116,7 @@ namespace FishGame
             };
 
         formatText(m_hud.scoreText,
-            "Score: ", m_scoreSystem->getCurrentScore(),
-            " | Points: ", m_player->getPoints(), "/", Constants::POINTS_TO_WIN);
+            "Score: ", m_scoreSystem->getCurrentScore());
 
         formatText(m_hud.livesText, "Lives: ", m_gameState.playerLives);
 
@@ -1138,7 +1137,7 @@ namespace FishGame
         if (!activePowerUps.empty())
         {
             std::ostringstream powerUpStream;
-            powerUpStream << "Active Power-Ups:\n";
+            powerUpStream << "\nActive Power-Ups:\n";
 
             std::for_each(activePowerUps.begin(), activePowerUps.end(),
                 [this, &powerUpStream](PowerUpType type) {
