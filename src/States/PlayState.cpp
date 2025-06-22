@@ -438,7 +438,8 @@ namespace FishGame
         m_powerUpManager->update(deltaTime);
         m_scoreSystem->update(deltaTime);
         m_growthMeter->update(deltaTime);
-        m_oysterManager->update(deltaTime);
+        if (m_gameState.currentLevel >= 2)
+            m_oysterManager->update(deltaTime);
 
         // Update schooling system
         m_schoolingSystem->update(deltaTime);
@@ -637,8 +638,11 @@ namespace FishGame
             });
 
         // Player vs oysters
-        m_oysterManager->checkCollisions(*m_player,
-            [this](PermanentOyster* oyster) { handleOysterCollision(oyster); });
+        if (m_gameState.currentLevel >= 2)
+        {
+            m_oysterManager->checkCollisions(*m_player,
+                [this](PermanentOyster* oyster) { handleOysterCollision(oyster); });
+        }
 
         // Fish vs fish collisions
         StateUtils::processCollisionsBetween(m_entities, m_entities,
@@ -687,20 +691,23 @@ namespace FishGame
             });
 
         // Enemy fish vs oysters
-        StateUtils::applyToEntities(m_entities, [this](Entity& entity) {
-            if (auto* fish = dynamic_cast<Fish*>(&entity))
-            {
-                m_oysterManager->checkCollisions(*fish,
-                    [this, fish](PermanentOyster* oyster) {
-                        if (oyster->canDamagePlayer())
-                        {
-                            fish->destroy();
-                            createParticleEffect(fish->getPosition(), Constants::DEATH_PARTICLE_COLOR);
-                            createParticleEffect(oyster->getPosition(), Constants::OYSTER_IMPACT_COLOR);
-                        }
-                    });
-            }
-            });
+        if (m_gameState.currentLevel >= 2)
+        {
+            StateUtils::applyToEntities(m_entities, [this](Entity& entity) {
+                if (auto* fish = dynamic_cast<Fish*>(&entity))
+                {
+                    m_oysterManager->checkCollisions(*fish,
+                        [this, fish](PermanentOyster* oyster) {
+                            if (oyster->canDamagePlayer())
+                            {
+                                fish->destroy();
+                                createParticleEffect(fish->getPosition(), Constants::DEATH_PARTICLE_COLOR);
+                                createParticleEffect(oyster->getPosition(), Constants::OYSTER_IMPACT_COLOR);
+                            }
+                        });
+                }
+                });
+        }
     }
 
     void PlayState::FishCollisionHandler::operator()(Entity& fish) const
@@ -1050,6 +1057,7 @@ namespace FishGame
     void PlayState::updateLevelDifficulty()
     {
         m_bonusItemManager->setLevel(m_gameState.currentLevel);
+        m_bonusItemManager->setOysterEnabled(m_gameState.currentLevel >= 2);
 
         SpecialFishConfig config;
         float levelMultiplier = 1.0f + (m_gameState.currentLevel - 1) * Constants::DIFFICULTY_INCREMENT;
@@ -1255,7 +1263,8 @@ namespace FishGame
         window.draw(m_backgroundSprite);
         window.draw(*m_environmentSystem);
 
-        m_oysterManager->draw(window);
+        if (m_gameState.currentLevel >= 2)
+            m_oysterManager->draw(window);
 
         StateUtils::renderContainer(m_hazards, window);
         StateUtils::renderContainer(m_entities, window);

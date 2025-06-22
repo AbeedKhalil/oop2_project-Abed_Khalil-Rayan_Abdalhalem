@@ -70,7 +70,7 @@ namespace FishGame
         {
         case BonusStageType::TreasureHunt:
             m_timeLimit = sf::seconds(m_treasureHuntDuration);
-            m_objective = { "Collect Pearl Oysters!", 10, 0, 100 };
+            m_objective = { "Collect Pearl Oysters!", m_requiredPearlCount, 0, 100 };
             m_environment->setEnvironment(EnvironmentType::CoralReef);
             break;
 
@@ -155,6 +155,12 @@ namespace FishGame
         {
             m_timePowerUpTimer = sf::Time::Zero;
             spawnTimePowerUp();
+        }
+
+        // Countdown safety timer after collecting a pearl
+        if (m_oysterSafetyTimer > sf::Time::Zero)
+        {
+            m_oysterSafetyTimer -= deltaTime;
         }
 
         // Update entities
@@ -322,6 +328,7 @@ namespace FishGame
                         oyster->onCollect();
                         m_objective.currentCount++;
                         m_bonusScore += m_objective.pointsPerItem;
+                        m_oysterSafetyTimer = sf::seconds(1.0f);
 
                         // Update objective text
                         std::ostringstream objStream;
@@ -331,7 +338,7 @@ namespace FishGame
                     }
                     else if (auto* perm = dynamic_cast<PermanentOyster*>(oyster))
                     {
-                        if (perm->canDamagePlayer() &&
+                        if (m_oysterSafetyTimer <= sf::Time::Zero && perm->canDamagePlayer() &&
                             CollisionDetector::checkCircleCollision(*m_player, *perm))
                         {
                             // Player caught by closing oyster - stage failed
@@ -419,12 +426,11 @@ namespace FishGame
     void BonusStageState::spawnTreasureItems()
     {
         std::generate_n(std::back_inserter(m_bonusItems), 3, [this] {
-            auto oyster = std::make_unique<PermanentOyster>();
+            auto oyster = std::make_unique<PearlOyster>();
             float x = m_xDist(m_randomEngine);
             float y = static_cast<float>(getGame().getWindow().getSize().y) - 80.0f;
             oyster->setPosition(x, y);
             oyster->m_baseY = y;
-            oyster->initializeSprites(getGame().getSpriteManager());
             return oyster;
             });
     }
@@ -473,7 +479,7 @@ namespace FishGame
 
     void BonusStageState::checkCompletion()
     {
-        if (m_timeElapsed >= m_timeLimit || m_objective.currentCount >= m_objective.targetCount)
+        if (m_timeElapsed >= m_timeLimit || m_objective.currentCount >= m_requiredPearlCount)
         {
             completeStage();
         }
