@@ -1,28 +1,30 @@
 #include "BetweenLevelState.h"
 #include "Game.h"
+#include "Levels/LevelTable.h"
 
 namespace FishGame
 {
     namespace
     {
-        std::vector<std::string> g_upcomingEntities;
+        LevelDef g_upcomingDef;
     }
 
-    void setBetweenLevelEntities(std::vector<std::string> entities)
+    void setUpcomingLevelDef(LevelDef def)
     {
-        g_upcomingEntities = std::move(entities);
+        g_upcomingDef = std::move(def);
     }
 
-    static std::vector<std::string> takeEntities()
+    LevelDef takeUpcomingLevelDef()
     {
-        std::vector<std::string> tmp;
-        tmp.swap(g_upcomingEntities);
+        LevelDef tmp;
+        tmp = std::move(g_upcomingDef);
+        g_upcomingDef = LevelDef{};
         return tmp;
     }
 
-    BetweenLevelState::BetweenLevelState(Game& game)
+    BetweenLevelState::BetweenLevelState(Game& game, LevelDef upcoming)
         : State(game)
-        , m_entities(takeEntities())
+        , m_def(std::move(upcoming))
         , m_headerText()
         , m_continueText()
         , m_entityTexts()
@@ -55,13 +57,27 @@ namespace FishGame
         m_continueText.setPosition(window.getSize().x / 2.f, window.getSize().y - 150.f);
 
         float y = 250.f;
-        for (const auto& name : m_entities)
+        for (const auto& info : m_def.enemies)
+        {
+            sf::Text text;
+            text.setFont(font);
+            text.setString(info.type + " x" + std::to_string(info.count));
+            text.setCharacterSize(32);
+            text.setFillColor(sf::Color::Yellow);
+            sf::FloatRect tb = text.getLocalBounds();
+            text.setOrigin(tb.width / 2.f, tb.height / 2.f);
+            text.setPosition(window.getSize().x / 2.f, y);
+            y += 40.f;
+            m_entityTexts.push_back(text);
+        }
+
+        for (const auto& name : m_def.powerUps)
         {
             sf::Text text;
             text.setFont(font);
             text.setString(name);
             text.setCharacterSize(32);
-            text.setFillColor(sf::Color::Yellow);
+            text.setFillColor(sf::Color::Cyan);
             sf::FloatRect tb = text.getLocalBounds();
             text.setOrigin(tb.width / 2.f, tb.height / 2.f);
             text.setPosition(window.getSize().x / 2.f, y);

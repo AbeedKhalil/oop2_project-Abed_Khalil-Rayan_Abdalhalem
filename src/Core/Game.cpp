@@ -227,7 +227,10 @@ namespace FishGame
         registerState<IntroState>(StateID::Intro);
         registerState<MenuState>(StateID::Menu);
         registerState<PlayState>(StateID::Play);
-        registerState<BetweenLevelState>(StateID::BetweenLevel);
+        m_stateFactories[StateID::BetweenLevel] = [this]() -> std::unique_ptr<State>
+            {
+                return std::make_unique<BetweenLevelState>(*this, takeUpcomingLevelDef());
+            };
         // Register bonus stage
         m_stateFactories[StateID::BonusStage] = [this]() -> std::unique_ptr<State>
             {
