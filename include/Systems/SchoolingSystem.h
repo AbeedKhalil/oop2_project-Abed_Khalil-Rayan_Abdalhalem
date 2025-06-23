@@ -123,25 +123,17 @@ namespace FishGame
         }
 
         // Get all members for external processing
-        std::vector<Entity*> extractMembers()
+        std::vector<std::unique_ptr<Entity>> extractMembers()
         {
-            std::vector<Entity*> entities;
-            std::vector<MemberPtr> extracted;
-
+            std::vector<std::unique_ptr<Entity>> entities;
             entities.reserve(m_members.size());
-            extracted.reserve(m_members.size());
 
-            // Move members out of school
-            std::move(m_members.begin(), m_members.end(), std::back_inserter(extracted));
+            for (auto& member : m_members)
+            {
+                entities.push_back(std::move(member));
+            }
+
             m_members.clear();
-
-            // Convert to Entity pointers
-            std::transform(extracted.begin(), extracted.end(),
-                std::back_inserter(entities),
-                [](MemberPtr& member)
-                {
-                    return static_cast<Entity*>(member.release());
-                });
 
             return entities;
         }
@@ -243,7 +235,7 @@ namespace FishGame
         {
             virtual ~SchoolWrapperBase() = default;
             virtual void update(sf::Time deltaTime) = 0;
-            virtual std::vector<Entity*> extractMembers() = 0;
+            virtual std::vector<std::unique_ptr<Entity>> extractMembers() = 0;
             virtual size_t size() const = 0;
             virtual bool canDisband() const = 0;
         };
@@ -262,7 +254,7 @@ namespace FishGame
                 school->update(deltaTime);
             }
 
-            std::vector<Entity*> extractMembers() override
+            std::vector<std::unique_ptr<Entity>> extractMembers() override
             {
                 return school->extractMembers();
             }
