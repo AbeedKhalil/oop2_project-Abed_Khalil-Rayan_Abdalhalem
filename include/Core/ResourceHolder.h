@@ -42,10 +42,10 @@ namespace FishGame
         ResourceHolder(ResourceHolder&&) = default;
         ResourceHolder& operator=(ResourceHolder&&) = default;
 
-        bool load(Identifier id, const std::string& filename);
+        [[nodiscard]] bool load(Identifier id, const std::string& filename);
 
         template<typename Parameter>
-        bool load(Identifier id, const std::string& filename, const Parameter& secondParam);
+        [[nodiscard]] bool load(Identifier id, const std::string& filename, const Parameter& secondParam);
 
         Resource& get(Identifier id);
         const Resource& get(Identifier id) const;
@@ -58,8 +58,8 @@ namespace FishGame
     };
 
     // Template implementations
-    template<typename Resource, typename Identifier>
-    bool ResourceHolder<Resource, Identifier>::load(Identifier id, const std::string& filename)
+template<typename Resource, typename Identifier>
+[[nodiscard]] bool ResourceHolder<Resource, Identifier>::load(Identifier id, const std::string& filename)
     {
         auto resource = std::make_unique<Resource>();
         if (!resource->loadFromFile(filename))
@@ -71,9 +71,9 @@ namespace FishGame
         return true;
     }
 
-    template<typename Resource, typename Identifier>
-    template<typename Parameter>
-    bool ResourceHolder<Resource, Identifier>::load(Identifier id, const std::string& filename, const Parameter& secondParam)
+template<typename Resource, typename Identifier>
+template<typename Parameter>
+[[nodiscard]] bool ResourceHolder<Resource, Identifier>::load(Identifier id, const std::string& filename, const Parameter& secondParam)
     {
         auto resource = std::make_unique<Resource>();
         if (!resource->loadFromFile(filename, secondParam))
