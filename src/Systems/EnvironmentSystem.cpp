@@ -314,26 +314,6 @@ namespace FishGame
         setTimeOfDay(times[m_timeDist(m_randomEngine)]);
     }
 
-    float EnvironmentSystem::getPredatorAggressionMultiplier() const
-    {
-        float timeMultiplier = 1.0f;
-
-        switch (m_currentTimeOfDay)
-        {
-        case TimeOfDay::Night:
-            timeMultiplier = 1.5f; // More aggressive at night
-            break;
-        case TimeOfDay::Dusk:
-        case TimeOfDay::Dawn:
-            timeMultiplier = 1.2f; // Slightly more aggressive during transitions
-            break;
-        default:
-            timeMultiplier = 1.0f;
-            break;
-        }
-
-        return m_predatorAggressionBase * timeMultiplier;
-    }
 
     sf::Color EnvironmentSystem::getAmbientLightColor() const
     {
