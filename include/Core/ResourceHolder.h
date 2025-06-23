@@ -10,16 +10,6 @@
 
 namespace FishGame
 {
-    // Resource identifiers
-    enum class Textures
-    {
-        Player,
-        SmallFish,
-        MediumFish,
-        LargeFish,
-        Background
-    };
-
     enum class Fonts
     {
         Main,
@@ -122,6 +112,5 @@ namespace FishGame
     }
 
     // Type aliases for convenience
-    using TextureHolder = ResourceHolder<sf::Texture, Textures>;
     using FontHolder = ResourceHolder<sf::Font, Fonts>;
 }
