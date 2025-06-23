@@ -13,8 +13,6 @@ namespace FishGame
         static constexpr float speed = 0.0f;
         static constexpr float radius = 0.0f;
         static constexpr float outlineThickness = 1.0f;
-        static sf::Color fillColor;
-        static sf::Color outlineColor;
     };
 
     // Template specializations for each fish size
@@ -24,8 +22,6 @@ namespace FishGame
         static constexpr float speed = Constants::SMALL_FISH_SPEED;
         static constexpr float radius = Constants::SMALL_FISH_RADIUS;
         static constexpr float outlineThickness = 1.0f;
-        static inline sf::Color fillColor = Constants::SMALL_FISH_COLOR;
-        static inline sf::Color outlineColor = Constants::SMALL_FISH_OUTLINE;
     };
 
     template<>
@@ -34,8 +30,6 @@ namespace FishGame
         static constexpr float speed = Constants::MEDIUM_FISH_SPEED;
         static constexpr float radius = Constants::MEDIUM_FISH_RADIUS;
         static constexpr float outlineThickness = 1.5f;
-        static inline sf::Color fillColor = Constants::MEDIUM_FISH_COLOR;
-        static inline sf::Color outlineColor = Constants::MEDIUM_FISH_OUTLINE;
     };
 
     template<>
@@ -44,8 +38,6 @@ namespace FishGame
         static constexpr float speed = Constants::LARGE_FISH_SPEED;
         static constexpr float radius = Constants::LARGE_FISH_RADIUS;
         static constexpr float outlineThickness = 2.0f;
-        static inline sf::Color fillColor = Constants::LARGE_FISH_COLOR;
-        static inline sf::Color outlineColor = Constants::LARGE_FISH_OUTLINE;
     };
 
     // Generic fish template
