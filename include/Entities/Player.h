@@ -42,11 +42,6 @@ namespace FishGame
         void addPoints(int points);
         void resetSize();
         void fullReset();
-        int getCurrentStage() const { return m_currentStage; }
-        int getScore() const { return m_score; }
-        float getGrowthProgress() const { return m_growthProgress; }
-
-        void setAutoOrient(bool enable) { m_autoOrient = enable; }
 
         // Points tracking
         int getPoints() const { return m_points; }
@@ -73,16 +68,12 @@ namespace FishGame
         // Poison effect
         void applyPoisonEffect(sf::Time duration);
         void setControlsReversed(bool reversed) { m_controlsReversed = reversed; }
-        bool areControlsReversed() const { return m_controlsReversed; }
 
         // Size information
         bool isAtMaxSize() const { return m_currentStage >= Constants::MAX_STAGES; }
         void setWindowBounds(const sf::Vector2u& windowSize);
 
         // Statistics tracking
-        int getTotalFishEaten() const { return m_totalFishEaten; }
-        int getDamageTaken() const { return m_damageTaken; }
-        bool hasTakenDamage() const { return m_damageTaken > 0; }
 
         // Visual effects
         void triggerEatEffect();
@@ -149,10 +140,6 @@ namespace FishGame
 
         // Window bounds
         sf::Vector2u m_windowBounds;
-
-        // Statistics
-        int m_totalFishEaten;
-        int m_damageTaken;
 
         // Visual effects
         struct VisualEffect
