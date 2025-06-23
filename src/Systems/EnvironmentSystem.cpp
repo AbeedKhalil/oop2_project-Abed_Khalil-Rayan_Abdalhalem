@@ -214,7 +214,6 @@ namespace FishGame
             static_cast<float>(Constants::WINDOW_HEIGHT)))
         , m_dayNightTimer(sf::Time::Zero)
         , m_transitionTimer(sf::Time::Zero)
-        , m_predatorAggressionBase(1.0f)
         , m_isTransitioning(false)
         , m_dayNightCyclePaused(true)  // Start paused by default
         , m_randomEngine(std::chrono::steady_clock::now().time_since_epoch().count())
@@ -393,19 +392,16 @@ namespace FishGame
         switch (m_currentEnvironment)
         {
         case EnvironmentType::CoralReef:
-            m_predatorAggressionBase = 0.8f; // Less aggressive in coral reef
             m_oceanCurrents->setStrength(30.0f);
             m_oceanCurrents->setDirection(sf::Vector2f(1.0f, 0.2f));
             break;
 
         case EnvironmentType::OpenOcean:
-            m_predatorAggressionBase = 1.0f; // Normal aggression
             m_oceanCurrents->setStrength(50.0f);
             m_oceanCurrents->setDirection(sf::Vector2f(1.0f, 0.0f));
             break;
 
         case EnvironmentType::KelpForest:
-            m_predatorAggressionBase = 1.2f; // More aggressive in kelp forest
             m_oceanCurrents->setStrength(20.0f);
             m_oceanCurrents->setDirection(sf::Vector2f(0.5f, -0.5f));
             break;
