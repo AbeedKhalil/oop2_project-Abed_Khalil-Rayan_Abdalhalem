@@ -13,7 +13,8 @@ namespace FishGame
         CollisionDetector() = delete;
 
         // Check collision between two circular entities
-        static bool checkCircleCollision(const Entity& entity1, const Entity& entity2)
+        template<EntityUtils::CircularEntity A, EntityUtils::CircularEntity B>
+        static bool checkCircleCollision(const A& entity1, const B& entity2)
         {
             return EntityUtils::areColliding(entity1, entity2);
         }
@@ -28,7 +29,8 @@ namespace FishGame
         }
 
         // Get distance between two entities
-        static float getDistance(const Entity& entity1, const Entity& entity2)
+        template<EntityUtils::PositionProvider A, EntityUtils::PositionProvider B>
+        static float getDistance(const A& entity1, const B& entity2)
         {
             return EntityUtils::distance(entity1, entity2);
         }

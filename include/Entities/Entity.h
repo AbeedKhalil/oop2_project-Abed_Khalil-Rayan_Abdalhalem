@@ -93,21 +93,37 @@ namespace FishGame
     // Utility functions for entity operations
     namespace EntityUtils
     {
+        // Concepts to generalize position and radius access
+        template<typename T>
+        concept PositionProvider = requires(const T& t)
+        {
+            { t.getPosition() } -> std::convertible_to<sf::Vector2f>;
+        };
+
+        template<typename T>
+        concept CircularEntity = PositionProvider<T> && requires(const T& t)
+        {
+            { t.getRadius() } -> std::convertible_to<float>;
+        };
+
         // Calculate distance squared between two entities (more efficient than distance)
-        inline float distanceSquared(const Entity& a, const Entity& b) noexcept
+        template<PositionProvider A, PositionProvider B>
+        inline float distanceSquared(const A& a, const B& b) noexcept
         {
             const auto diff = a.getPosition() - b.getPosition();
             return diff.x * diff.x + diff.y * diff.y;
         }
 
         // Calculate actual distance between two entities
-        inline float distance(const Entity& a, const Entity& b) noexcept
+        template<PositionProvider A, PositionProvider B>
+        inline float distance(const A& a, const B& b) noexcept
         {
             return std::sqrt(distanceSquared(a, b));
         }
 
         // Check if two entities are colliding (circle collision)
-        inline bool areColliding(const Entity& a, const Entity& b) noexcept
+        template<CircularEntity A, CircularEntity B>
+        inline bool areColliding(const A& a, const B& b) noexcept
         {
             const float radiusSum = a.getRadius() + b.getRadius();
             return distanceSquared(a, b) < (radiusSum * radiusSum);
