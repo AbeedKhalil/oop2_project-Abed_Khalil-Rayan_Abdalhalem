@@ -89,7 +89,6 @@ namespace FishGame
     ScoreSystem::ScoreSystem(const sf::Font& font)
         : m_font(font)
         , m_currentScore(0)
-        , m_totalScore(0)
         , m_currentChain(0)
         , m_floatingScores()
     {

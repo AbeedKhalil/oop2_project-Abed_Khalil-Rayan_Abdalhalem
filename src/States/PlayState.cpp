@@ -959,7 +959,6 @@ namespace FishGame
     {
         m_gameState.currentLevel++;
         m_gameState.totalScore += m_scoreSystem->getCurrentScore();
-        m_scoreSystem->addToTotalScore(m_scoreSystem->getCurrentScore());
 
         if (m_gameState.currentLevel % 3 == 0)
         {
