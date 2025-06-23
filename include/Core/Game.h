@@ -2,7 +2,6 @@
 
 #include <SFML/Graphics.hpp>
 #include <memory>
-#include <stack>
 #include <map>
 #include <vector>
 #include <functional>
@@ -48,7 +47,7 @@ namespace FishGame
 
             if (!m_stateStack.empty())
             {
-                return dynamic_cast<StateType*>(m_stateStack.top().get());
+                return dynamic_cast<StateType*>(m_stateStack.back().get());
             }
             return nullptr;
         }
@@ -97,7 +96,7 @@ namespace FishGame
         using StatePtr = std::unique_ptr<State>;
         using StateFactory = std::function<StatePtr()>;
 
-        std::stack<StatePtr> m_stateStack;
+        std::vector<StatePtr> m_stateStack;
         std::vector<std::pair<StateAction, StateID>> m_pendingList;
         std::map<StateID, StateFactory> m_stateFactories;
 

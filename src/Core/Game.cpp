@@ -110,8 +110,8 @@ namespace FishGame
         while (m_window.pollEvent(event))
         {
             // Process events through active states using STL algorithms
-            std::for_each(m_stateStack._Get_container().rbegin(),
-                m_stateStack._Get_container().rend(),
+            std::for_each(m_stateStack.rbegin(),
+                m_stateStack.rend(),
                 [&event](const StatePtr& state)
                 {
                     state->handleEvent(event);
@@ -127,15 +127,13 @@ namespace FishGame
     void Game::update(sf::Time deltaTime)
     {
         // Update active states from top to bottom using STL
-        const auto& container = m_stateStack._Get_container();
-
         auto updateState = [deltaTime](const StatePtr& state) -> bool
             {
                 return state->update(deltaTime);
             };
 
         // Update states until one returns false (blocks updates below)
-        auto it = std::find_if(container.rbegin(), container.rend(),
+        auto it = std::find_if(m_stateStack.rbegin(), m_stateStack.rend(),
             [&updateState](const StatePtr& state)
             {
                 return !updateState(state);
@@ -150,8 +148,7 @@ namespace FishGame
         m_window.clear(Constants::OCEAN_BLUE);
 
         // Render all states from bottom to top using STL
-        const auto& container = m_stateStack._Get_container();
-        std::for_each(container.begin(), container.end(),
+        std::for_each(m_stateStack.begin(), m_stateStack.end(),
             [this](const StatePtr& state)
             {
                 state->render();
@@ -189,19 +186,19 @@ namespace FishGame
                 {
                     auto newState = createState(stateID);
                     newState->onActivate();
-                    m_stateStack.push(std::move(newState));
+                    m_stateStack.push_back(std::move(newState));
                 }
                 break;
 
                 case StateAction::Pop:
                     if (!m_stateStack.empty())
                     {
-                        m_stateStack.top()->onDeactivate();
-                        m_stateStack.pop();
+                        m_stateStack.back()->onDeactivate();
+                        m_stateStack.pop_back();
 
                         if (!m_stateStack.empty())
                         {
-                            m_stateStack.top()->onActivate();
+                            m_stateStack.back()->onActivate();
                         }
                     }
                     break;
@@ -210,8 +207,8 @@ namespace FishGame
                     // Clear stack using STL container operations
                     while (!m_stateStack.empty())
                     {
-                        m_stateStack.top()->onDeactivate();
-                        m_stateStack.pop();
+                        m_stateStack.back()->onDeactivate();
+                        m_stateStack.pop_back();
                     }
                     break;
                 }
