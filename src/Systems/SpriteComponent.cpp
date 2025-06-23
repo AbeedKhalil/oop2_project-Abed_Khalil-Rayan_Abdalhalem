@@ -135,28 +135,10 @@ namespace FishGame
     }
 
     template<typename OwnerType>
-    void SpriteComponent<OwnerType>::setScale(float scaleX, float scaleY)
-    {
-        m_sprite.setScale(scaleX, scaleY);
-    }
-
-    template<typename OwnerType>
-    void SpriteComponent<OwnerType>::setScale(const sf::Vector2f& scale)
-    {
-        m_sprite.setScale(scale);
-    }
-
-    template<typename OwnerType>
     void SpriteComponent<OwnerType>::setColor(const sf::Color& color)
     {
         m_baseColor = color;
         m_sprite.setColor(color);
-    }
-
-    template<typename OwnerType>
-    void SpriteComponent<OwnerType>::setRotation(float angle)
-    {
-        m_sprite.setRotation(angle);
     }
 
     template<typename OwnerType>
@@ -187,15 +169,6 @@ namespace FishGame
         m_pulseScale = scale;
         m_pulseSpeed = speed;
         m_pulseTimer = 0.0f;
-    }
-
-    template<typename OwnerType>
-    void SpriteComponent<OwnerType>::resetEffects()
-    {
-        m_isPulsing = false;
-        m_flashIntensity = 0.0f;
-        m_sprite.setColor(m_baseColor);
-        m_sprite.setScale(m_config.scaleMultiplier, m_config.scaleMultiplier);
     }
 
     template<typename OwnerType>
