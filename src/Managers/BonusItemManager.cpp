@@ -2,7 +2,9 @@
 #include "SpriteManager.h"
 #include <algorithm>
 #include <numeric>
+#include <array>
 #include <ExtendedPowerUps.h>
+#include "PowerUpFactory.h"
 
 namespace FishGame
 {
@@ -141,40 +143,29 @@ namespace FishGame
     std::unique_ptr<PowerUp> BonusItemManager::createRandomPowerUp()
     {
         // Extended to include new power-ups
-        std::vector<int> types;
+        std::vector<PowerUpType> types;
         if (m_currentLevel >= 2)
-            types = {0, 1, 0, 1, 2, 3, 4};
+            types = { PowerUpType::ScoreDoubler, PowerUpType::FrenzyStarter,
+                PowerUpType::ScoreDoubler, PowerUpType::FrenzyStarter,
+                PowerUpType::Freeze, PowerUpType::ExtraLife, PowerUpType::SpeedBoost };
         else
-            types = {0, 1, 0, 1, 0, 1, 3}; // Freeze and SpeedBoost unlocked from level 2
+            types = { PowerUpType::ScoreDoubler, PowerUpType::FrenzyStarter,
+                PowerUpType::ScoreDoubler, PowerUpType::FrenzyStarter,
+                PowerUpType::ScoreDoubler, PowerUpType::FrenzyStarter, PowerUpType::ExtraLife };
 
         int index = std::uniform_int_distribution<int>(0, static_cast<int>(types.size()) - 1)(m_randomEngine);
-        int type = types[index];
+        PowerUpType type = types[index];
 
-        switch (type)
-        {
-        case 0:
-        {
-            auto powerUp = std::make_unique<ScoreDoublerPowerUp>();
-            powerUp->setFont(m_font);
-            return powerUp;
-        }
-        case 1:
-            return std::make_unique<FrenzyStarterPowerUp>();
+        using CreateFunc = std::unique_ptr<PowerUp>(*)(const sf::Font*);
+        static constexpr std::array<CreateFunc, 6> creators = {
+            &PowerUpFactory<PowerUpType::ScoreDoubler>::create,
+            &PowerUpFactory<PowerUpType::FrenzyStarter>::create,
+            &PowerUpFactory<PowerUpType::SpeedBoost>::create,
+            &PowerUpFactory<PowerUpType::Freeze>::create,
+            &PowerUpFactory<PowerUpType::ExtraLife>::create,
+            &PowerUpFactory<PowerUpType::AddTime>::create
+        };
 
-        case 2:
-        {
-            auto powerUp = std::make_unique<FreezePowerUp>();
-            powerUp->setFont(m_font);
-            return powerUp;
-        }
-        case 3:
-            return std::make_unique<ExtraLifePowerUp>();
-
-        case 4:
-            return std::make_unique<SpeedBoostPowerUp>();
-
-        default:
-            return nullptr;
-        }
+        return creators[static_cast<size_t>(type)](&m_font);
     }
 }
