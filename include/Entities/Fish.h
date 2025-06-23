@@ -2,7 +2,7 @@
 
 #include "Entity.h"
 #include "Animator.h"
-#include "MovementStrategy.h"
+#include "Strategy.h"
 #include <vector>
 #include <memory>
 #include <string>

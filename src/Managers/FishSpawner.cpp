@@ -1,8 +1,7 @@
 #include "FishSpawner.h"
 #include "GameConstants.h"
 #include "SpriteManager.h"
-#include "RandomWanderStrategy.h"
-#include "AggressiveChaseStrategy.h"
+#include "Strategy.h"
 #include <algorithm>
 #include <array>
 
