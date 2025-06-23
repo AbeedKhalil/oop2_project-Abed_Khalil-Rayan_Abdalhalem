@@ -48,14 +48,7 @@ namespace FishGame
             [&allFish](auto& pair)
             {
                 auto members = pair.second->extractMembers();
-
-                // Convert raw pointers to unique_ptr
-                std::transform(members.begin(), members.end(),
-                    std::back_inserter(allFish),
-                    [](Entity* entity)
-                    {
-                        return std::unique_ptr<Entity>(entity);
-                    });
+                std::move(members.begin(), members.end(), std::back_inserter(allFish));
             });
 
         // Clear empty schools
