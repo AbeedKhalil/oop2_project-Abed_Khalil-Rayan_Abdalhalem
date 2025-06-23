@@ -132,7 +132,6 @@ namespace FishGame
         sf::Time m_dayNightTimer;
         sf::Time m_transitionTimer;
 
-        float m_predatorAggressionBase;
         bool m_isTransitioning;
         bool m_dayNightCyclePaused;
 
