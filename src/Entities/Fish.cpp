@@ -5,6 +5,7 @@
 #include "GameConstants.h"
 #include "Player.h"
 #include "SpecialFish.h"
+#include "MovementStrategy.h"
 #include <cmath>
 #include <algorithm>
 
@@ -32,6 +33,7 @@ namespace FishGame
         , m_baseColor(sf::Color::White)
         , m_eating(false)
         , m_eatTimer(sf::Time::Zero)
+        , m_movementStrategy(nullptr)
     {
         // Set radius based on size
         switch (m_size)
@@ -549,7 +551,14 @@ namespace FishGame
 
     void Fish::updateMovement(sf::Time deltaTime)
     {
-        m_position += m_velocity * deltaTime.asSeconds();
+        if (m_movementStrategy)
+        {
+            m_movementStrategy->update(*this, deltaTime);
+        }
+        else
+        {
+            m_position += m_velocity * deltaTime.asSeconds();
+        }
     }
 
     int Fish::getPointValue(FishSize size, int level)

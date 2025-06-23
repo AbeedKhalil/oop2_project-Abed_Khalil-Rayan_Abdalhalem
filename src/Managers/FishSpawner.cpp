@@ -1,6 +1,8 @@
 #include "FishSpawner.h"
 #include "GameConstants.h"
 #include "SpriteManager.h"
+#include "RandomWanderStrategy.h"
+#include "AggressiveChaseStrategy.h"
 #include <algorithm>
 #include <array>
 
@@ -87,6 +89,7 @@ namespace FishGame
             fish.setDirection(smallConfig.fromLeft ? 1.0f : -1.0f, 0.0f);
             fish.setWindowBounds(m_windowSize);
             fish.initializeSprite(*m_spriteManager);
+            fish.setMovementStrategy(std::make_unique<RandomWanderStrategy>());
             };
 
         m_smallSpawner.setConfig(smallSpawnerConfig);
@@ -109,6 +112,7 @@ namespace FishGame
             };
             std::uniform_int_distribution<int> dist(0, colors.size() - 1);
             fish.setBaseColor(colors[dist(m_randomEngine)]);
+            fish.setMovementStrategy(std::make_unique<RandomWanderStrategy>());
             };
 
         m_mediumSpawner.setConfig(mediumSpawnerConfig);
@@ -124,6 +128,7 @@ namespace FishGame
             fish.setDirection(largeConfig.fromLeft ? 1.0f : -1.0f, 0.0f);
             fish.setWindowBounds(m_windowSize);
             fish.initializeSprite(*m_spriteManager);
+            fish.setMovementStrategy(std::make_unique<AggressiveChaseStrategy>(nullptr));
             };
 
         m_largeSpawner.setConfig(largeSpawnerConfig);
