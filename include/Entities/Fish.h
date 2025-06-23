@@ -2,6 +2,7 @@
 
 #include "Entity.h"
 #include "Animator.h"
+#include "MovementStrategy.h"
 #include <vector>
 #include <memory>
 #include <string>
@@ -55,6 +56,11 @@ namespace FishGame
         float getSpeed() const { return m_speed; }
         int getCurrentLevel() const { return m_currentLevel; }
         sf::Vector2u getWindowBounds() const { return m_windowBounds; }
+
+        void setMovementStrategy(std::unique_ptr<MovementStrategy> strategy)
+        {
+            m_movementStrategy = std::move(strategy);
+        }
 
         // Virtual methods for derived classes
         virtual int getPointValue() const { return m_pointValue; }
@@ -134,5 +140,7 @@ namespace FishGame
         bool m_eating{ false };
         sf::Time m_eatTimer{ sf::Time::Zero };
         static constexpr float m_eatDuration = 0.5f;
+
+        std::unique_ptr<MovementStrategy> m_movementStrategy;
     };
 }
