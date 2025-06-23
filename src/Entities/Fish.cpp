@@ -548,17 +548,32 @@ namespace FishGame
         }
     }
 
-    void Fish::updateMovement(sf::Time deltaTime)
+void Fish::updateMovement(sf::Time deltaTime)
+{
+    if (m_movementStrategy)
     {
-        if (m_movementStrategy)
-        {
-            m_movementStrategy->update(*this, deltaTime);
-        }
-        else
-        {
-            m_position += m_velocity * deltaTime.asSeconds();
-        }
+        m_movementStrategy->update(*this, deltaTime);
     }
+    else
+    {
+        m_position += m_velocity * deltaTime.asSeconds();
+    }
+}
+
+int Fish::getScorePoints() const
+{
+    switch (m_size)
+    {
+    case FishSize::Small:
+        return Constants::SMALL_FISH_POINTS;
+    case FishSize::Medium:
+        return Constants::MEDIUM_FISH_POINTS;
+    case FishSize::Large:
+        return Constants::LARGE_FISH_POINTS;
+    default:
+        return 0;
+    }
+}
 
     int Fish::getPointValue(FishSize size, int level)
     {
