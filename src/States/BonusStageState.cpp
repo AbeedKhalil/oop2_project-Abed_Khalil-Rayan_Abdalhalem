@@ -108,12 +108,7 @@ namespace FishGame
                     });
             }
         }
-        else if (event.type == sf::Event::MouseMoved)
-        {
-            sf::Vector2f worldPos = getGame().getWindow().mapPixelToCoords(
-                sf::Vector2i(event.mouseMove.x, event.mouseMove.y));
-            m_player->followMouse(worldPos);
-        }
+
     }
 
     bool BonusStageState::update(sf::Time deltaTime)

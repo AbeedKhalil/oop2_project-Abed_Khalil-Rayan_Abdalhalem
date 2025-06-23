@@ -24,9 +24,7 @@ namespace FishGame
         , m_currentStage(1)
         , m_growthProgress(0.0f)
         , m_points(0)
-        , m_useMouseControl(false)
         , m_targetPosition(0.0f, 0.0f)
-        , m_mouseControlActive(true)
         , m_autoOrient(true)
         , m_growthMeter(nullptr)
         , m_frenzySystem(nullptr)
@@ -116,42 +114,6 @@ namespace FishGame
         // Handle input
         handleInput();
 
-        // Mouse control movement
-        if (m_mouseControlActive)
-        {
-            // Calculate direction to mouse
-            sf::Vector2f direction = m_targetPosition - m_position;
-            float distance = std::sqrt(direction.x * direction.x + direction.y * direction.y);
-
-            if (distance > m_mouseDeadzone)
-            {
-                // Normalize direction
-                direction /= distance;
-
-                // Calculate speed based on power-ups
-                float effectiveSpeed = m_baseSpeed;
-                if (m_speedBoostTimer > sf::Time::Zero)
-                    effectiveSpeed *= m_speedMultiplier;
-
-                // Target velocity
-                sf::Vector2f targetVelocity = direction * effectiveSpeed;
-
-                // Smooth velocity transition
-                m_velocity.x = m_velocity.x + (targetVelocity.x - m_velocity.x) * m_mouseSmoothingFactor;
-                m_velocity.y = m_velocity.y + (targetVelocity.y - m_velocity.y) * m_mouseSmoothingFactor;
-            }
-            else
-            {
-                // Close to target - decelerate smoothly
-                m_velocity *= (1.0f - m_deceleration * deltaTime.asSeconds());
-
-                // Stop completely when very slow
-                if (std::abs(m_velocity.x) < 1.0f && std::abs(m_velocity.y) < 1.0f)
-                {
-                    m_velocity = sf::Vector2f(0.0f, 0.0f);
-                }
-            }
-        }
 
         // Limit maximum speed
         float maxSpeed = m_maxSpeed * (m_speedBoostTimer > sf::Time::Zero ? m_speedMultiplier : 1.0f);
@@ -235,7 +197,7 @@ namespace FishGame
 
     void Player::handleInput()
     {
-        // Check for keyboard input - this will override mouse control
+        // Check for keyboard input
         sf::Vector2f inputDirection(0.0f, 0.0f);
         bool keyboardUsed = false;
 
@@ -265,11 +227,9 @@ namespace FishGame
             inputDirection = -inputDirection;
         }
 
-        // Switch to keyboard control if keys are pressed
+        // Apply movement if any keyboard input was detected
         if (keyboardUsed)
         {
-            m_mouseControlActive = false;
-
             // Normalize diagonal movement
             float length = std::sqrt(inputDirection.x * inputDirection.x + inputDirection.y * inputDirection.y);
             if (length > 0.0f)
@@ -279,16 +239,11 @@ namespace FishGame
                 m_velocity = inputDirection * speed;
             }
         }
-        else if (!m_mouseControlActive)
+        else
         {
             // Apply deceleration when no keyboard input
             m_velocity *= 0.9f;
         }
-    }
-
-    void Player::followMouse(const sf::Vector2f& mousePosition)
-    {
-        m_targetPosition = mousePosition;
     }
 
     sf::FloatRect Player::getBounds() const
@@ -371,18 +326,6 @@ namespace FishGame
         m_poisonColorTimer = sf::Time::Zero;
     }
 
-    void Player::enableMouseControl(bool enable)
-    {
-        m_mouseControlActive = enable;
-    }
-
-    void Player::setMousePosition(const sf::Vector2f& screenPos)
-    {
-        if (!m_mouseControlActive)
-            return;
-
-        m_targetPosition = screenPos;
-    }
 
     bool Player::canEat(const Entity& other) const
     {

@@ -30,9 +30,7 @@ namespace FishGame
 
         // Player-specific methods
         void handleInput();
-        void followMouse(const sf::Vector2f& mousePosition);
         sf::Vector2f getTargetPosition() const { return m_targetPosition; }
-        bool isUsingMouseControl() const { return m_useMouseControl; }
 
         // Sprite initialization
         void initializeSprite(SpriteManager& spriteManager);
@@ -48,9 +46,6 @@ namespace FishGame
         int getScore() const { return m_score; }
         float getGrowthProgress() const { return m_growthProgress; }
 
-        void enableMouseControl(bool enable);
-        void setMousePosition(const sf::Vector2f& screenPos);
-        bool isMouseControlActive() const { return m_mouseControlActive; }
         void setAutoOrient(bool enable) { m_autoOrient = enable; }
 
         // Points tracking
@@ -108,11 +103,6 @@ namespace FishGame
         int m_currentStage;
         float m_growthProgress;
 
-        // Mouse control enhancements
-        bool m_mouseControlActive;
-        static constexpr float m_mouseDeadzone = 2.0f;
-        static constexpr float m_mouseSmoothingFactor = 0.15f;
-
         // Auto-orientation
         bool m_autoOrient;
         static constexpr float m_orientationThreshold = 5.0f;
@@ -121,7 +111,6 @@ namespace FishGame
         int m_points;
 
         // Control state
-        bool m_useMouseControl;
         sf::Vector2f m_targetPosition;
         bool m_controlsReversed{ false };
         sf::Time m_poisonColorTimer{ sf::Time::Zero };
