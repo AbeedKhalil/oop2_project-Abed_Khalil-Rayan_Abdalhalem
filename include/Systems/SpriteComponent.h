@@ -40,10 +40,7 @@ namespace FishGame
         void syncWithOwner();
 
         // Sprite manipulation
-        void setScale(float scaleX, float scaleY);
-        void setScale(const sf::Vector2f& scale);
         void setColor(const sf::Color& color);
-        void setRotation(float angle);
         void setTextureRect(const sf::IntRect& rect);
 
         // Getters
@@ -53,7 +50,6 @@ namespace FishGame
         // State effects
         void applyFlashEffect(const sf::Color& color, float intensity);
         void applyPulseEffect(float scale, float speed);
-        void resetEffects();
 
     protected:
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
