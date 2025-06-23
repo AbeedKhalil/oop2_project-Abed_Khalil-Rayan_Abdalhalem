@@ -36,8 +36,6 @@ namespace FishGame
         , m_speedMultiplier(1.0f)
         , m_speedBoostTimer(sf::Time::Zero)
         , m_windowBounds(Constants::WINDOW_WIDTH, Constants::WINDOW_HEIGHT)
-        , m_totalFishEaten(0)
-        , m_damageTaken(0)
         , m_activeEffects()
         , m_eatAnimationScale(1.0f)
         , m_eatAnimationTimer(sf::Time::Zero)
@@ -320,8 +318,6 @@ namespace FishGame
     {
         resetSize();
         m_points = 0;
-        m_totalFishEaten = 0;
-        m_damageTaken = 0;
         m_controlsReversed = false;
         m_poisonColorTimer = sf::Time::Zero;
     }
@@ -399,7 +395,6 @@ namespace FishGame
 
             // Add points
             addPoints(pointsToAdd);
-            m_totalFishEaten++;
 
             // Visual growth
             grow(fish->getPointValue());
@@ -499,7 +494,6 @@ namespace FishGame
         if (m_invulnerabilityTimer > sf::Time::Zero)
             return;
 
-        m_damageTaken++;
         m_damageCooldown = m_damageCooldownDuration;
 
         if (m_scoreSystem)
