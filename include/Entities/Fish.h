@@ -3,6 +3,7 @@
 #include "Entity.h"
 #include "Animator.h"
 #include "Strategy.h"
+#include "GameConstants.h"
 #include <vector>
 #include <memory>
 #include <string>
@@ -64,6 +65,8 @@ namespace FishGame
 
         // Virtual methods for derived classes
         virtual int getPointValue() const { return m_pointValue; }
+        // Points awarded when this fish is eaten by the player
+        virtual int getScorePoints() const;
         virtual bool canEat(const Entity& other) const;
         virtual void updateAI(const std::vector<std::unique_ptr<Entity>>& entities,
             const Entity* player, sf::Time deltaTime);

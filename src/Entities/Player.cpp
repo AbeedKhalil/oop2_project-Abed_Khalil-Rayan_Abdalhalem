@@ -365,36 +365,8 @@ namespace FishGame
         const Fish* fish = dynamic_cast<const Fish*>(&other);
         if (fish)
         {
-            int pointsToAdd = 0;
-
-            // Determine points based on fish type
-            if (dynamic_cast<const SmallFish*>(fish))
-            {
-                pointsToAdd = Constants::SMALL_FISH_POINTS;
-            }
-            else if (dynamic_cast<const MediumFish*>(fish))
-            {
-                pointsToAdd = Constants::MEDIUM_FISH_POINTS;
-            }
-            else if (dynamic_cast<const LargeFish*>(fish))
-            {
-                pointsToAdd = Constants::LARGE_FISH_POINTS;
-            }
-            else if (dynamic_cast<const Barracuda*>(fish))
-            {
-                pointsToAdd = Constants::BARRACUDA_POINTS;
-            }
-            else if (dynamic_cast<const Pufferfish*>(fish))
-            {
-                pointsToAdd = Constants::PUFFERFISH_POINTS;
-            }
-            else if (dynamic_cast<const Angelfish*>(fish))
-            {
-                pointsToAdd = Constants::ANGELFISH_POINTS;
-            }
-
-            // Add points
-            addPoints(pointsToAdd);
+            // Use polymorphic score value
+            addPoints(fish->getScorePoints());
 
             // Visual growth
             grow(fish->getPointValue());

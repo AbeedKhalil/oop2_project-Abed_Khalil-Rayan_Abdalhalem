@@ -4,6 +4,7 @@
 #include "CollisionDetector.h"
 #include "GenericFish.h"
 #include "Animator.h"
+#include "GameConstants.h"
 #include <cmath>
 #include <algorithm>
 #include <vector>
@@ -53,6 +54,7 @@ namespace FishGame
         bool isSpecialFish() const override { return true; }
         bool isBarracuda() const override { return true; }
         TextureID getTextureID() const override { return TextureID::Barracuda; }
+        int getScorePoints() const override { return Constants::BARRACUDA_POINTS; }
 
         // Enhanced AI for aggressive hunting
         void updateAI(const std::vector<std::unique_ptr<Entity>>& entities,
@@ -99,6 +101,7 @@ namespace FishGame
         {
             return isInflated() ? TextureID::PufferfishInflated : TextureID::Pufferfish;
         }
+        int getScorePoints() const override { return Constants::PUFFERFISH_POINTS; }
 
         void update(sf::Time deltaTime) override;
         void initializeSprite(SpriteManager& spriteManager);
@@ -169,6 +172,7 @@ namespace FishGame
 
         EntityType getType() const override { return EntityType::SmallFish; }
         int getPointValue() const override { return m_poisonPoints; }
+        int getScorePoints() const override { return m_poisonPoints; }
 
         void update(sf::Time deltaTime) override;
 
@@ -204,6 +208,7 @@ namespace FishGame
         EntityType getType() const override { return EntityType::SmallFish; }
         int getPointValue() const { return m_bonusPoints; }
         TextureID getTextureID() const override { return TextureID::Angelfish; }
+        int getScorePoints() const override { return Constants::ANGELFISH_POINTS; }
 
         void update(sf::Time deltaTime) override;
 
