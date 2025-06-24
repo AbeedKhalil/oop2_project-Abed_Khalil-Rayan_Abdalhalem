@@ -248,8 +248,6 @@ namespace FishGame
 
     sf::FloatRect Player::getBounds() const
     {
-        if (m_renderMode == RenderMode::Sprite && m_animator)
-            return m_animator->getBounds();
         return sf::FloatRect(m_position.x - m_radius, m_position.y - m_radius,
             m_radius * 2.0f, m_radius * 2.0f);
     }
@@ -363,8 +361,7 @@ namespace FishGame
         float mouthRadius = m_radius * 0.5f;
 
         float distance = CollisionDetector::getDistance(mouthPos, other.getPosition());
-        float otherRadius = std::max(other.getBounds().width, other.getBounds().height) / 2.f;
-        if (distance > mouthRadius + otherRadius)
+        if (distance > mouthRadius + other.getRadius())
             return false;
 
         const Fish* fish = dynamic_cast<const Fish*>(&other);
@@ -427,8 +424,7 @@ namespace FishGame
             float length = std::sqrt(tailOffset.x * tailOffset.x + tailOffset.y * tailOffset.y);
             if (length > 0)
             {
-                float otherRadius = std::max(other.getBounds().width, other.getBounds().height) / 2.f;
-                tailOffset = (tailOffset / length) * otherRadius * 0.8f;
+                tailOffset = (tailOffset / length) * other.getRadius() * 0.8f;
                 sf::Vector2f tailPos = fishPos + tailOffset;
 
                 float dx = m_position.x - tailPos.x;

@@ -120,8 +120,6 @@ namespace FishGame
 
     sf::FloatRect Bomb::getBounds() const
     {
-        if (getRenderMode() == RenderMode::Sprite && getSpriteComponent())
-            return getSpriteComponent()->getBounds();
         float effectiveRadius = m_isExploding ? m_explosionRadius : m_radius;
         return sf::FloatRect(m_position.x - effectiveRadius, m_position.y - effectiveRadius,
             effectiveRadius * 2.f, effectiveRadius * 2.f);
@@ -290,8 +288,6 @@ namespace FishGame
 
     sf::FloatRect Jellyfish::getBounds() const
     {
-        if (getRenderMode() == RenderMode::Sprite && getSpriteComponent())
-            return getSpriteComponent()->getBounds();
         // Include tentacle reach
         float effectiveRadius = m_radius + 15.0f;
         return sf::FloatRect(m_position.x - effectiveRadius, m_position.y - effectiveRadius,

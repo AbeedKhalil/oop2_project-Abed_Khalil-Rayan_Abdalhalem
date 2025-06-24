@@ -183,7 +183,7 @@ namespace FishGame
             [this](auto& item) {
                 if (auto* timePU = dynamic_cast<AddTimePowerUp*>(item.get()))
                 {
-                    if (CollisionDetector::checkCollision(*m_player, *timePU))
+                    if (CollisionDetector::checkCircleCollision(*m_player, *timePU))
                     {
                         timePU->onCollect();
                         m_timeLimit += sf::seconds(3.f);
@@ -319,7 +319,7 @@ namespace FishGame
             [this](auto& item) {
                 if (auto* perm = dynamic_cast<PermanentOyster*>(item.get()))
                 {
-                    if (perm->isOpen() && CollisionDetector::checkCollision(*m_player, *perm))
+                    if (perm->isOpen() && CollisionDetector::checkCircleCollision(*m_player, *perm))
                     {
                         perm->onCollect();
                         m_objective.currentCount++;
@@ -332,7 +332,7 @@ namespace FishGame
                         m_objectiveText.setString(objStream.str());
                     }
                     else if (m_oysterSafetyTimer <= sf::Time::Zero && perm->canDamagePlayer() &&
-                        CollisionDetector::checkCollision(*m_player, *perm))
+                        CollisionDetector::checkCircleCollision(*m_player, *perm))
                     {
                         m_objective.currentCount = 0;
                         completeStage();
@@ -358,7 +358,7 @@ namespace FishGame
             [this](auto& entity) {
                 if (SmallFish* fish = dynamic_cast<SmallFish*>(entity.get()))
                 {
-                    if (m_player->canEat(*fish) && CollisionDetector::checkCollision(*m_player, *fish))
+                    if (m_player->canEat(*fish) && CollisionDetector::checkCircleCollision(*m_player, *fish))
                     {
                         if (m_player->attemptEat(*fish))
                         {
@@ -394,7 +394,7 @@ namespace FishGame
             [this](auto& entity) {
                 if (Fish* fish = dynamic_cast<Fish*>(entity.get()))
                 {
-                    if (fish->canEat(*m_player) && CollisionDetector::checkCollision(*m_player, *fish))
+                    if (fish->canEat(*m_player) && CollisionDetector::checkCircleCollision(*m_player, *fish))
                     {
                         // Player dies - stage failed
                         m_objective.currentCount = 0;

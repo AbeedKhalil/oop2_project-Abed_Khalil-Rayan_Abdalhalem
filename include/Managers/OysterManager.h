@@ -152,7 +152,10 @@ namespace FishGame
 
         static bool checkCollision(const Entity& a, const Entity& b)
         {
-            return a.getBounds().intersects(b.getBounds());
+            sf::Vector2f diff = a.getPosition() - b.getPosition();
+            float distSq = diff.x * diff.x + diff.y * diff.y;
+            float radiusSum = a.getRadius() + b.getRadius();
+            return distSq < radiusSum * radiusSum;
         }
 
     private:

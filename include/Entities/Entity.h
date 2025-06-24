@@ -102,9 +102,9 @@ namespace FishGame
         };
 
         template<typename T>
-        concept BoundsProvider = requires(const T& t)
+        concept CircularEntity = PositionProvider<T> && requires(const T & t)
         {
-            { t.getBounds() } -> std::convertible_to<sf::FloatRect>;
+            { t.getRadius() } -> std::convertible_to<float>;
         };
 
         // Calculate distance squared between two entities (more efficient than distance)
@@ -122,11 +122,12 @@ namespace FishGame
             return std::sqrt(distanceSquared(a, b));
         }
 
-        // Check if two entities are colliding using bounding boxes
-        template<BoundsProvider A, BoundsProvider B>
+        // Check if two entities are colliding (circle collision)
+        template<CircularEntity A, CircularEntity B>
         inline bool areColliding(const A& a, const B& b) noexcept
         {
-            return a.getBounds().intersects(b.getBounds());
+            const float radiusSum = a.getRadius() + b.getRadius();
+            return distanceSquared(a, b) < (radiusSum * radiusSum);
         }
 
         // Apply a function to all alive entities in a container
