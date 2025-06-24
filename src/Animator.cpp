@@ -10,18 +10,19 @@ Animator::Animator(const sf::Texture& texture, int frameWidth, int frameHeight, 
 }
 
 void Animator::addClip(const std::string& name, const std::vector<IntRect>& frames,
-    Time frameTime, bool loop, bool flipped)
+    Time frameTime, bool loop, bool flipped, bool pingPong)
 {
     Clip c;
     c.frames = frames;
     c.frameTime = frameTime;
     c.loop = loop;
     c.flipped = flipped;
+    c.pingPong = pingPong;
     m_clips[name] = std::move(c);
 }
 
 void Animator::addClipRow(const std::string& name, int rowY, int startFrame, int count,
-    Time frameTime, bool loop, bool reverse)
+    Time frameTime, bool loop, bool reverse, bool pingPong)
 {
     std::vector<IntRect> frames;
     frames.reserve(static_cast<std::size_t>(count));
@@ -30,7 +31,7 @@ void Animator::addClipRow(const std::string& name, int rowY, int startFrame, int
         int idx = reverse ? startFrame + count - 1 - i : startFrame + i;
         frames.emplace_back(m_startX + idx * m_frameW, rowY, m_frameW, m_frameH);
     }
-    addClip(name, frames, frameTime, loop, false);
+    addClip(name, frames, frameTime, loop, false, pingPong);
 }
 
 void Animator::copyFlip(const std::string& left, const std::string& right)
@@ -68,6 +69,7 @@ void Animator::play(const std::string& name)
     m_index = 0;
     m_elapsed = Time::Zero;
 
+    m_forward = true;
     m_sprite.setTextureRect(m_current->frames[0]);
     m_sprite.setOrigin(static_cast<float>(m_frameW) / 2.f,
         static_cast<float>(m_frameH) / 2.f);
@@ -83,14 +85,50 @@ void Animator::update(Time dt)
     if (m_elapsed >= m_current->frameTime)
     {
         m_elapsed -= m_current->frameTime;
-        ++m_index;
-        if (m_index >= m_current->frames.size())
+
+        if (m_current->pingPong)
         {
-            if (m_current->loop)
-                m_index = 0;
+            if (m_forward)
+            {
+                if (m_index + 1 >= m_current->frames.size())
+                {
+                    if (m_current->loop)
+                    {
+                        m_forward = false;
+                        if (m_index > 0)
+                            --m_index;
+                    }
+                }
+                else
+                    ++m_index;
+            }
             else
-                m_index = m_current->frames.size() - 1;
+            {
+                if (m_index == 0)
+                {
+                    if (m_current->loop)
+                    {
+                        m_forward = true;
+                        if (m_current->frames.size() > 1)
+                            ++m_index;
+                    }
+                }
+                else
+                    --m_index;
+            }
         }
+        else
+        {
+            ++m_index;
+            if (m_index >= m_current->frames.size())
+            {
+                if (m_current->loop)
+                    m_index = 0;
+                else
+                    m_index = m_current->frames.size() - 1;
+            }
+        }
+
         m_sprite.setTextureRect(m_current->frames[m_index]);
     }
 }
@@ -107,9 +145,9 @@ Animator createFishAnimator(const sf::Texture& tex)
     Animator a(tex, 126, 102);
 
     auto makeClip = [&](const std::string& name, int rowY, int start, int count,
-        Time dur, bool loop = true, bool reverse = false)
+        Time dur, bool loop = true, bool reverse = false, bool ping = false)
         {
-            a.addClipRow(name, rowY, start, count, dur, loop, reverse);
+            a.addClipRow(name, rowY, start, count, dur, loop, reverse, ping);
         };
 
     const int EAT_Y = 1;
@@ -135,9 +173,9 @@ Animator createBarracudaAnimator(const sf::Texture& tex)
     Animator a(tex, 270, 122);
 
     auto makeClip = [&](const std::string& name, int rowY, int start, int count,
-        Time dur, bool loop = true, bool reverse = false)
+        Time dur, bool loop = true, bool reverse = false, bool ping = false)
         {
-            a.addClipRow(name, rowY, start, count, dur, loop, reverse);
+            a.addClipRow(name, rowY, start, count, dur, loop, reverse, ping);
         };
 
     const int EAT_Y = 1;
@@ -160,9 +198,9 @@ Animator createSimpleFishAnimator(const sf::Texture& tex)
     Animator a(tex, 66, 44);
 
     auto makeClip = [&](const std::string& name, int rowY, int start, int count,
-        Time dur, bool loop = true, bool reverse = false)
+        Time dur, bool loop = true, bool reverse = false, bool ping = false)
         {
-            a.addClipRow(name, rowY, start, count, dur, loop, reverse);
+            a.addClipRow(name, rowY, start, count, dur, loop, reverse, ping);
         };
 
     const int SWIM_Y = 1;
@@ -182,9 +220,9 @@ Animator createMediumFishAnimator(const sf::Texture& tex)
     Animator a(tex, 172, 108);
 
     auto makeClip = [&](const std::string& name, int rowY, int start, int count,
-        Time dur, bool loop = true, bool reverse = false)
+        Time dur, bool loop = true, bool reverse = false, bool ping = false)
         {
-            a.addClipRow(name, rowY, start, count, dur, loop, reverse);
+            a.addClipRow(name, rowY, start, count, dur, loop, reverse, ping);
         };
 
     const int EAT_Y = 1;
@@ -223,7 +261,7 @@ Animator createPufferfishAnimator(const sf::Texture& tex)
     const int TURN_Y = 433;
 
     a.addClip("eatLeft", makeFrames(EAT_Y, 187, 7, 131), milliseconds(100), false);
-    a.addClip("puffLeft", makeFrames(PUFF_Y, 186, 6, 169), milliseconds(100), false);
+    a.addClip("puffLeft", makeFrames(PUFF_Y, 186, 6, 169), milliseconds(100), true, false, true);
     a.addClip("swimLeft", makeFrames(SWIM_Y, 184, 15, 128), milliseconds(80));
 
     auto turnFrames = makeFrames(TURN_Y, 168, 5, 86);
@@ -243,9 +281,9 @@ Animator createLargeFishAnimator(const sf::Texture& tex)
     Animator a(tex, 201, 148);
 
     auto makeClip = [&](const std::string& name, int rowY, int start, int count,
-        Time dur, bool loop = true, bool reverse = false)
+        Time dur, bool loop = true, bool reverse = false, bool ping = false)
         {
-            a.addClipRow(name, rowY, start, count, dur, loop, reverse);
+            a.addClipRow(name, rowY, start, count, dur, loop, reverse, ping);
         };
 
     const int EAT_Y = 1;
@@ -253,7 +291,7 @@ Animator createLargeFishAnimator(const sf::Texture& tex)
     const int TURN_Y = 297;
 
     makeClip("eatLeft", EAT_Y, 0, 6, milliseconds(100), false);
-    makeClip("swimLeft", SWIM_Y, 0, 14, milliseconds(80));
+    makeClip("swimLeft", SWIM_Y, 0, 14, milliseconds(80), true, false, true);
     makeClip("turnLeftToRight", TURN_Y, 0, 5, milliseconds(90), false);
     makeClip("turnRightToLeft", TURN_Y, 0, 5, milliseconds(70), false, true);
 

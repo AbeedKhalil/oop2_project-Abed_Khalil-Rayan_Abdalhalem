@@ -11,9 +11,11 @@ public:
     Animator(const sf::Texture& texture, int frameWidth, int frameHeight, int startX = 1);
 
     void addClip(const std::string& name, const std::vector<sf::IntRect>& frames,
-        sf::Time frameTime, bool loop = true, bool flipped = false);
+        sf::Time frameTime, bool loop = true, bool flipped = false,
+        bool pingPong = false);
     void addClipRow(const std::string& name, int rowY, int startFrame, int count,
-        sf::Time frameTime, bool loop = true, bool reverse = false);
+        sf::Time frameTime, bool loop = true, bool reverse = false,
+        bool pingPong = false);
     void copyFlip(const std::string& left, const std::string& right);
 
     void play(const std::string& name);
@@ -32,6 +34,7 @@ private:
         sf::Time frameTime{};
         bool loop{ true };
         bool flipped{ false };
+        bool pingPong{ false };
     };
 
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
@@ -48,6 +51,7 @@ private:
     std::string m_currentName;
     std::size_t m_index{ 0 };
     sf::Time m_elapsed{};
+    bool m_forward{ true };
 };
 
 // Helper factory functions
