@@ -185,7 +185,8 @@ namespace FishGame
 
         // Random number generation for power-ups
         std::mt19937 m_randomEngine;
-        std::uniform_real_distribution<float> m_positionDist;
+        std::uniform_real_distribution<float> m_xDistribution;
+        std::uniform_real_distribution<float> m_yDistribution;
 
         // Base spawn rates
         static constexpr float m_baseStarfishRate = 0.2f;
