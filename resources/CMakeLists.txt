@@ -18,6 +18,11 @@ configure_file ("PowerupTime.png" ${CMAKE_BINARY_DIR} COPYONLY)
 configure_file ("PowerupLife.png" ${CMAKE_BINARY_DIR} COPYONLY)
 
 configure_file ("Background1.png" ${CMAKE_BINARY_DIR} COPYONLY)
+configure_file ("Background2.png" ${CMAKE_BINARY_DIR} COPYONLY)
+configure_file ("Background3.png" ${CMAKE_BINARY_DIR} COPYONLY)
+configure_file ("Background4.png" ${CMAKE_BINARY_DIR} COPYONLY)
+configure_file ("Background5.png" ${CMAKE_BINARY_DIR} COPYONLY)
+configure_file ("Background6.png" ${CMAKE_BINARY_DIR} COPYONLY)
 configure_file ("GameTitle.png" ${CMAKE_BINARY_DIR} COPYONLY)
 
 configure_file ("Intro1.png" ${CMAKE_BINARY_DIR} COPYONLY)

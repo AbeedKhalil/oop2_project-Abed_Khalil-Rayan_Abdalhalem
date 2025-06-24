@@ -80,22 +80,12 @@ namespace FishGame
 
     void FreezePowerUp::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        const auto* sprite = getSpriteComponent();
-        if (sprite && sprite->getSprite().getTexture())
-        {
-            target.draw(*sprite, states);
-        }
-        /*
-        else
-        {
-            target.draw(m_aura, states);
-            target.draw(m_iconBackground, states);
+        target.draw(m_aura, states);
+        target.draw(m_iconBackground, states);
 
-            DrawUtils::drawContainer(m_iceShards, target, states);
+        DrawUtils::drawContainer(m_iceShards, target, states);
 
-            target.draw(m_icon, states);
-        }
-        */
+        target.draw(m_icon, states);
     }
 
     // ExtraLifePowerUp implementation
@@ -118,7 +108,7 @@ namespace FishGame
         if (!updateLifetime(deltaTime))
             return;
 
-        if (getSpriteComponent())
+        if (getRenderMode() == RenderMode::Sprite && getSpriteComponent())
             getSpriteComponent()->update(deltaTime);
 
         // Update animations
@@ -148,19 +138,16 @@ namespace FishGame
 
     void ExtraLifePowerUp::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        const auto* sprite = getSpriteComponent();
-        if (sprite && sprite->getSprite().getTexture())
+        if (getRenderMode() == RenderMode::Sprite && getSpriteComponent())
         {
-            target.draw(*sprite, states);
+            target.draw(*getSpriteComponent(), states);
         }
-        /*
         else
         {
             target.draw(m_aura, states);
             target.draw(m_iconBackground, states);
             target.draw(m_heart, states);
         }
-        */
     }
 
     void ExtraLifePowerUp::initializeSprite(SpriteManager& spriteManager)
@@ -172,6 +159,7 @@ namespace FishGame
             auto config = spriteManager.getSpriteConfig<Entity>(TextureID::PowerUpExtraLife);
             sprite->configure(config);
             setSpriteComponent(std::move(sprite));
+            setRenderMode(RenderMode::Sprite);
         }
     }
 
@@ -203,7 +191,7 @@ namespace FishGame
         if (!updateLifetime(deltaTime))
             return;
 
-        if (getSpriteComponent())
+        if (getRenderMode() == RenderMode::Sprite && getSpriteComponent())
             getSpriteComponent()->update(deltaTime);
 
         // Update animations
@@ -247,12 +235,10 @@ namespace FishGame
 
     void SpeedBoostPowerUp::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        const auto* sprite = getSpriteComponent();
-        if (sprite && sprite->getSprite().getTexture())
+        if (getRenderMode() == RenderMode::Sprite && getSpriteComponent())
         {
-            target.draw(*sprite, states);
+            target.draw(*getSpriteComponent(), states);
         }
-        /*
         else
         {
             target.draw(m_aura, states);
@@ -260,7 +246,6 @@ namespace FishGame
 
             DrawUtils::drawContainer(m_speedLines, target, states);
         }
-        */
     }
 
     void SpeedBoostPowerUp::initializeSprite(SpriteManager& spriteManager)
@@ -272,6 +257,7 @@ namespace FishGame
             auto config = spriteManager.getSpriteConfig<Entity>(TextureID::PowerUpSpeedBoost);
             sprite->configure(config);
             setSpriteComponent(std::move(sprite));
+            setRenderMode(RenderMode::Sprite);
         }
     }
 
@@ -286,11 +272,11 @@ namespace FishGame
         if (!updateLifetime(deltaTime))
             return;
 
-        if (getSpriteComponent())
+        if (getRenderMode() == RenderMode::Sprite && getSpriteComponent())
             getSpriteComponent()->update(deltaTime);
 
         m_position.y = m_baseY + computeBobbingOffset();
-        if (getSpriteComponent())
+        if (getRenderMode() == RenderMode::Sprite && getSpriteComponent())
             getSpriteComponent()->syncWithOwner();
     }
 
@@ -301,10 +287,9 @@ namespace FishGame
 
     void AddTimePowerUp::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        const auto* sprite = getSpriteComponent();
-        if (sprite && sprite->getSprite().getTexture())
+        if (getRenderMode() == RenderMode::Sprite && getSpriteComponent())
         {
-            target.draw(*sprite, states);
+            target.draw(*getSpriteComponent(), states);
         }
     }
 
@@ -317,6 +302,7 @@ namespace FishGame
             auto config = spriteManager.getSpriteConfig<Entity>(TextureID::PowerUpAddTime);
             sprite->configure(config);
             setSpriteComponent(std::move(sprite));
+            setRenderMode(RenderMode::Sprite);
         }
     }
 }

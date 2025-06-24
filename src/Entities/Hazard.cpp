@@ -133,17 +133,8 @@ namespace FishGame
 
     void Bomb::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        const auto* sprite = getSpriteComponent();
-        if (sprite && sprite->getSprite().getTexture())
-        {
-            target.draw(*sprite, states);
-        }
-        /*
-        else if (m_sprite)
-        {
+        if (m_sprite)
             target.draw(*m_sprite, states);
-        }
-        */
     }
 
     void Bomb::advanceState()
@@ -226,6 +217,7 @@ namespace FishGame
             auto config = spriteManager.getSpriteConfig<Entity>(TextureID::Jellyfish);
             sprite->configure(config);
             setSpriteComponent(std::move(sprite));
+            setRenderMode(RenderMode::Sprite);
 
             // Set initial frame
             m_texture = &spriteManager.getTexture(TextureID::Jellyfish);
@@ -240,7 +232,7 @@ namespace FishGame
         if (!m_isAlive)
             return;
 
-        if (getSpriteComponent())
+        if (getRenderMode() == RenderMode::Sprite && getSpriteComponent())
         {
             getSpriteComponent()->update(deltaTime);
 
@@ -311,12 +303,10 @@ namespace FishGame
 
     void Jellyfish::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        const auto* sprite = getSpriteComponent();
-        if (sprite && sprite->getSprite().getTexture())
-        {
-            target.draw(*sprite, states);
+        if (getRenderMode() == RenderMode::Sprite && getSpriteComponent())
+    {
+            target.draw(*getSpriteComponent(), states);
         }
-        /*
         else
         {
             std::for_each(m_tentacles.begin(), m_tentacles.end(),
@@ -326,7 +316,6 @@ namespace FishGame
 
             target.draw(m_bell, states);
         }
-        */
     }
 
     void Jellyfish::pushEntity(Entity& entity) const

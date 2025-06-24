@@ -109,6 +109,7 @@ namespace FishGame
         float scale = spriteManager.getScaleConfig().large * 1.5f;
         m_animator->setScale({ scale, scale });
         m_animator->setPosition(m_position);
+        setRenderMode(RenderMode::Sprite);
 
         m_facingRight = m_velocity.x > 0.f;
         m_currentAnimation = m_facingRight ? "swimRight" : "swimLeft";
@@ -129,7 +130,7 @@ namespace FishGame
     {
         AdvancedFish::update(deltaTime);
 
-        if (m_animator)
+        if (m_animator && getRenderMode() == RenderMode::Sprite)
         {
             bool newFacingRight = m_velocity.x > 0.f;
             if (newFacingRight != m_facingRight)
@@ -286,6 +287,7 @@ namespace FishGame
         float scale = spriteManager.getScaleConfig().medium;
         m_animator->setScale({ scale, scale });
         m_animator->setPosition(m_position);
+        setRenderMode(RenderMode::Sprite);
 
         m_facingRight = m_velocity.x > 0.f;
         m_currentAnimation = m_facingRight ? "swimRight" : "swimLeft";
@@ -409,27 +411,17 @@ namespace FishGame
 
     void Pufferfish::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        const auto* sprite = getSpriteComponent();
-        if (sprite && sprite->getSprite().getTexture())
-        {
-            target.draw(*sprite, states);
-        }
-        /*
-        else
-        {
-            Fish::draw(target, states);
+        Fish::draw(target, states);
 
-            // Draw spikes when inflating
-            if (m_inflationLevel > 0.2f)
-            {
-                std::for_each(m_spikes.begin(), m_spikes.end(),
-                    [&target, &states](const sf::CircleShape& spike)
-                    {
-                        target.draw(spike, states);
-                    });
-            }
+        // Draw spikes when inflating
+        if (m_inflationLevel > 0.2f)
+        {
+            std::for_each(m_spikes.begin(), m_spikes.end(),
+                [&target, &states](const sf::CircleShape& spike)
+                {
+                    target.draw(spike, states);
+                });
         }
-        */
     }
 
 
@@ -598,24 +590,14 @@ namespace FishGame
 
     void PoisonFish::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        const auto* sprite = getSpriteComponent();
-        if (sprite && sprite->getSprite().getTexture())
-        {
-            target.draw(*sprite, states);
-        }
-        /*
-        else
-        {
-            // Draw poison bubbles first
-            std::for_each(m_poisonBubbles.begin(), m_poisonBubbles.end(),
-                [&target, &states](const sf::CircleShape& bubble) {
-                    target.draw(bubble, states);
-                });
+        // Draw poison bubbles first
+        std::for_each(m_poisonBubbles.begin(), m_poisonBubbles.end(),
+            [&target, &states](const sf::CircleShape& bubble) {
+                target.draw(bubble, states);
+            });
 
-            // Draw the fish
-            Fish::draw(target, states);
-        }
-        */
+        // Draw the fish
+        Fish::draw(target, states);
     }
 
     // Angelfish implementation
@@ -874,24 +856,14 @@ namespace FishGame
 
     void Angelfish::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        const auto* sprite = getSpriteComponent();
-        if (sprite && sprite->getSprite().getTexture())
-        {
-            target.draw(*sprite, states);
-        }
-        /*
-        else
-        {
-            // Draw fins first
-            std::for_each(m_fins.begin(), m_fins.end(),
-                [&target, &states](const sf::CircleShape& fin)
-                {
-                    target.draw(fin, states);
-                });
+        // Draw fins first
+        std::for_each(m_fins.begin(), m_fins.end(),
+            [&target, &states](const sf::CircleShape& fin)
+            {
+                target.draw(fin, states);
+            });
 
-            Fish::draw(target, states);
-        }
-        */
+        Fish::draw(target, states);
     }
 
     void Angelfish::updateErraticMovement(sf::Time deltaTime)
