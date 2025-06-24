@@ -12,9 +12,7 @@ namespace FishGame
     {
         FishEaten,
         BonusCollected,
-        TailBite,
-        PowerUpCollected,
-        LevelComplete
+        TailBite
     };
 
     // Floating score text that appears when points are earned
