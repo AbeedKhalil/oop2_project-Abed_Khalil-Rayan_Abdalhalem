@@ -7,9 +7,8 @@
 #include "ExtendedPowerUps.h"
 #include "BonusItem.h"
 #include "Hazard.h"
-#include "Systems/FishCollisionHandler.h"
+#include "FishCollisionHandler.h"
 #include "OysterManager.h"
-#include <cmath>
 #include <algorithm>
 #include <execution>
 #include <sstream>
@@ -429,37 +428,6 @@ namespace FishGame
             spawnBomb();
         }
 
-        // Update schooling behavior for spawned fish
-        for (auto& group : m_fishSchools)
-        {
-            std::vector<SchoolMember<SmallFish>*> aliveMembers;
-            aliveMembers.reserve(group.size());
-
-            for (auto* member : group)
-            {
-                if (member && member->isAlive())
-                    aliveMembers.push_back(member);
-            }
-
-            for (auto* member : aliveMembers)
-            {
-                member->updateSchooling(aliveMembers, deltaTime);
-            }
-        }
-
-        m_fishSchools.erase(
-            std::remove_if(
-                m_fishSchools.begin(),
-                m_fishSchools.end(),
-                [](const auto& g)
-                {
-                    return std::none_of(g.begin(), g.end(), [](auto* m)
-                    {
-                        return m && m->isAlive();
-                    });
-                }),
-            m_fishSchools.end());
-
         // Check collisions with fish
         std::for_each(m_entities.begin(), m_entities.end(),
             [this](auto& entity) {
@@ -536,32 +504,17 @@ namespace FishGame
 
     void BonusStageState::spawnBonusFish()
     {
-        const std::size_t count = 5;
-
-        bool fromLeft = m_randomEngine() % 2 == 0;
-        float baseX = fromLeft ? -50.0f : 1970.0f;
-        float baseY = m_yDist(m_randomEngine);
-
-        std::vector<SchoolMember<SmallFish>*> school;
-        school.reserve(count);
-
-        for (std::size_t i = 0; i < count; ++i)
-        {
-            auto fish = std::make_unique<SchoolMember<SmallFish>>(m_playerLevel);
-            float xOffset = static_cast<float>(i) * 40.0f;
-            float yOffset = std::sin(static_cast<float>(i) * 0.5f) * 30.0f;
-            float x = fromLeft ? baseX - xOffset : baseX + xOffset;
-            float y = baseY + yOffset;
+        std::generate_n(std::back_inserter(m_entities), 5, [this] {
+            auto fish = std::make_unique<SmallFish>(m_playerLevel);
+            bool fromLeft = m_randomEngine() % 2 == 0;
+            float x = fromLeft ? -50.0f : 1970.0f;
+            float y = m_yDist(m_randomEngine);
             fish->setPosition(x, y);
             fish->setDirection(fromLeft ? 1.0f : -1.0f, 0.0f);
             fish->setWindowBounds(getGame().getWindow().getSize());
             fish->initializeSprite(getGame().getSpriteManager());
-
-            school.push_back(fish.get());
-            m_entities.push_back(std::move(fish));
-        }
-
-        m_fishSchools.push_back(std::move(school));
+            return fish;
+            });
     }
 
     void BonusStageState::spawnPredatorWave()
