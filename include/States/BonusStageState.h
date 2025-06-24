@@ -5,6 +5,7 @@
 #include "EnvironmentSystem.h"
 #include "Player.h"
 #include "Hazard.h"
+#include "SpecialFish.h"
 #include <SFML/Graphics.hpp>
 #include <memory>
 #include <vector>
@@ -110,10 +111,13 @@ namespace FishGame
         // Short grace period after collecting a pearl to avoid instant failure
         sf::Time m_oysterSafetyTimer{ sf::Time::Zero };
 
+        // Tracking schools of bonus fish
+        std::vector<std::vector<SchoolMember<SmallFish>*>> m_fishSchools;
+
         // Stage configuration
         static constexpr int m_requiredPearlCount = 10;
         static constexpr float m_treasureHuntDuration = 30.0f;
-        static constexpr float m_feedingFrenzyDuration = 45.0f;
+        static constexpr float m_feedingFrenzyDuration = 15.0f;
         static constexpr float m_survivalDuration = 60.0f;
     };
 }
