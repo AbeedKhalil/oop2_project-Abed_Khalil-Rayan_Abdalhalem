@@ -113,7 +113,7 @@ namespace FishGame
         // Stage configuration
         static constexpr int m_requiredPearlCount = 10;
         static constexpr float m_treasureHuntDuration = 30.0f;
-        static constexpr float m_feedingFrenzyDuration = 45.0f;
+        static constexpr float m_feedingFrenzyDuration = 15.0f;
         static constexpr float m_survivalDuration = 60.0f;
     };
 }

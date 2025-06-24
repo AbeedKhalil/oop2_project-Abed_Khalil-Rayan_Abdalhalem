@@ -7,7 +7,7 @@
 #include "ExtendedPowerUps.h"
 #include "BonusItem.h"
 #include "Hazard.h"
-#include "Systems/FishCollisionHandler.h"
+#include "FishCollisionHandler.h"
 #include "OysterManager.h"
 #include <algorithm>
 #include <execution>
