@@ -62,7 +62,8 @@ namespace FishGame
     {
         m_elements.clear();
 
-        std::mt19937 rng(std::chrono::steady_clock::now().time_since_epoch().count());
+        std::mt19937 rng(static_cast<std::mt19937::result_type>(
+            std::chrono::steady_clock::now().time_since_epoch().count()));
         std::uniform_real_distribution<float> xDist(0.0f, 2000.0f);
         std::uniform_real_distribution<float> yDist(100.0f, 900.0f);
         std::uniform_real_distribution<float> sizeDist(20.0f, 100.0f);
@@ -125,7 +126,8 @@ namespace FishGame
         m_particles.reserve(50);
 
         // Initialize current particles
-        std::mt19937 rng(std::chrono::steady_clock::now().time_since_epoch().count());
+        std::mt19937 rng(static_cast<std::mt19937::result_type>(
+            std::chrono::steady_clock::now().time_since_epoch().count()));
         std::uniform_real_distribution<float> xDist(0.0f, static_cast<float>(Constants::WINDOW_WIDTH));
         std::uniform_real_distribution<float> yDist(0.0f, static_cast<float>(Constants::WINDOW_HEIGHT));
 
@@ -216,7 +218,8 @@ namespace FishGame
         , m_transitionTimer(sf::Time::Zero)
         , m_isTransitioning(false)
         , m_dayNightCyclePaused(true)  // Start paused by default
-        , m_randomEngine(std::chrono::steady_clock::now().time_since_epoch().count())
+        , m_randomEngine(static_cast<std::mt19937::result_type>(
+            std::chrono::steady_clock::now().time_since_epoch().count()))
         , m_timeDist(0, 3)
     {
         m_lightingOverlay.setFillColor(sf::Color(0, 0, 0, 0));

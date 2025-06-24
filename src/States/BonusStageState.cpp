@@ -32,7 +32,8 @@ namespace FishGame
         , m_scoreText()
         , m_timerBar()
         , m_timerBackground()
-        , m_randomEngine(std::chrono::steady_clock::now().time_since_epoch().count())
+        , m_randomEngine(static_cast<std::mt19937::result_type>(
+            std::chrono::steady_clock::now().time_since_epoch().count()))
         , m_xDist(100.0f, 1820.0f)
         , m_yDist(100.0f, 980.0f)
     {
