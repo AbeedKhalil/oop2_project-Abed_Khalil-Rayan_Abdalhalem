@@ -6,6 +6,7 @@
 #include "GameOverState.h"
 #include "PauseState.h"
 #include <algorithm>
+#include <execution>
 #include <sstream>
 #include <iomanip>
 #include <numeric>
@@ -350,7 +351,8 @@ namespace FishGame
         std::move(newItems.begin(), newItems.end(), std::back_inserter(m_bonusItems));
 
         // Update particles with parallel execution
-        std::for_each(m_particles.begin(), m_particles.end(),
+        std::for_each(std::execution::par_unseq,
+            m_particles.begin(), m_particles.end(),
             [deltaTime](ParticleEffect& particle) {
                 particle.lifetime -= deltaTime;
                 particle.shape.move(particle.velocity * deltaTime.asSeconds());
