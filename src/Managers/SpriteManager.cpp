@@ -70,6 +70,7 @@ namespace FishGame
 
 void SpriteManager::loadTextures(const std::string& assetPath)
 {
+        m_textureHolder.reserve(s_textureFiles.size());
         // Use STL algorithm to load all textures
         std::for_each(s_textureFiles.begin(), s_textureFiles.end(),
             [this, &assetPath](const auto& pair)
