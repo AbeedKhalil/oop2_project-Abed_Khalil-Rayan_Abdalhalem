@@ -51,7 +51,6 @@ namespace FishGame
 
         // Control the explosion sequence
         void trigger();
-        bool isFinished() const;
 
         // Compatibility with old systems
         bool isExploding() const { return m_isExploding; }
