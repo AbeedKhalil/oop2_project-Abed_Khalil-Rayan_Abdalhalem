@@ -87,9 +87,19 @@ namespace FishGame
 
     void ScoreDoublerPowerUp::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        target.draw(m_aura, states);
-        target.draw(m_iconBackground, states);
-        target.draw(m_icon, states);
+        const auto* sprite = getSpriteComponent();
+        if (sprite && sprite->getSprite().getTexture())
+        {
+            target.draw(*sprite, states);
+        }
+        /*
+        else
+        {
+            target.draw(m_aura, states);
+            target.draw(m_iconBackground, states);
+            target.draw(m_icon, states);
+        }
+        */
     }
 
     // FrenzyStarterPowerUp implementation
@@ -159,11 +169,21 @@ namespace FishGame
 
     void FrenzyStarterPowerUp::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        target.draw(m_aura, states);
-        target.draw(m_iconBackground, states);
+        const auto* sprite = getSpriteComponent();
+        if (sprite && sprite->getSprite().getTexture())
+        {
+            target.draw(*sprite, states);
+        }
+        /*
+        else
+        {
+            target.draw(m_aura, states);
+            target.draw(m_iconBackground, states);
 
-        // Draw lightning bolts
-        DrawUtils::drawContainer(m_lightningBolts, target, states);
+            // Draw lightning bolts
+            DrawUtils::drawContainer(m_lightningBolts, target, states);
+        }
+        */
     }
 
     // PowerUpManager implementation
