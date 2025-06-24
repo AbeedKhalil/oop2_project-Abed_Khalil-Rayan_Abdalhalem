@@ -61,16 +61,9 @@ namespace FishGame
 
         // Setup background and camera
         auto& window = getGame().getWindow();
-        m_backgroundSprite.setTexture(
-            getGame().getSpriteManager().getTexture(TextureID::Background));
+        updateBackground(m_gameState.currentLevel);
 
         const sf::Vector2f windowSize(window.getSize());
-
-        // Scale background to always fill the window
-        const sf::Vector2f textureSize(m_backgroundSprite.getTexture()->getSize());
-        m_backgroundSprite.setScale(
-            windowSize.x / textureSize.x,
-            windowSize.y / textureSize.y);
 
         m_worldSize = windowSize;
 
@@ -964,6 +957,8 @@ namespace FishGame
         m_gameState.currentLevel++;
         m_gameState.totalScore += m_scoreSystem->getCurrentScore();
 
+        updateBackground(m_gameState.currentLevel);
+
         if (m_gameState.currentLevel % 3 == 0)
         {
             EnvironmentType newEnv = static_cast<EnvironmentType>(
@@ -1220,8 +1215,8 @@ namespace FishGame
         centerText(m_hud.messageText);
     }
 
-    void PlayState::centerText(sf::Text& text)
-    {
+void PlayState::centerText(sf::Text& text)
+{
         sf::FloatRect bounds = text.getLocalBounds();
         text.setOrigin(bounds.width / 2.0f, bounds.height / 2.0f);
         auto windowSize = getGame().getWindow().getSize();
@@ -1291,6 +1286,7 @@ namespace FishGame
 
             resetLevel();
             updateLevelDifficulty();
+            updateBackground(m_gameState.currentLevel);
 
             // Mouse control disabled
 
@@ -1307,6 +1303,7 @@ namespace FishGame
             m_returningFromBonusStage = false;
             m_savedLevel = 1;
             m_initialized = true;
+            updateBackground(m_gameState.currentLevel);
         }
 
         // Ensure camera starts centered on the player
@@ -1317,5 +1314,28 @@ namespace FishGame
     {
         // Show mouse cursor again when leaving play state
         getGame().getWindow().setMouseCursorVisible(true);
+    }
+
+    void PlayState::updateBackground(int level)
+    {
+        static const TextureID backgrounds[] = {
+            TextureID::Background1,
+            TextureID::Background2,
+            TextureID::Background3,
+            TextureID::Background4,
+            TextureID::Background5
+        };
+
+        int index = ((level - 1) / 2) % 5;
+        TextureID id = backgrounds[index];
+
+        auto& manager = getGame().getSpriteManager();
+        m_backgroundSprite.setTexture(manager.getTexture(id));
+
+        auto windowSize = getGame().getWindow().getSize();
+        auto texSize = m_backgroundSprite.getTexture()->getSize();
+        m_backgroundSprite.setScale(
+            static_cast<float>(windowSize.x) / texSize.x,
+            static_cast<float>(windowSize.y) / texSize.y);
     }
 }
