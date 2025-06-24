@@ -72,6 +72,7 @@ namespace FishGame
     template<typename SpecialFishType>
     void EnhancedFishSpawner::spawnSpecialFish(float spawnRate, sf::Time deltaTime)
     {
+        (void)deltaTime;
         std::string typeName;
 
         // Determine type name for timer lookup
@@ -134,7 +135,7 @@ namespace FishGame
             config.fishSize = FishSize::Medium;
         }
 
-        int schoolId = m_schoolingSystem->createSchool<FishType>(config);
+        m_schoolingSystem->createSchool<FishType>(config);
 
         // Spawn position for the school
         bool fromLeft = m_randomEngine() % 2 == 0;

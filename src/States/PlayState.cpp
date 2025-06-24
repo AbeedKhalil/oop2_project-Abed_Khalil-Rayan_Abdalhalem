@@ -723,7 +723,7 @@ namespace FishGame
                 state->handlePlayerDeath();
             }
         }
-        else if (auto* angel = dynamic_cast<Angelfish*>(&fish))
+        else if (dynamic_cast<Angelfish*>(&fish))
         {
             if (state->m_player->canEat(fish) && state->m_player->attemptEat(fish))
             {

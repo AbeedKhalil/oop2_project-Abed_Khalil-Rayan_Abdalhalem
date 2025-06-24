@@ -127,6 +127,7 @@ namespace FishGame
 
     void Bomb::onContact(Entity& entity)
     {
+        (void)entity;
         trigger();
     }
 

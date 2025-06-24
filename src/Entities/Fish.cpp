@@ -61,7 +61,7 @@ namespace FishGame
         m_isFleeing = true;
 
         // Determine flee direction based on position
-        float centerX = m_windowBounds.x / 2.0f;
+        float centerX = static_cast<float>(m_windowBounds.x) / 2.0f;
 
         // Flee to nearest edge
         if (m_position.x < centerX)
@@ -77,7 +77,7 @@ namespace FishGame
         m_velocity = m_fleeDirection * m_fleeSpeed;
     }
 
-    void Fish::updateFleeingBehavior(sf::Time deltaTime)
+    void Fish::updateFleeingBehavior()
     {
         if (!m_isFleeing)
             return;
@@ -292,14 +292,15 @@ namespace FishGame
         // Update fleeing behavior if active
         if (m_isFleeing)
         {
-            updateFleeingBehavior(deltaTime);
+            updateFleeingBehavior();
         }
 
         // Update position
         updateMovement(deltaTime);
 
         // Check if fish has moved off screen
-        if (m_velocity.x > 0 && m_position.x > m_windowBounds.x + m_radius)
+        if (m_velocity.x > 0 &&
+            m_position.x > static_cast<float>(m_windowBounds.x) + m_radius)
         {
             destroy();
         }

@@ -41,12 +41,12 @@ namespace FishGame
         , m_activeEffects()
         , m_eatAnimationScale(1.0f)
         , m_eatAnimationTimer(sf::Time::Zero)
+        , m_turnAnimationTimer(sf::Time::Zero)
         , m_damageFlashColor(sf::Color::White)
         , m_damageFlashIntensity(0.0f)
         , m_animator(nullptr)
         , m_currentAnimation()
         , m_facingRight(false)
-        , m_turnAnimationTimer(sf::Time::Zero)
     {
         m_radius = m_baseRadius;
 

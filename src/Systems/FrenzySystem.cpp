@@ -172,7 +172,6 @@ namespace FishGame
     {
         if (m_currentLevel != level)
         {
-            FrenzyLevel oldLevel = m_currentLevel;
             m_currentLevel = level;
 
             // Update visuals based on level

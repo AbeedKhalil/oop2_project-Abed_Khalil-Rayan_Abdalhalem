@@ -285,6 +285,7 @@ namespace FishGame
 
     void GameOverState::updateMenuSelection(sf::Time deltaTime)
     {
+        (void)deltaTime;
         if (m_isTransitioning) return;
 
         // Get mouse position for hover effects
@@ -349,6 +350,7 @@ namespace FishGame
 
     void GameOverState::handleMouseMove(const sf::Vector2f& mousePos)
     {
+        (void)mousePos;
         // Hover effect handled in updateMenuSelection
     }
 

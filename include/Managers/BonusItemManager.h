@@ -18,12 +18,13 @@ namespace FishGame
         EnhancedBonusSpawner(float spawnRate, const sf::Vector2u& windowSize, const sf::Font* font = nullptr)
             : m_spawnRate(spawnRate)
             , m_spawnTimer(sf::Time::Zero)
+            , m_shouldSpawn(false)
+            , m_enabled(true)
             , m_windowSize(windowSize)
             , m_font(font)
             , m_randomEngine(std::random_device{}())
             , m_xDistribution(0.0f, 1.0f)  // Initialize with valid range
             , m_yDistribution(0.0f, 1.0f)  // Initialize with valid range
-            , m_enabled(true)
         {
             // Set up distributions with validation
             float margin = 100.0f;
