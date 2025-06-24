@@ -1,4 +1,5 @@
 #include "Animator.h"
+#include <algorithm>
 
 using namespace sf;
 
@@ -205,10 +206,15 @@ Animator createPufferfishAnimator(const sf::Texture& tex)
 {
     Animator a(tex, 187, 123, 1);
 
-    auto makeClip = [&](const std::string& name, int rowY, int start, int count,
-        Time dur, bool loop = true, bool reverse = false)
+    auto makeFrames = [](int rowY, int width, int count, int height)
         {
-            a.addClipRow(name, rowY, start, count, dur, loop, reverse);
+            std::vector<sf::IntRect> frames;
+            frames.reserve(count);
+            for (int i = 0; i < count; ++i)
+            {
+                frames.emplace_back(1 + i * width, rowY, width, height);
+            }
+            return frames;
         };
 
     const int EAT_Y = 1;
@@ -216,11 +222,14 @@ Animator createPufferfishAnimator(const sf::Texture& tex)
     const int SWIM_Y = 285;
     const int TURN_Y = 405;
 
-    makeClip("eatLeft", EAT_Y, 0, 7, milliseconds(100), false);
-    makeClip("puffLeft", PUFF_Y, 0, 6, milliseconds(100), false);
-    makeClip("swimLeft", SWIM_Y, 0, 15, milliseconds(80));
-    makeClip("turnLeftToRight", TURN_Y, 0, 5, milliseconds(90), false);
-    makeClip("turnRightToLeft", TURN_Y, 0, 5, milliseconds(90), false, true);
+    a.addClip("eatLeft", makeFrames(EAT_Y, 187, 7, 123), milliseconds(100), false);
+    a.addClip("puffLeft", makeFrames(PUFF_Y, 186, 6, 123), milliseconds(100), false);
+    a.addClip("swimLeft", makeFrames(SWIM_Y, 184, 15, 123), milliseconds(80));
+
+    auto turnFrames = makeFrames(TURN_Y, 168, 5, 114);
+    a.addClip("turnLeftToRight", turnFrames, milliseconds(90), false);
+    std::reverse(turnFrames.begin(), turnFrames.end());
+    a.addClip("turnRightToLeft", turnFrames, milliseconds(90), false);
 
     a.copyFlip("eatLeft", "eatRight");
     a.copyFlip("puffLeft", "puffRight");
