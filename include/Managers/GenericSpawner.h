@@ -29,11 +29,13 @@ namespace FishGame
 
         explicit GenericSpawner(const ConfigType& config = {})
             : m_config(config)
+            , m_factory(nullptr)
             , m_spawnTimer(sf::Time::Zero)
+            , m_enabled(true)
+            , m_spawnBuffer()
             , m_randomEngine(std::random_device{}())
             , m_xDist(config.minBounds.x, config.maxBounds.x)
             , m_yDist(config.minBounds.y, config.maxBounds.y)
-            , m_enabled(true)
         {
         }
 

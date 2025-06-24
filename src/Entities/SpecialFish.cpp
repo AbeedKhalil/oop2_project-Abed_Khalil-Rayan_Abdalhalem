@@ -228,7 +228,7 @@ namespace FishGame
         }
     }
 
-    void Barracuda::updateHuntingBehavior(const Entity* target, sf::Time deltaTime)
+    void Barracuda::updateHuntingBehavior(const Entity* target, sf::Time /*deltaTime*/)
     {
         sf::Vector2f direction = target->getPosition() - m_position;
         float distance = std::sqrt(direction.x * direction.x + direction.y * direction.y);
@@ -554,7 +554,7 @@ namespace FishGame
         updatePoisonBubbles(deltaTime);
     }
 
-    void PoisonFish::updatePoisonBubbles(sf::Time deltaTime)
+    void PoisonFish::updatePoisonBubbles(sf::Time /*deltaTime*/)
     {
         for (size_t i = 0; i < m_poisonBubbles.size(); ++i)
         {

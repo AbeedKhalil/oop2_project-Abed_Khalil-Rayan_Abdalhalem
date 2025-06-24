@@ -89,7 +89,7 @@ namespace FishGame
         float spacing = 50.0f;
         MovementPattern movementPattern = MovementPattern::Linear;
 
-        void applyToFish(FishType& fish, size_t index) const
+        void applyToFish(FishType& fish, [[maybe_unused]] size_t index) const
         {
             if constexpr (std::is_base_of_v<AdvancedFish, FishType>)
             {

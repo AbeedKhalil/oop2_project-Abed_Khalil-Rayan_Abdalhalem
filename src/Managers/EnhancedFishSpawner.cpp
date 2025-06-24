@@ -11,11 +11,11 @@ namespace FishGame
         , m_barracudaSpawner()
         , m_pufferfishSpawner()
         , m_angelfishSpawner()
+        , m_poisonFishSpawner()
         , m_specialConfig()
         , m_schoolingSystem(nullptr)
         , m_schoolChanceDist(0.0f, 1.0f)
         , m_schoolSizeDist(2, 3)  // Reduced from (2, 4) to (2, 3) - smaller schools
-        , m_poisonFishSpawner()
     {
         // Initialize special spawn timers
         m_specialSpawnTimers["barracuda"] = sf::Time::Zero;
@@ -103,7 +103,9 @@ namespace FishGame
 
             // Determine spawn position
             bool fromLeft = m_randomEngine() % 2 == 0;
-            float y = std::uniform_real_distribution<float>(100.0f, m_windowSize.y - 100.0f)(m_randomEngine);
+            float y = std::uniform_real_distribution<float>(
+                100.0f,
+                static_cast<float>(m_windowSize.y) - 100.0f)(m_randomEngine);
             float x = fromLeft ? -50.0f : m_windowSize.x + 50.0f;
 
             fish->setPosition(x, y);
@@ -139,7 +141,9 @@ namespace FishGame
 
         // Spawn position for the school
         bool fromLeft = m_randomEngine() % 2 == 0;
-        float baseY = std::uniform_real_distribution<float>(150.0f, m_windowSize.y - 150.0f)(m_randomEngine);
+        float baseY = std::uniform_real_distribution<float>(
+            150.0f,
+            static_cast<float>(m_windowSize.y) - 150.0f)(m_randomEngine);
         float baseX = fromLeft ? -50.0f : m_windowSize.x + 50.0f;
 
         // Create formation configuration

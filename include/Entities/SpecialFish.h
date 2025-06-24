@@ -67,7 +67,7 @@ namespace FishGame
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
     private:
-        void updateHuntingBehavior(const Entity* target, sf::Time deltaTime);
+        void updateHuntingBehavior(const Entity* target, sf::Time /*deltaTime*/);
 
     private:
         const Entity* m_currentTarget;
@@ -184,7 +184,7 @@ namespace FishGame
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
     private:
-        void updatePoisonBubbles(sf::Time deltaTime);
+        void updatePoisonBubbles(sf::Time /*deltaTime*/);
 
     private:
         std::vector<sf::CircleShape> m_poisonBubbles;

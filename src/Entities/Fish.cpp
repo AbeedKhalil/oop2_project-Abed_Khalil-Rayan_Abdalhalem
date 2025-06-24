@@ -433,7 +433,7 @@ namespace FishGame
     }
 
     void Fish::updateAI(const std::vector<std::unique_ptr<Entity>>& entities,
-        const Entity* player, sf::Time deltaTime)
+        const Entity* player, sf::Time /*deltaTime*/)
     {
         // Skip AI if frozen, fleeing, or stunned
         if (m_isFrozen || m_isFleeing || m_isStunned)
