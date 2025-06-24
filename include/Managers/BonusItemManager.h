@@ -158,8 +158,7 @@ namespace FishGame
         void setStarfishEnabled(bool enabled);
         void setPowerUpsEnabled(bool enabled);
 
-        // Force spawn specific items
-        void spawnStarfish();
+        // Force spawn a random power-up
         void spawnRandomPowerUp();
 
     private:
