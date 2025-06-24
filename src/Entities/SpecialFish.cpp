@@ -409,17 +409,27 @@ namespace FishGame
 
     void Pufferfish::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        Fish::draw(target, states);
-
-        // Draw spikes when inflating
-        if (m_inflationLevel > 0.2f)
+        const auto* sprite = getSpriteComponent();
+        if (sprite && sprite->getSprite().getTexture())
         {
-            std::for_each(m_spikes.begin(), m_spikes.end(),
-                [&target, &states](const sf::CircleShape& spike)
-                {
-                    target.draw(spike, states);
-                });
+            target.draw(*sprite, states);
         }
+        /*
+        else
+        {
+            Fish::draw(target, states);
+
+            // Draw spikes when inflating
+            if (m_inflationLevel > 0.2f)
+            {
+                std::for_each(m_spikes.begin(), m_spikes.end(),
+                    [&target, &states](const sf::CircleShape& spike)
+                    {
+                        target.draw(spike, states);
+                    });
+            }
+        }
+        */
     }
 
 
@@ -588,14 +598,24 @@ namespace FishGame
 
     void PoisonFish::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        // Draw poison bubbles first
-        std::for_each(m_poisonBubbles.begin(), m_poisonBubbles.end(),
-            [&target, &states](const sf::CircleShape& bubble) {
-                target.draw(bubble, states);
-            });
+        const auto* sprite = getSpriteComponent();
+        if (sprite && sprite->getSprite().getTexture())
+        {
+            target.draw(*sprite, states);
+        }
+        /*
+        else
+        {
+            // Draw poison bubbles first
+            std::for_each(m_poisonBubbles.begin(), m_poisonBubbles.end(),
+                [&target, &states](const sf::CircleShape& bubble) {
+                    target.draw(bubble, states);
+                });
 
-        // Draw the fish
-        Fish::draw(target, states);
+            // Draw the fish
+            Fish::draw(target, states);
+        }
+        */
     }
 
     // Angelfish implementation
@@ -854,14 +874,24 @@ namespace FishGame
 
     void Angelfish::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        // Draw fins first
-        std::for_each(m_fins.begin(), m_fins.end(),
-            [&target, &states](const sf::CircleShape& fin)
-            {
-                target.draw(fin, states);
-            });
+        const auto* sprite = getSpriteComponent();
+        if (sprite && sprite->getSprite().getTexture())
+        {
+            target.draw(*sprite, states);
+        }
+        /*
+        else
+        {
+            // Draw fins first
+            std::for_each(m_fins.begin(), m_fins.end(),
+                [&target, &states](const sf::CircleShape& fin)
+                {
+                    target.draw(fin, states);
+                });
 
-        Fish::draw(target, states);
+            Fish::draw(target, states);
+        }
+        */
     }
 
     void Angelfish::updateErraticMovement(sf::Time deltaTime)

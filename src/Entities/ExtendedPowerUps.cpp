@@ -80,12 +80,22 @@ namespace FishGame
 
     void FreezePowerUp::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        target.draw(m_aura, states);
-        target.draw(m_iconBackground, states);
+        const auto* sprite = getSpriteComponent();
+        if (sprite && sprite->getSprite().getTexture())
+        {
+            target.draw(*sprite, states);
+        }
+        /*
+        else
+        {
+            target.draw(m_aura, states);
+            target.draw(m_iconBackground, states);
 
-        DrawUtils::drawContainer(m_iceShards, target, states);
+            DrawUtils::drawContainer(m_iceShards, target, states);
 
-        target.draw(m_icon, states);
+            target.draw(m_icon, states);
+        }
+        */
     }
 
     // ExtraLifePowerUp implementation
@@ -138,16 +148,19 @@ namespace FishGame
 
     void ExtraLifePowerUp::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        if (getSpriteComponent())
+        const auto* sprite = getSpriteComponent();
+        if (sprite && sprite->getSprite().getTexture())
         {
-            target.draw(*getSpriteComponent(), states);
+            target.draw(*sprite, states);
         }
+        /*
         else
         {
             target.draw(m_aura, states);
             target.draw(m_iconBackground, states);
             target.draw(m_heart, states);
         }
+        */
     }
 
     void ExtraLifePowerUp::initializeSprite(SpriteManager& spriteManager)
@@ -234,10 +247,12 @@ namespace FishGame
 
     void SpeedBoostPowerUp::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        if (getSpriteComponent())
+        const auto* sprite = getSpriteComponent();
+        if (sprite && sprite->getSprite().getTexture())
         {
-            target.draw(*getSpriteComponent(), states);
+            target.draw(*sprite, states);
         }
+        /*
         else
         {
             target.draw(m_aura, states);
@@ -245,6 +260,7 @@ namespace FishGame
 
             DrawUtils::drawContainer(m_speedLines, target, states);
         }
+        */
     }
 
     void SpeedBoostPowerUp::initializeSprite(SpriteManager& spriteManager)
@@ -285,9 +301,10 @@ namespace FishGame
 
     void AddTimePowerUp::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        if (getSpriteComponent())
+        const auto* sprite = getSpriteComponent();
+        if (sprite && sprite->getSprite().getTexture())
         {
-            target.draw(*getSpriteComponent(), states);
+            target.draw(*sprite, states);
         }
     }
 

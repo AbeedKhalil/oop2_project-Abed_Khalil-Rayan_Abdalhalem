@@ -133,8 +133,17 @@ namespace FishGame
 
     void Bomb::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        if (m_sprite)
+        const auto* sprite = getSpriteComponent();
+        if (sprite && sprite->getSprite().getTexture())
+        {
+            target.draw(*sprite, states);
+        }
+        /*
+        else if (m_sprite)
+        {
             target.draw(*m_sprite, states);
+        }
+        */
     }
 
     void Bomb::advanceState()
@@ -302,10 +311,12 @@ namespace FishGame
 
     void Jellyfish::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        if (getSpriteComponent())
+        const auto* sprite = getSpriteComponent();
+        if (sprite && sprite->getSprite().getTexture())
         {
-            target.draw(*getSpriteComponent(), states);
+            target.draw(*sprite, states);
         }
+        /*
         else
         {
             std::for_each(m_tentacles.begin(), m_tentacles.end(),
@@ -315,6 +326,7 @@ namespace FishGame
 
             target.draw(m_bell, states);
         }
+        */
     }
 
     void Jellyfish::pushEntity(Entity& entity) const

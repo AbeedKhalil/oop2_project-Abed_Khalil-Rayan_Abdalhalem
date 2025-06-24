@@ -136,10 +136,12 @@ namespace FishGame
 
     void Starfish::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        if (getSpriteComponent())
+        const auto* sprite = getSpriteComponent();
+        if (sprite && sprite->getSprite().getTexture())
         {
-            target.draw(*getSpriteComponent(), states);
+            target.draw(*sprite, states);
         }
+        /*
         else
         {
             // Draw arms first
@@ -148,5 +150,6 @@ namespace FishGame
             // Draw center
             target.draw(m_shape, states);
         }
+        */
     }
 }
