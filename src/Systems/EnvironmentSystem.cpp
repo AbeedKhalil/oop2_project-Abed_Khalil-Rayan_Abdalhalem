@@ -5,6 +5,7 @@
 #include <numeric>
 #include <chrono>
 #include <iterator>
+#include <execution>
 
 namespace FishGame
 {
@@ -255,17 +256,20 @@ namespace FishGame
         m_oceanCurrents->update(deltaTime);
 
         // Update background fish
-        for (auto& fish : m_backgroundFish)
-        {
-            fish.shape.move(fish.velocity * deltaTime.asSeconds());
-            sf::Vector2f pos = fish.shape.getPosition();
-            float radius = fish.shape.getRadius();
-            if (fish.velocity.x > 0.f && pos.x - radius > static_cast<float>(Constants::WINDOW_WIDTH))
-                pos.x = -radius;
-            else if (fish.velocity.x < 0.f && pos.x + radius < 0.f)
-                pos.x = static_cast<float>(Constants::WINDOW_WIDTH) + radius;
-            fish.shape.setPosition(pos);
-        }
+        std::for_each(
+            std::execution::par_unseq,
+            m_backgroundFish.begin(),
+            m_backgroundFish.end(),
+            [deltaTime](BackgroundFish& fish) {
+                fish.shape.move(fish.velocity * deltaTime.asSeconds());
+                sf::Vector2f pos = fish.shape.getPosition();
+                float radius = fish.shape.getRadius();
+                if (fish.velocity.x > 0.f && pos.x - radius > static_cast<float>(Constants::WINDOW_WIDTH))
+                    pos.x = -radius;
+                else if (fish.velocity.x < 0.f && pos.x + radius < 0.f)
+                    pos.x = static_cast<float>(Constants::WINDOW_WIDTH) + radius;
+                fish.shape.setPosition(pos);
+            });
 
         // Update day/night cycle only if not paused
         if (!m_dayNightCyclePaused)
@@ -345,10 +349,13 @@ namespace FishGame
         m_farLayer->draw(target);
 
         // Draw background fish behind near layer
-        for (const auto& fish : m_backgroundFish)
-        {
-            target.draw(fish.shape, states);
-        }
+        std::for_each(
+            std::execution::par_unseq,
+            m_backgroundFish.begin(),
+            m_backgroundFish.end(),
+            [&target, states](const BackgroundFish& fish) {
+                target.draw(fish.shape, states);
+            });
 
         m_midLayer->draw(target);
         m_nearLayer->draw(target);
