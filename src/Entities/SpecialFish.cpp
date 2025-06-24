@@ -344,7 +344,7 @@ namespace FishGame
             );
 
             m_spikes[i].setPosition(spikePos);
-            m_spikes[i].setRotation(angle * Constants::DEG_TO_RAD);
+            m_spikes[i].setRotation(angle * Constants::RAD_TO_DEG);
         }
     }
 
@@ -650,7 +650,7 @@ namespace FishGame
             );
 
             m_fins[i].setPosition(finPos);
-            m_fins[i].setRotation(finAngle * Constants::DEG_TO_RAD);
+            m_fins[i].setRotation(finAngle * Constants::RAD_TO_DEG);
 
             // Pulse fins when evading (unless frozen)
             if (m_isEvading && !m_isFrozen)
