@@ -55,3 +55,4 @@ Animator createFishAnimator(const sf::Texture& texture);
 Animator createBarracudaAnimator(const sf::Texture& texture);
 Animator createSimpleFishAnimator(const sf::Texture& texture);
 Animator createMediumFishAnimator(const sf::Texture& texture);
+Animator createPufferfishAnimator(const sf::Texture& texture);

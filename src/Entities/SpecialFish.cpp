@@ -271,6 +271,8 @@ namespace FishGame
         , m_frameHeight(0)
         , m_playPuff(false)
         , m_puffPlayed(false)
+        , m_isPuffing(false)
+        , m_puffTimer(sf::Time::Zero)
     {
         m_radius = m_normalRadius;
 
@@ -286,16 +288,20 @@ namespace FishGame
 
     void Pufferfish::initializeSprite(SpriteManager& spriteManager)
     {
-        Fish::initializeSprite(spriteManager);
+        const sf::Texture& tex = spriteManager.getTexture(getTextureID());
+        m_animator = std::make_unique<Animator>(createPufferfishAnimator(tex));
 
-        m_texture = &spriteManager.getTexture(getTextureID());
-        if (m_texture)
-        {
-            m_frameWidth = 190;
-            m_frameHeight = static_cast<int>(m_texture->getSize().y) - 2;
-            int x = 1 + m_swimStart * m_frameWidth;
-            getSpriteComponent()->setTextureRect(sf::IntRect(x, 1, m_frameWidth, m_frameHeight));
-        }
+        float scale = spriteManager.getScaleConfig().medium;
+        m_animator->setScale({ scale, scale });
+        m_animator->setPosition(m_position);
+        setRenderMode(RenderMode::Sprite);
+
+        m_facingRight = m_velocity.x > 0.f;
+        m_currentAnimation = m_facingRight ? "swimRight" : "swimLeft";
+        m_animator->play(m_currentAnimation);
+
+        // Reset manual sprite pointers
+        m_texture = &tex;
     }
 
     void Pufferfish::update(sf::Time deltaTime)
@@ -331,6 +337,21 @@ namespace FishGame
 
         // Update automatic cycle between normal and puffed states
         updateCycleState(deltaTime);
+
+        if (m_isPuffing)
+        {
+            m_puffTimer += deltaTime;
+            if (m_puffTimer.asSeconds() >= m_puffAnimDuration)
+            {
+                m_isPuffing = false;
+                if (m_animator)
+                {
+                    std::string swim = m_facingRight ? "swimRight" : "swimLeft";
+                    m_animator->play(swim);
+                    m_currentAnimation = swim;
+                }
+            }
+        }
 
         // Update spike positions
         for (size_t i = 0; i < m_spikes.size(); ++i)
@@ -496,6 +517,16 @@ namespace FishGame
         m_playPuff = true;
         m_puffPlayed = false;
         m_frame = m_puffStart;
+
+        m_isPuffing = true;
+        m_puffTimer = sf::Time::Zero;
+
+        if (m_animator)
+        {
+            std::string anim = m_facingRight ? "puffRight" : "puffLeft";
+            m_animator->play(anim);
+            m_currentAnimation = anim;
+        }
     }
 
     void Pufferfish::transitionToNormal()
@@ -503,6 +534,12 @@ namespace FishGame
         m_isPuffed = false;
         m_stateTimer = sf::Time::Zero;
         m_frame = m_swimStart;
+        if (m_animator)
+        {
+            std::string anim = m_facingRight ? "swimRight" : "swimLeft";
+            m_animator->play(anim);
+            m_currentAnimation = anim;
+        }
     }
 
     // PoisonFish implementation
