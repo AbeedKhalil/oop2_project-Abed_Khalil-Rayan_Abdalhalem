@@ -25,7 +25,9 @@ namespace FishGame
         m_titleText.setFillColor(sf::Color::White);
         auto bounds = m_titleText.getLocalBounds();
         m_titleText.setOrigin(bounds.width / 2.f, bounds.height / 2.f);
-        m_titleText.setPosition(window.getSize().x / 2.f, window.getSize().y / 2.f - 40.f);
+        float winWidth = static_cast<float>(window.getSize().x);
+        float winHeight = static_cast<float>(window.getSize().y);
+        m_titleText.setPosition(winWidth / 2.f, winHeight / 2.f - 40.f);
 
         m_instructionText.setFont(font);
         m_instructionText.setString("Press Esc to return");
@@ -33,7 +35,7 @@ namespace FishGame
         m_instructionText.setFillColor(sf::Color::White);
         bounds = m_instructionText.getLocalBounds();
         m_instructionText.setOrigin(bounds.width / 2.f, bounds.height / 2.f);
-        m_instructionText.setPosition(window.getSize().x / 2.f, window.getSize().y / 2.f + 40.f);
+        m_instructionText.setPosition(winWidth / 2.f, winHeight / 2.f + 40.f);
     }
 
     void GameOptionsState::handleEvent(const sf::Event& event)

@@ -664,6 +664,7 @@ namespace FishGame
     void Angelfish::updateAI(const std::vector<std::unique_ptr<Entity>>& entities,
         const Entity* player, sf::Time deltaTime)
     {
+        (void)deltaTime;
         if (!m_isAlive || m_isFrozen || m_isStunned)
             return;
 
@@ -733,12 +734,12 @@ namespace FishGame
         // Calculate evasive movement
         if (!threats.empty())
         {
-            updateEvasiveMovement(entities, player, deltaTime);
+            updateEvasiveMovement(entities, player);
         }
     }
 
     void Angelfish::updateEvasiveMovement(const std::vector<std::unique_ptr<Entity>>& entities,
-        const Entity* player, sf::Time deltaTime)
+        const Entity* player)
     {
         std::vector<const Entity*> threats;
 

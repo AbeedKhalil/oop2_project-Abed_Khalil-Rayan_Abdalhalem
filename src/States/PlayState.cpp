@@ -844,6 +844,10 @@ namespace FishGame
             m_gameState.playerLives++;
             createParticleEffect(powerUp.getPosition(), sf::Color::Green, 15);
             break;
+
+        case PowerUpType::AddTime:
+            // Currently handled only in bonus stages
+            break;
         }
     }
 
