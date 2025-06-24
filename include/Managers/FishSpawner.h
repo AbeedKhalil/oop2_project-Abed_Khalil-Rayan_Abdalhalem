@@ -14,7 +14,6 @@ namespace FishGame
         float spawnRate;     // Fish per second
         float minY;          // Minimum Y position
         float maxY;          // Maximum Y position
-        bool fromLeft;       // Initial spawn side (unused)
     };
 
     class SpriteManager;

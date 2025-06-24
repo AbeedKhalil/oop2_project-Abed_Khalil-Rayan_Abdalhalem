@@ -23,20 +23,20 @@ namespace FishGame
         // Significantly reduced small fish spawn rates
 
         // Level 1: Easier difficulty
-        m_smallFishConfig[1] = { 0.08f, 100.0f, m_windowSize.y - 100.0f, true };   // Further reduced spawn rate for level 1
+        m_smallFishConfig[1] = { 0.08f, 100.0f, m_windowSize.y - 100.0f};   // Further reduced spawn rate for level 1
         // Increased spawn rate for more medium fish
-        m_mediumFishConfig[1] = { 0.8f, 150.0f, m_windowSize.y - 150.0f, false };
-        m_largeFishConfig[1] = { 0.3f, 200.0f, m_windowSize.y - 200.0f, true };    // Reduced from 0.8f
+        m_mediumFishConfig[1] = { 0.8f, 150.0f, m_windowSize.y - 150.0f};
+        m_largeFishConfig[1] = { 0.3f, 200.0f, m_windowSize.y - 200.0f};    // Reduced from 0.8f
 
         // Level 2: Medium difficulty
-        m_smallFishConfig[2] = { 0.2f, 100.0f, m_windowSize.y - 100.0f, true };    // Reduced from 0.5f (1 every 5 seconds)
-        m_mediumFishConfig[2] = { 0.9f, 150.0f, m_windowSize.y - 150.0f, false };
-        m_largeFishConfig[2] = { 0.3f, 200.0f, m_windowSize.y - 200.0f, true };    // Reduced from 0.5f
+        m_smallFishConfig[2] = { 0.2f, 100.0f, m_windowSize.y - 100.0f};    // Reduced from 0.5f (1 every 5 seconds)
+        m_mediumFishConfig[2] = { 0.9f, 150.0f, m_windowSize.y - 150.0f};
+        m_largeFishConfig[2] = { 0.3f, 200.0f, m_windowSize.y - 200.0f};    // Reduced from 0.5f
 
         // Level 3: Hard difficulty
-        m_smallFishConfig[3] = { 0.3f, 100.0f, m_windowSize.y - 100.0f, true };    // Significantly reduced from 1.5f (1 every ~3.3 seconds)
-        m_mediumFishConfig[3] = { 1.0f, 150.0f, m_windowSize.y - 150.0f, false };
-        m_largeFishConfig[3] = { 0.4f, 200.0f, m_windowSize.y - 200.0f, true };    // Reduced from 0.7f
+        m_smallFishConfig[3] = { 0.3f, 100.0f, m_windowSize.y - 100.0f};    // Significantly reduced from 1.5f (1 every ~3.3 seconds)
+        m_mediumFishConfig[3] = { 1.0f, 150.0f, m_windowSize.y - 150.0f};
+        m_largeFishConfig[3] = { 0.4f, 200.0f, m_windowSize.y - 200.0f};    // Reduced from 0.7f
 
         // Setup spawners
         configureSpawnersForLevel(1);
