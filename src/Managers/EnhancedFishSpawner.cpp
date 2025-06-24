@@ -33,7 +33,6 @@ namespace FishGame
         FishSpawner::update(deltaTime, currentLevel);
 
         // Update special fish spawning
-        // Timers are updated regardless of level
         std::for_each(m_specialSpawnTimers.begin(), m_specialSpawnTimers.end(),
             [deltaTime](auto& pair)
             {
