@@ -264,13 +264,6 @@ namespace FishGame
         , m_stateTimer(sf::Time::Zero)
         , m_inflationLevel(0.0f)
         , m_normalRadius(25.0f)
-        , m_frame(0)
-        , m_frameTimer(sf::Time::Zero)
-        , m_texture(nullptr)
-        , m_frameWidth(0)
-        , m_frameHeight(0)
-        , m_playPuff(false)
-        , m_puffPlayed(false)
         , m_isPuffing(false)
         , m_puffTimer(sf::Time::Zero)
     {
@@ -300,8 +293,6 @@ namespace FishGame
         m_currentAnimation = m_facingRight ? "swimRight" : "swimLeft";
         m_animator->play(m_currentAnimation);
 
-        // Reset manual sprite pointers
-        m_texture = &tex;
     }
 
     void Pufferfish::update(sf::Time deltaTime)
@@ -428,37 +419,6 @@ namespace FishGame
         }
     }
 
-    void Pufferfish::updateSpriteEffects(sf::Time deltaTime)
-    {
-        if (getRenderMode() != RenderMode::Sprite || !getSpriteComponent() || !m_texture)
-            return;
-
-        m_frameTimer += deltaTime;
-        if (m_frameTimer.asSeconds() >= m_frameTime)
-        {
-            m_frameTimer -= sf::seconds(m_frameTime);
-
-            if (m_playPuff && !m_puffPlayed)
-            {
-                ++m_frame;
-                if (m_frame >= m_puffStart + m_puffCount)
-                {
-                    m_puffPlayed = true;
-                    m_playPuff = false;
-                    m_frame = m_puffStart + m_puffCount - 1;
-                }
-            }
-            else if (!m_isPuffed)
-            {
-                ++m_frame;
-                if (m_frame >= m_swimStart + m_swimCount)
-                    m_frame = m_swimStart;
-            }
-
-            int x = 1 + m_frame * m_frameWidth;
-            getSpriteComponent()->setTextureRect(sf::IntRect(x, 1, m_frameWidth, m_frameHeight));
-        }
-    }
 
     void Pufferfish::updateCycleState(sf::Time deltaTime)
     {
@@ -514,9 +474,6 @@ namespace FishGame
     {
         m_isPuffed = true;
         m_stateTimer = sf::Time::Zero;
-        m_playPuff = true;
-        m_puffPlayed = false;
-        m_frame = m_puffStart;
 
         m_isPuffing = true;
         m_puffTimer = sf::Time::Zero;
@@ -533,7 +490,6 @@ namespace FishGame
     {
         m_isPuffed = false;
         m_stateTimer = sf::Time::Zero;
-        m_frame = m_swimStart;
         if (m_animator)
         {
             std::string anim = m_facingRight ? "swimRight" : "swimLeft";

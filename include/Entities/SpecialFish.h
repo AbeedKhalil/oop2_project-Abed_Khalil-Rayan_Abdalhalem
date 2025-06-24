@@ -116,7 +116,6 @@ namespace FishGame
 
     protected:
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
-        void updateSpriteEffects(sf::Time deltaTime) override;
 
     private:
         void updateCycleState(sf::Time deltaTime);
@@ -145,22 +144,10 @@ namespace FishGame
         static constexpr float m_inflatedRadiusMultiplier = 2.0f;
         static constexpr int m_spikeCount = 8;
 
-        // Animation
-        int m_frame{ 0 };
-        sf::Time m_frameTimer{ sf::Time::Zero };
-        const sf::Texture* m_texture{ nullptr };
-        int m_frameWidth{ 0 };
-        int m_frameHeight{ 0 };
-        bool m_playPuff{ false };
-        bool m_puffPlayed{ false };
+        // Animation state
         bool m_isPuffing{ false };
         sf::Time m_puffTimer{ sf::Time::Zero };
-        static constexpr float m_frameTime = 0.1f; // seconds per frame
-        static constexpr float m_puffAnimDuration = m_frameTime * 6.f;
-        static constexpr int m_puffStart = 0;
-        static constexpr int m_puffCount = 6;
-        static constexpr int m_swimStart = 6;
-        static constexpr int m_swimCount = 15;
+        static constexpr float m_puffAnimDuration = 0.6f; // 6 frames * 0.1s
     };
 
     // PoisonFish - Can be eaten but reverses controls when consumed
