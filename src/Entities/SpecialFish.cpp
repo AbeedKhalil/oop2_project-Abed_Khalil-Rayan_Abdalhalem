@@ -329,13 +329,23 @@ namespace FishGame
         // Update automatic cycle between normal and puffed states
         updateCycleState(deltaTime);
 
-        if (m_isPuffing)
+        if (m_puffPhase == PuffPhase::Inflating || m_puffPhase == PuffPhase::Deflating)
         {
             m_puffTimer += deltaTime;
             if (m_puffTimer.asSeconds() >= m_puffAnimDuration)
             {
-                m_isPuffing = false;
-                // Keep final puff frame until the puffed state ends
+                m_puffTimer = sf::Time::Zero;
+                if (m_puffPhase == PuffPhase::Inflating)
+                {
+                    m_puffPhase = PuffPhase::Holding;
+                    m_isPuffing = false;
+                }
+                else if (m_puffPhase == PuffPhase::Deflating)
+                {
+                    m_isPuffing = false;
+                    if (m_inflationLevel <= 0.0f)
+                        transitionToNormal();
+                }
             }
         }
 
@@ -436,30 +446,42 @@ namespace FishGame
         }
         else
         {
-            // Puffed state
-            if (m_stateTimer.asSeconds() < m_puffedStateDuration)
+            switch (m_puffPhase)
             {
-                // Inflate until fully puffed
+            case PuffPhase::Inflating:
                 if (m_inflationLevel < 1.0f)
                 {
                     m_inflationLevel = std::min(1.0f, m_inflationLevel + m_inflationSpeed * deltaTime.asSeconds());
                     m_radius = m_normalRadius * (1.0f + m_inflationLevel * (m_inflatedRadiusMultiplier - 1.0f));
                 }
-            }
-            else
-            {
-                // After puff duration elapsed, start deflating but remain puffed
+                break;
+            case PuffPhase::Holding:
+                if (m_stateTimer.asSeconds() >= m_puffedStateDuration)
+                {
+                    m_puffPhase = PuffPhase::Deflating;
+                    m_puffTimer = sf::Time::Zero;
+                    if (m_animator)
+                    {
+                        std::string anim = m_facingRight ? "puffDeflateRight" : "puffDeflateLeft";
+                        m_animator->play(anim);
+                        m_currentAnimation = anim;
+                    }
+                }
+                break;
+            case PuffPhase::Deflating:
                 if (m_inflationLevel > 0.0f)
                 {
                     m_inflationLevel = std::max(0.0f, m_inflationLevel - m_deflationSpeed * deltaTime.asSeconds());
                     m_radius = m_normalRadius * (1.0f + m_inflationLevel * (m_inflatedRadiusMultiplier - 1.0f));
                 }
+                break;
+            default:
+                break;
+            }
 
-                // When back to normal size, switch to normal state
-                if (m_inflationLevel <= 0.0f)
-                {
-                    transitionToNormal();
-                }
+            if (m_puffPhase == PuffPhase::Deflating && m_inflationLevel <= 0.0f)
+            {
+                // Wait for animation completion to switch state
             }
         }
 
@@ -472,13 +494,13 @@ namespace FishGame
     {
         m_isPuffed = true;
         m_stateTimer = sf::Time::Zero;
-
         m_isPuffing = true;
         m_puffTimer = sf::Time::Zero;
+        m_puffPhase = PuffPhase::Inflating;
 
         if (m_animator)
         {
-            std::string anim = m_facingRight ? "puffRight" : "puffLeft";
+            std::string anim = m_facingRight ? "puffInflateRight" : "puffInflateLeft";
             m_animator->play(anim);
             m_currentAnimation = anim;
         }
@@ -488,6 +510,7 @@ namespace FishGame
     {
         m_isPuffed = false;
         m_stateTimer = sf::Time::Zero;
+        m_puffPhase = PuffPhase::None;
         if (m_animator)
         {
             std::string anim = m_facingRight ? "swimRight" : "swimLeft";

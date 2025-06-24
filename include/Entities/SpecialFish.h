@@ -122,6 +122,8 @@ namespace FishGame
         void transitionToInflated();
         void transitionToNormal();
 
+        enum class PuffPhase { None, Inflating, Holding, Deflating };
+
     private:
         // State management
         bool m_isPuffed;
@@ -148,6 +150,7 @@ namespace FishGame
         bool m_isPuffing{ false };
         sf::Time m_puffTimer{ sf::Time::Zero };
         static constexpr float m_puffAnimDuration = 0.6f; // 6 frames * 0.1s
+        PuffPhase m_puffPhase{ PuffPhase::None };
     };
 
     // PoisonFish - Can be eaten but reverses controls when consumed
