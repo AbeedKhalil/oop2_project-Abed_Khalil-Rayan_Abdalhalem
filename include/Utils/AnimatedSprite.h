@@ -24,6 +24,8 @@ public:
     void setPosition(const sf::Vector2f& pos);
     sf::Vector2f getPosition() const { return m_sprite.getPosition(); }
     void setScale(const sf::Vector2f& scale) { m_sprite.setScale(scale); }
+    void setRotation(float angle) { m_sprite.setRotation(angle); }
+    float getRotation() const { return m_sprite.getRotation(); }
 
     bool isFinished() const { return m_finished; }
 

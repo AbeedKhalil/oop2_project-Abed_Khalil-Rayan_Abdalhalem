@@ -55,6 +55,7 @@ void AnimatedSprite::setPosition(const sf::Vector2f& pos)
     m_sprite.setPosition(pos);
 }
 
+
 void AnimatedSprite::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
     target.draw(m_sprite, states);
