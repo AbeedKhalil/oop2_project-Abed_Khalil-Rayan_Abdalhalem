@@ -57,8 +57,6 @@ namespace FishGame
         Background4,
         Background5,
         Background6,
-        // legacy identifier kept for compatibility
-        Background = Background1,
         GameTitle
         , NewGame
         , NewGameHover
@@ -68,6 +66,7 @@ namespace FishGame
         , ExitHover
         , Intro1
         , Intro2
+        , Background = Background1
     };
 
     // Sprite scale configurations
