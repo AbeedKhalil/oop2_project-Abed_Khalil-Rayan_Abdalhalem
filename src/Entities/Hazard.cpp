@@ -173,10 +173,6 @@ namespace FishGame
             advanceState();
     }
 
-    bool Bomb::isFinished() const
-    {
-        return m_state == State::Done;
-    }
 
     // Jellyfish implementation
     Jellyfish::Jellyfish()
