@@ -13,7 +13,8 @@ namespace FishGame
         , m_transitionAlpha(0.0f)
         , m_animationTime(0.0f)
         , m_fadeInTime(0.0f)
-        , m_randomEngine(std::chrono::steady_clock::now().time_since_epoch().count())
+        , m_randomEngine(static_cast<std::mt19937::result_type>(
+            std::chrono::steady_clock::now().time_since_epoch().count()))
     {
         m_particles.reserve(m_maxParticles);
     }
