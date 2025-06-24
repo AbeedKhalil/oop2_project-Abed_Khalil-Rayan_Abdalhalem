@@ -7,6 +7,7 @@
 #include "ExtendedPowerUps.h"
 #include "OysterManager.h"
 #include <algorithm>
+#include <execution>
 #include <sstream>
 #include <iomanip>
 #include <chrono>
@@ -169,7 +170,7 @@ namespace FishGame
         }
 
         // Update entities
-        std::for_each(m_entities.begin(), m_entities.end(),
+        std::for_each(std::execution::par_unseq, m_entities.begin(), m_entities.end(),
             [deltaTime, this](auto& entity) {
                 entity->update(deltaTime);
 
@@ -182,7 +183,7 @@ namespace FishGame
             });
 
         // Update bonus items
-        std::for_each(m_bonusItems.begin(), m_bonusItems.end(),
+        std::for_each(std::execution::par_unseq, m_bonusItems.begin(), m_bonusItems.end(),
             [deltaTime](auto& item) {
                 item->update(deltaTime);
             });
