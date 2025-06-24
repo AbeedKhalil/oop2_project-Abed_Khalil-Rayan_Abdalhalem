@@ -33,7 +33,7 @@ namespace FishGame
                                 {
                                     if (!fish2->isAlive()) return;
 
-                                    if (CollisionDetector::checkCollision(*fish1, *fish2))
+                                    if (CollisionDetector::checkCircleCollision(*fish1, *fish2))
                                     {
                                         handleFishToFishCollision(*fish1, *fish2);
                                     }
@@ -59,7 +59,7 @@ namespace FishGame
                             {
                                 if (!hazard->isAlive()) return;
 
-                                if (CollisionDetector::checkCollision(*fish, *hazard))
+                                if (CollisionDetector::checkCircleCollision(*fish, *hazard))
                                 {
                                     handleFishToHazardCollision(*fish, *hazard);
                                 }

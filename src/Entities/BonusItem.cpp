@@ -23,8 +23,6 @@ namespace FishGame
 
     sf::FloatRect BonusItem::getBounds() const
     {
-        if (getRenderMode() == RenderMode::Sprite && getSpriteComponent())
-            return getSpriteComponent()->getBounds();
         return sf::FloatRect(m_position.x - m_radius, m_position.y - m_radius,
             m_radius * 2.0f, m_radius * 2.0f);
     }

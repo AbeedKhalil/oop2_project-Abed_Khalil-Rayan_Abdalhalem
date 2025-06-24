@@ -82,7 +82,7 @@ namespace FishGame::StateUtils
                 if (!item2 || !item2->isAlive() || item1 == item2)
                     continue;
 
-                if (CollisionDetector::checkCollision(*item1, *item2))
+                if (CollisionDetector::checkCircleCollision(*item1, *item2))
                 {
                     onCollision(*item1, *item2);
                 }
@@ -100,7 +100,7 @@ namespace FishGame::StateUtils
         std::for_each(container.begin(), container.end(),
             [&entity, &onCollision](auto& item)
             {
-                if (item && item->isAlive() && CollisionDetector::checkCollision(entity, *item))
+                if (item && item->isAlive() && CollisionDetector::checkCircleCollision(entity, *item))
                 {
                     onCollision(*item);
                 }
