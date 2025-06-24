@@ -35,7 +35,8 @@ namespace FishGame
         std::vector<std::unique_ptr<Entity>> allFish;
 
         // Calculate total size needed
-        size_t totalSize = std::accumulate(m_schools.begin(), m_schools.end(), 0,
+        size_t totalSize = std::accumulate(
+            m_schools.begin(), m_schools.end(), size_t{0},
             [](size_t sum, const auto& pair)
             {
                 return sum + pair.second->size();
