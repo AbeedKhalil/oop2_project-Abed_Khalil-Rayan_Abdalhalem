@@ -82,10 +82,14 @@ namespace FishGame
         const auto& smallConfig = m_smallFishConfig[configLevel];
         SpawnerConfig<SmallFish> smallSpawnerConfig;
         smallSpawnerConfig.spawnRate = smallConfig.spawnRate;
-        smallSpawnerConfig.minBounds = sf::Vector2f(smallConfig.fromLeft ? -SPAWN_MARGIN : m_windowSize.x + SPAWN_MARGIN, smallConfig.minY);
-        smallSpawnerConfig.maxBounds = sf::Vector2f(smallConfig.fromLeft ? -SPAWN_MARGIN : m_windowSize.x + SPAWN_MARGIN, smallConfig.maxY);
-        smallSpawnerConfig.customizer = [this, &smallConfig](SmallFish& fish) {
-            fish.setDirection(smallConfig.fromLeft ? 1.0f : -1.0f, 0.0f);
+        // Allow spawning from either side by using the full horizontal range
+        smallSpawnerConfig.minBounds = sf::Vector2f(-SPAWN_MARGIN, smallConfig.minY);
+        smallSpawnerConfig.maxBounds = sf::Vector2f(m_windowSize.x + SPAWN_MARGIN, smallConfig.maxY);
+        smallSpawnerConfig.customizer = [this](SmallFish& fish) {
+            bool fromLeft = m_randomEngine() % 2 == 0;
+            float x = fromLeft ? -SPAWN_MARGIN : m_windowSize.x + SPAWN_MARGIN;
+            fish.setPosition(x, fish.getPosition().y);
+            fish.setDirection(fromLeft ? 1.0f : -1.0f, 0.0f);
             fish.setWindowBounds(m_windowSize);
             fish.initializeSprite(*m_spriteManager);
             fish.setMovementStrategy(std::make_unique<RandomWanderStrategy>());
@@ -98,10 +102,13 @@ namespace FishGame
         const auto& mediumConfig = m_mediumFishConfig[configLevel];
         SpawnerConfig<MediumFish> mediumSpawnerConfig;
         mediumSpawnerConfig.spawnRate = mediumConfig.spawnRate;
-        mediumSpawnerConfig.minBounds = sf::Vector2f(mediumConfig.fromLeft ? -SPAWN_MARGIN : m_windowSize.x + SPAWN_MARGIN, mediumConfig.minY);
-        mediumSpawnerConfig.maxBounds = sf::Vector2f(mediumConfig.fromLeft ? -SPAWN_MARGIN : m_windowSize.x + SPAWN_MARGIN, mediumConfig.maxY);
-        mediumSpawnerConfig.customizer = [this, &mediumConfig](MediumFish& fish) {
-            fish.setDirection(mediumConfig.fromLeft ? 1.0f : -1.0f, 0.0f);
+        mediumSpawnerConfig.minBounds = sf::Vector2f(-SPAWN_MARGIN, mediumConfig.minY);
+        mediumSpawnerConfig.maxBounds = sf::Vector2f(m_windowSize.x + SPAWN_MARGIN, mediumConfig.maxY);
+        mediumSpawnerConfig.customizer = [this](MediumFish& fish) {
+            bool fromLeft = m_randomEngine() % 2 == 0;
+            float x = fromLeft ? -SPAWN_MARGIN : m_windowSize.x + SPAWN_MARGIN;
+            fish.setPosition(x, fish.getPosition().y);
+            fish.setDirection(fromLeft ? 1.0f : -1.0f, 0.0f);
             fish.setWindowBounds(m_windowSize);
             fish.initializeSprite(*m_spriteManager);
 
@@ -121,10 +128,13 @@ namespace FishGame
         const auto& largeConfig = m_largeFishConfig[configLevel];
         SpawnerConfig<LargeFish> largeSpawnerConfig;
         largeSpawnerConfig.spawnRate = largeConfig.spawnRate;
-        largeSpawnerConfig.minBounds = sf::Vector2f(largeConfig.fromLeft ? -SPAWN_MARGIN : m_windowSize.x + SPAWN_MARGIN, largeConfig.minY);
-        largeSpawnerConfig.maxBounds = sf::Vector2f(largeConfig.fromLeft ? -SPAWN_MARGIN : m_windowSize.x + SPAWN_MARGIN, largeConfig.maxY);
-        largeSpawnerConfig.customizer = [this, &largeConfig](LargeFish& fish) {
-            fish.setDirection(largeConfig.fromLeft ? 1.0f : -1.0f, 0.0f);
+        largeSpawnerConfig.minBounds = sf::Vector2f(-SPAWN_MARGIN, largeConfig.minY);
+        largeSpawnerConfig.maxBounds = sf::Vector2f(m_windowSize.x + SPAWN_MARGIN, largeConfig.maxY);
+        largeSpawnerConfig.customizer = [this](LargeFish& fish) {
+            bool fromLeft = m_randomEngine() % 2 == 0;
+            float x = fromLeft ? -SPAWN_MARGIN : m_windowSize.x + SPAWN_MARGIN;
+            fish.setPosition(x, fish.getPosition().y);
+            fish.setDirection(fromLeft ? 1.0f : -1.0f, 0.0f);
             fish.setWindowBounds(m_windowSize);
             fish.initializeSprite(*m_spriteManager);
             fish.setMovementStrategy(std::make_unique<AggressiveChaseStrategy>(nullptr));
