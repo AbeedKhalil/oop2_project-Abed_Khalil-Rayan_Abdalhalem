@@ -2,8 +2,8 @@
 #include "Entity.h"
 #include "Fish.h"
 #include "Player.h"
-#include <stdexcept>
 #include <algorithm>
+#include "GameExceptions.h"
 
 namespace FishGame
 {
@@ -63,24 +63,16 @@ namespace FishGame
     {
     }
 
-    bool SpriteManager::loadTextures(const std::string& assetPath)
+void SpriteManager::loadTextures(const std::string& assetPath)
     {
-        bool allLoaded = true;
-
         // Use STL algorithm to load all textures
         std::for_each(s_textureFiles.begin(), s_textureFiles.end(),
-            [this, &assetPath, &allLoaded](const auto& pair) {
+            [this, &assetPath](const auto& pair) {
                 const auto& [id, filename] = pair;
                 std::string fullPath = filename;
 
-                if (!m_textureHolder.load(id, fullPath))
-                {
-                    // Log error but continue loading other textures
-                    allLoaded = false;
-                }
+                m_textureHolder.load(id, fullPath);
             });
-
-        return allLoaded;
     }
 
     const sf::Texture& SpriteManager::getTexture(TextureID id) const

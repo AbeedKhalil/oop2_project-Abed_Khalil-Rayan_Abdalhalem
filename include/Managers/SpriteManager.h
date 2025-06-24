@@ -84,7 +84,7 @@ namespace FishGame
         SpriteManager& operator=(const SpriteManager&) = delete;
 
         // Load all textures
-        bool loadTextures(const std::string& assetPath);
+        void loadTextures(const std::string& assetPath);
 
         // Get texture for entity
         const sf::Texture& getTexture(TextureID id) const;
