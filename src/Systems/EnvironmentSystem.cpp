@@ -77,9 +77,9 @@ namespace FishGame
                 sf::RectangleShape coral(sf::Vector2f(sizeDist(rng), sizeDist(rng) * 1.5f));
                 coral.setPosition(xDist(rng), yDist(rng));
                 coral.setFillColor(sf::Color(
-                    m_baseColor.r + (rng() % 50),
-                    m_baseColor.g - (rng() % 30),
-                    m_baseColor.b + (rng() % 40),
+                    static_cast<sf::Uint8>(m_baseColor.r + (rng() % 50)),
+                    static_cast<sf::Uint8>(m_baseColor.g - (rng() % 30)),
+                    static_cast<sf::Uint8>(m_baseColor.b + (rng() % 40)),
                     m_baseColor.a));
                 return coral;
                 });
@@ -93,7 +93,7 @@ namespace FishGame
                 kelp.setOrigin(5.0f, sizeDist(rng) * 3.0f);
                 kelp.setFillColor(sf::Color(
                     0,
-                    m_baseColor.g + (rng() % 50),
+                    static_cast<sf::Uint8>(m_baseColor.g + (rng() % 50)),
                     0,
                     m_baseColor.a));
                 return kelp;
@@ -109,7 +109,7 @@ namespace FishGame
                 wave.setFillColor(sf::Color(
                     m_baseColor.r,
                     m_baseColor.g,
-                    m_baseColor.b + (rng() % 30),
+                    static_cast<sf::Uint8>(m_baseColor.b + (rng() % 30)),
                     m_baseColor.a / 2));
                 return wave;
                 });

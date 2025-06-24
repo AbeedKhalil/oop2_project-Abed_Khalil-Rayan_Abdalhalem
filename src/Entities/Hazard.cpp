@@ -261,8 +261,9 @@ namespace FishGame
         // Update tentacles with wave motion
         for (size_t i = 0; i < m_tentacles.size(); ++i)
         {
-            float angle = (360.0f / m_tentacleCount) * i * Constants::DEG_TO_RAD;
-            float wave = std::sin(m_tentacleWave + i * 0.5f) * 10.0f;
+            float angle = (360.0f / static_cast<float>(m_tentacleCount)) *
+                static_cast<float>(i) * Constants::DEG_TO_RAD;
+            float wave = std::sin(m_tentacleWave + static_cast<float>(i) * 0.5f) * 10.0f;
 
             sf::Vector2f tentaclePos(
                 m_position.x + std::cos(angle) * 15.0f,

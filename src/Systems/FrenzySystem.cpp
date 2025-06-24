@@ -160,7 +160,8 @@ namespace FishGame
             auto recentStart = std::find_if(m_eatHistory.begin(), m_eatHistory.end(),
                 [](const EatEvent& event) { return event.timestamp.asSeconds() <= 2.5f; });
 
-            size_t recentCount = std::distance(recentStart, m_eatHistory.end());
+            std::size_t recentCount =
+                static_cast<std::size_t>(std::distance(recentStart, m_eatHistory.end()));
             if (recentCount >= m_requiredFishCount)
             {
                 setFrenzyLevel(FrenzyLevel::SuperFrenzy);
