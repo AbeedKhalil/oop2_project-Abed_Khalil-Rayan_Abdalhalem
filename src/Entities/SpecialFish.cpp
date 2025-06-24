@@ -335,12 +335,7 @@ namespace FishGame
             if (m_puffTimer.asSeconds() >= m_puffAnimDuration)
             {
                 m_isPuffing = false;
-                if (m_animator)
-                {
-                    std::string swim = m_facingRight ? "swimRight" : "swimLeft";
-                    m_animator->play(swim);
-                    m_currentAnimation = swim;
-                }
+                // Keep final puff frame until the puffed state ends
             }
         }
 
