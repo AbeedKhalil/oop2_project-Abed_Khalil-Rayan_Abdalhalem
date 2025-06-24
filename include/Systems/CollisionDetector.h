@@ -12,9 +12,9 @@ namespace FishGame
         // Delete constructor - this is a utility class with only static methods
         CollisionDetector() = delete;
 
-        // Check collision between two circular entities
-        template<EntityUtils::CircularEntity A, EntityUtils::CircularEntity B>
-        static bool checkCircleCollision(const A& entity1, const B& entity2)
+        // Check collision between two entities using bounding boxes
+        template<EntityUtils::BoundsProvider A, EntityUtils::BoundsProvider B>
+        static bool checkCollision(const A& entity1, const B& entity2)
         {
             return EntityUtils::areColliding(entity1, entity2);
         }
