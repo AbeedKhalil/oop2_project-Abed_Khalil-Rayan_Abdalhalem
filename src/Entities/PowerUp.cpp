@@ -135,7 +135,7 @@ namespace FishGame
         // Update lightning bolts - rotate around center
         for (size_t i = 0; i < m_lightningBolts.size(); ++i)
         {
-            float angle = m_sparkAnimation + (i * 90.0f);
+            float angle = m_sparkAnimation + static_cast<float>(i) * 90.0f;
             float radius = 15.0f + 5.0f * std::sin(m_sparkAnimation * 2.0f);
 
             sf::Vector2f boltPos;

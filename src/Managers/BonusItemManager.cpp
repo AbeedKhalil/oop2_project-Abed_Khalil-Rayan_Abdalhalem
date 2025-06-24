@@ -82,12 +82,15 @@ namespace FishGame
         m_currentLevel = std::max(1, level);
 
         // Increase spawn rates based on level
-        float difficultyMultiplier = 1.0f + (m_currentLevel - 1) * 0.2f;
+        float difficultyMultiplier =
+            1.0f + static_cast<float>(m_currentLevel - 1) * 0.2f;
 
         m_starfishSpawner->setSpawnRate(m_baseStarfishRate * difficultyMultiplier);
 
         // Decrease power-up spawn interval for higher levels
-        m_powerUpSpawnInterval = m_basePowerUpInterval / (1.0f + (m_currentLevel - 1) * 0.1f);
+        m_powerUpSpawnInterval =
+            m_basePowerUpInterval /
+            (1.0f + static_cast<float>(m_currentLevel - 1) * 0.1f);
     }
 
     void BonusItemManager::setStarfishEnabled(bool enabled)
@@ -146,8 +149,9 @@ namespace FishGame
                 PowerUpType::ScoreDoubler, PowerUpType::FrenzyStarter,
                 PowerUpType::ScoreDoubler, PowerUpType::FrenzyStarter, PowerUpType::ExtraLife };
 
-        int index = std::uniform_int_distribution<int>(0, static_cast<int>(types.size()) - 1)(m_randomEngine);
-        PowerUpType type = types[index];
+        int index = std::uniform_int_distribution<int>(
+            0, static_cast<int>(types.size()) - 1)(m_randomEngine);
+        PowerUpType type = types[static_cast<std::size_t>(index)];
 
         using CreateFunc = std::unique_ptr<PowerUp>(*)(const sf::Font*);
         static constexpr std::array<CreateFunc, 6> creators = {

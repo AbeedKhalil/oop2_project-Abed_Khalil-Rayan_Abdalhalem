@@ -306,7 +306,8 @@ namespace FishGame
             // Still update visual elements but not state transitions
             for (size_t i = 0; i < m_spikes.size(); ++i)
             {
-                float angle = (360.0f / m_spikeCount) * i * Constants::DEG_TO_RAD;
+                float angle = (360.0f / static_cast<float>(m_spikeCount)) *
+                    static_cast<float>(i) * Constants::DEG_TO_RAD;
                 float spikeRadius = m_radius + (m_inflationLevel * 10.0f);
 
                 sf::Vector2f spikePos(
@@ -352,7 +353,8 @@ namespace FishGame
         // Update spike positions
         for (size_t i = 0; i < m_spikes.size(); ++i)
         {
-            float angle = (360.0f / m_spikeCount) * i * Constants::DEG_TO_RAD;
+            float angle = (360.0f / static_cast<float>(m_spikeCount)) *
+                static_cast<float>(i) * Constants::DEG_TO_RAD;
             float spikeRadius = m_radius + (m_inflationLevel * 10.0f);
 
             sf::Vector2f spikePos(
@@ -572,8 +574,8 @@ namespace FishGame
     {
         for (size_t i = 0; i < m_poisonBubbles.size(); ++i)
         {
-            float angle = (60.0f * i + m_wobbleAnimation * 30.0f) * Constants::DEG_TO_RAD;
-            float radius = 18.0f + 3.0f * std::sin(m_wobbleAnimation + i);
+            float angle = (60.0f * static_cast<float>(i) + m_wobbleAnimation * 30.0f) * Constants::DEG_TO_RAD;
+            float radius = 18.0f + 3.0f * std::sin(m_wobbleAnimation + static_cast<float>(i));
 
             sf::Vector2f bubblePos(
                 m_position.x + std::cos(angle) * radius,
@@ -583,7 +585,7 @@ namespace FishGame
             m_poisonBubbles[i].setPosition(bubblePos);
 
             // Pulsing effect for bubbles
-            float scale = 1.0f + 0.2f * std::sin(m_wobbleAnimation * 2.0f + i);
+            float scale = 1.0f + 0.2f * std::sin(m_wobbleAnimation * 2.0f + static_cast<float>(i));
             m_poisonBubbles[i].setScale(scale, scale);
         }
     }
@@ -655,7 +657,7 @@ namespace FishGame
         // Update fin positions with more dynamic movement
         for (size_t i = 0; i < m_fins.size(); ++i)
         {
-            float finAngle = (m_colorShift + i * 120.0f) * 3.14159f / 180.0f;
+            float finAngle = (m_colorShift + static_cast<float>(i) * 120.0f) * 3.14159f / 180.0f;
             float finRadius = 20.0f + (m_isEvading ? 10.0f * std::sin(m_colorShift * 5.0f) : 0.0f);
 
             sf::Vector2f finPos(

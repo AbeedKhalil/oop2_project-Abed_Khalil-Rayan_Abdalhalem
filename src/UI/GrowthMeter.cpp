@@ -134,7 +134,8 @@ namespace FishGame
             sf::Color(0, 150, 255),
             sf::Color(255, 100, 0)
         };
-        m_fillBar.setFillColor(stageColors[m_currentStage - 1]);
+        m_fillBar.setFillColor(
+            stageColors[static_cast<std::size_t>(m_currentStage - 1)]);
 
         setPoints(m_points);
     }

@@ -98,7 +98,7 @@ namespace FishGame
     int calculateTotalScore(int baseScore, Multipliers... multipliers)
     {
         float total = static_cast<float>(baseScore);
-        ((total *= multipliers), ...);
+        ((total *= static_cast<float>(multipliers)), ...);
         return static_cast<int>(std::round(total));
     }
 }
