@@ -55,6 +55,16 @@ void AnimatedSprite::setPosition(const sf::Vector2f& pos)
     m_sprite.setPosition(pos);
 }
 
+void AnimatedSprite::setRotation(float angle)
+{
+    m_sprite.setRotation(angle);
+}
+
+float AnimatedSprite::getRotation() const
+{
+    return m_sprite.getRotation();
+}
+
 void AnimatedSprite::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
     target.draw(m_sprite, states);
