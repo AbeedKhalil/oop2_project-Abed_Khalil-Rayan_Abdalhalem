@@ -261,7 +261,10 @@ Animator createPufferfishAnimator(const sf::Texture& tex)
     const int TURN_Y = 433;
 
     a.addClip("eatLeft", makeFrames(EAT_Y, 187, 7, 131), milliseconds(100), false);
-    a.addClip("puffLeft", makeFrames(PUFF_Y, 186, 6, 169), milliseconds(100), true, false, true);
+    a.addClip("puffInflateLeft", makeFrames(PUFF_Y, 186, 6, 169), milliseconds(100), false);
+    auto defFrames = makeFrames(PUFF_Y, 186, 6, 169);
+    std::reverse(defFrames.begin(), defFrames.end());
+    a.addClip("puffDeflateLeft", defFrames, milliseconds(100), false);
     a.addClip("swimLeft", makeFrames(SWIM_Y, 184, 15, 128), milliseconds(80));
 
     auto turnFrames = makeFrames(TURN_Y, 168, 5, 123);
@@ -270,7 +273,8 @@ Animator createPufferfishAnimator(const sf::Texture& tex)
     a.addClip("turnRightToLeft", turnFrames, milliseconds(90), false);
 
     a.copyFlip("eatLeft", "eatRight");
-    a.copyFlip("puffLeft", "puffRight");
+    a.copyFlip("puffInflateLeft", "puffInflateRight");
+    a.copyFlip("puffDeflateLeft", "puffDeflateRight");
     a.copyFlip("swimLeft", "swimRight");
 
     return a;
