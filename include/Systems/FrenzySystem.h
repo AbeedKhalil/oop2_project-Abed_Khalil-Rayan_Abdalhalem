@@ -69,6 +69,7 @@ namespace FishGame
         float m_textScale;
         float m_textRotation;
         sf::Color m_currentColor;
+        sf::Time m_animationTimer;
 
         // Timing constants
         static constexpr float m_frenzyActivationTime = 2.0f;     // 4 fish in 2 seconds
