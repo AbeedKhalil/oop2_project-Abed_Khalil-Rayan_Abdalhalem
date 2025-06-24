@@ -67,7 +67,7 @@ namespace FishGame
         std::generate_n(std::back_inserter(m_arms), m_armCount,
             [this, i = 0]() mutable {
                 sf::ConvexShape arm(4);
-                float angle = (360.0f / m_armCount) * i;
+                float angle = (360.0f / static_cast<float>(m_armCount)) * static_cast<float>(i);
                 float radAngle = angle * Constants::DEG_TO_RAD;
 
                 // Create arm points

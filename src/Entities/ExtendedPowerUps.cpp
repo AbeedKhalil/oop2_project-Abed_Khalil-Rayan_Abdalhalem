@@ -55,7 +55,7 @@ namespace FishGame
         // Update ice shards
         for (size_t i = 0; i < m_iceShards.size(); ++i)
         {
-            float angle = (60.0f * i + m_pulseAnimation * 30.0f) * Constants::DEG_TO_RAD;
+            float angle = (60.0f * static_cast<float>(i) + m_pulseAnimation * 30.0f) * Constants::DEG_TO_RAD;
             float radius = 20.0f + 5.0f * std::sin(m_pulseAnimation);
 
             sf::Vector2f shardPos(
@@ -210,8 +210,8 @@ namespace FishGame
         // Update speed lines
         for (size_t i = 0; i < m_speedLines.size(); ++i)
         {
-            float angle = (90.0f * i) * Constants::DEG_TO_RAD;
-            float offset = 10.0f + 10.0f * std::sin(m_lineAnimation + i);
+            float angle = (90.0f * static_cast<float>(i)) * Constants::DEG_TO_RAD;
+            float offset = 10.0f + 10.0f * std::sin(m_lineAnimation + static_cast<float>(i));
 
             sf::Vector2f linePos(
                 m_position.x + std::cos(angle) * offset,

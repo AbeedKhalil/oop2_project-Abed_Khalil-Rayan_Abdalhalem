@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SFML/Graphics.hpp>
+#include <cmath>
 #include <memory>
 
 namespace FishGame
