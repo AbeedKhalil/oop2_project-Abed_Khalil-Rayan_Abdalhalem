@@ -15,8 +15,6 @@ namespace FishGame
         : Entity()
         , m_hazardType(type)
         , m_damageAmount(damageAmount)
-        , m_activationDelay(sf::Time::Zero)
-        , m_isActivated(true)
     {
     }
 
