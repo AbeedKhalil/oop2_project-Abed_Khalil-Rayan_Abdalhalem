@@ -20,6 +20,7 @@ namespace FishGame
         , m_textScale(1.0f)
         , m_textRotation(0.0f)
         , m_currentColor(sf::Color::White)
+        , m_animationTimer(sf::Time::Zero)
     {
         // Setup frenzy text
         m_frenzyText.setFont(font);
@@ -173,6 +174,7 @@ namespace FishGame
         if (m_currentLevel != level)
         {
             m_currentLevel = level;
+            m_animationTimer = sf::Time::Zero;
 
             // Update visuals based on level
             switch (level)
@@ -208,9 +210,11 @@ namespace FishGame
     {
         if (m_currentLevel != FrenzyLevel::None)
         {
+            m_animationTimer += deltaTime;
+
             // Animate text
-            m_textScale = 1.0f + 0.1f * std::sin(deltaTime.asSeconds() * 5.0f);
-            m_textRotation = 5.0f * std::sin(deltaTime.asSeconds() * 3.0f);
+            m_textScale = 1.0f + 0.1f * std::sin(m_animationTimer.asSeconds() * 5.0f);
+            m_textRotation = 5.0f * std::sin(m_animationTimer.asSeconds() * 3.0f);
 
             // Update timer bar
             float timerPercentage = m_frenzyTimer.asSeconds() / m_frenzyMaintainTime;
@@ -223,7 +227,7 @@ namespace FishGame
             m_timerText.setString(timerStream.str());
 
             // Flash color
-            float flash = std::abs(std::sin(deltaTime.asSeconds() * 10.0f));
+            float flash = std::abs(std::sin(m_animationTimer.asSeconds() * 10.0f));
             sf::Color flashColor = m_currentColor;
             flashColor.r = static_cast<sf::Uint8>(flashColor.r + (255 - flashColor.r) * flash * 0.3f);
             flashColor.g = static_cast<sf::Uint8>(flashColor.g + (255 - flashColor.g) * flash * 0.3f);
