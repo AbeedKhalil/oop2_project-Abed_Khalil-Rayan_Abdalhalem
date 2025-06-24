@@ -153,7 +153,10 @@ namespace FishGame
         int m_frameHeight{ 0 };
         bool m_playPuff{ false };
         bool m_puffPlayed{ false };
+        bool m_isPuffing{ false };
+        sf::Time m_puffTimer{ sf::Time::Zero };
         static constexpr float m_frameTime = 0.1f; // seconds per frame
+        static constexpr float m_puffAnimDuration = m_frameTime * 6.f;
         static constexpr int m_puffStart = 0;
         static constexpr int m_puffCount = 6;
         static constexpr int m_swimStart = 6;
