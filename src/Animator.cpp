@@ -226,7 +226,7 @@ Animator createPufferfishAnimator(const sf::Texture& tex)
     a.addClip("puffLeft", makeFrames(PUFF_Y, 186, 6, 169), milliseconds(100), false);
     a.addClip("swimLeft", makeFrames(SWIM_Y, 184, 15, 128), milliseconds(80));
 
-    auto turnFrames = makeFrames(TURN_Y, 168, 5, 86);
+    auto turnFrames = makeFrames(TURN_Y, 168, 5, 123);
     a.addClip("turnLeftToRight", turnFrames, milliseconds(90), false);
     std::reverse(turnFrames.begin(), turnFrames.end());
     a.addClip("turnRightToLeft", turnFrames, milliseconds(90), false);
