@@ -217,7 +217,6 @@ namespace FishGame
             auto config = spriteManager.getSpriteConfig<Entity>(TextureID::Jellyfish);
             sprite->configure(config);
             setSpriteComponent(std::move(sprite));
-            setRenderMode(RenderMode::Sprite);
 
             // Set initial frame
             m_texture = &spriteManager.getTexture(TextureID::Jellyfish);
@@ -232,7 +231,7 @@ namespace FishGame
         if (!m_isAlive)
             return;
 
-        if (getRenderMode() == RenderMode::Sprite && getSpriteComponent())
+        if (getSpriteComponent())
         {
             getSpriteComponent()->update(deltaTime);
 
@@ -303,8 +302,8 @@ namespace FishGame
 
     void Jellyfish::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        if (getRenderMode() == RenderMode::Sprite && getSpriteComponent())
-    {
+        if (getSpriteComponent())
+        {
             target.draw(*getSpriteComponent(), states);
         }
         else
