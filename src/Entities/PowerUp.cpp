@@ -4,6 +4,8 @@
 #include <cmath>
 #include <algorithm>
 #include <iterator>
+#include <ranges>
+#include <execution>
 
 namespace FishGame
 {
@@ -132,19 +134,21 @@ namespace FishGame
         m_aura.setPosition(m_position);
         m_aura.setScale(pulse * 1.2f, pulse * 1.2f);
 
-        // Update lightning bolts - rotate around center
-        for (size_t i = 0; i < m_lightningBolts.size(); ++i)
-        {
-            float angle = m_sparkAnimation + static_cast<float>(i) * 90.0f;
-            float radius = 15.0f + 5.0f * std::sin(m_sparkAnimation * 2.0f);
+        // Update lightning bolts - rotate around center using ranges
+        auto boltIndices = std::views::iota(size_t{ 0 }, m_lightningBolts.size());
+        std::for_each(std::execution::unseq, boltIndices.begin(), boltIndices.end(),
+            [this](size_t i)
+            {
+                float angle = m_sparkAnimation + (i * 90.0f);
+                float radius = 15.0f + 5.0f * std::sin(m_sparkAnimation * 2.0f);
 
-            sf::Vector2f boltPos;
-            boltPos.x = m_position.x + std::cos(angle * Constants::DEG_TO_RAD) * radius;
-            boltPos.y = m_position.y + std::sin(angle * Constants::DEG_TO_RAD) * radius;
+                sf::Vector2f boltPos;
+                boltPos.x = m_position.x + std::cos(angle * Constants::DEG_TO_RAD) * radius;
+                boltPos.y = m_position.y + std::sin(angle * Constants::DEG_TO_RAD) * radius;
 
-            m_lightningBolts[i].setPosition(boltPos);
-            m_lightningBolts[i].setRotation(angle);
-        }
+                m_lightningBolts[i].setPosition(boltPos);
+                m_lightningBolts[i].setRotation(angle);
+            });
 
         // Electric aura effect
         sf::Color auraColor = getAuraColor();
