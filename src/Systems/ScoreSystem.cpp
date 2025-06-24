@@ -118,7 +118,7 @@ namespace FishGame
         m_currentScore += totalPoints;
 
         // Create floating score
-        int displayMultiplier = static_cast<int>(frenzyMultiplier * powerUpMultiplier);
+        int displayMultiplier = static_cast<int>(std::round(frenzyMultiplier * powerUpMultiplier));
         createFloatingScore(totalPoints, displayMultiplier, position);
     }
 
