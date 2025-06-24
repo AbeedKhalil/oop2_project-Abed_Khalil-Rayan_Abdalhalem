@@ -33,7 +33,7 @@ namespace FishGame
         // New fleeing behavior methods
         void startFleeing();
         bool isFleeing() const { return m_isFleeing; }
-        void updateFleeingBehavior(sf::Time deltaTime);
+        void updateFleeingBehavior();
 
         void setFrozen(bool frozen);
         bool isFrozen() const { return m_isFrozen; }

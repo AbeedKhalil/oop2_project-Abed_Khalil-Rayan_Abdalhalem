@@ -43,7 +43,7 @@ namespace FishGame
         Fish::update(deltaTime);
     }
 
-    void AdvancedFish::updateMovementPattern(sf::Time deltaTime)
+    void AdvancedFish::updateMovementPattern(sf::Time /*deltaTime*/)
     {
         switch (m_movementPattern)
         {
