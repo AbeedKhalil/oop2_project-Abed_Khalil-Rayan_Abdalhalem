@@ -47,7 +47,7 @@ namespace FishGame
         }
 
         // Pufferfish appear from level 4 onwards
-        if (currentLevel >= 1)
+        if (currentLevel >= 4)
         {
             spawnSpecialFish<Pufferfish>(m_specialConfig.pufferfishSpawnRate, deltaTime);
         }

@@ -68,7 +68,10 @@ namespace FishGame
         SpriteComponent<Entity>* getSpriteComponent();
         const SpriteComponent<Entity>* getSpriteComponent() const;
 
-
+        // Visual mode
+        enum class RenderMode { Circle, Sprite };
+        void setRenderMode(RenderMode mode) { m_renderMode = mode; }
+        RenderMode getRenderMode() const { return m_renderMode; }
 
     protected:
         // Protected draw function for derived classes
@@ -85,6 +88,7 @@ namespace FishGame
 
         // Sprite component - using unique_ptr requires complete type in .cpp
         std::unique_ptr<SpriteComponent<Entity>> m_sprite;
+        RenderMode m_renderMode = RenderMode::Sprite;
     };
 
     // Utility functions for entity operations

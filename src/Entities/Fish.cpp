@@ -99,6 +99,9 @@ namespace FishGame
             sprite->configure(config);
             setSpriteComponent(std::move(sprite));
 
+            // Set render mode to sprite
+            setRenderMode(RenderMode::Sprite);
+
             // Apply initial visual state
             updateVisualState();
         }
@@ -310,7 +313,7 @@ namespace FishGame
         }
 
         // Update sprite or animator
-        if (m_animator)
+        if (m_animator && m_renderMode == RenderMode::Sprite)
         {
             bool newFacingRight = m_velocity.x > 0.f;
             if (!m_eating && std::abs(m_velocity.x) > 1.f && newFacingRight != m_facingRight)
@@ -351,7 +354,7 @@ namespace FishGame
 
             m_animator->setPosition(m_position);
         }
-        else if (m_sprite)
+        else if (m_sprite && m_renderMode == RenderMode::Sprite)
         {
             m_sprite->update(deltaTime);
             updateSpriteEffects(deltaTime);
