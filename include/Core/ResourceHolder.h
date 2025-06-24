@@ -7,6 +7,7 @@
 #include <string>
 #include <stdexcept>
 #include <cassert>
+#include "GameExceptions.h"
 
 namespace FishGame
 {
@@ -32,10 +33,10 @@ namespace FishGame
         ResourceHolder(ResourceHolder&&) = default;
         ResourceHolder& operator=(ResourceHolder&&) = default;
 
-        [[nodiscard]] bool load(Identifier id, const std::string& filename);
+        void load(Identifier id, const std::string& filename);
 
         template<typename Parameter>
-        [[nodiscard]] bool load(Identifier id, const std::string& filename, const Parameter& secondParam);
+        void load(Identifier id, const std::string& filename, const Parameter& secondParam);
 
         Resource& get(Identifier id);
         const Resource& get(Identifier id) const;
@@ -49,30 +50,28 @@ namespace FishGame
 
     // Template implementations
 template<typename Resource, typename Identifier>
-[[nodiscard]] bool ResourceHolder<Resource, Identifier>::load(Identifier id, const std::string& filename)
+void ResourceHolder<Resource, Identifier>::load(Identifier id, const std::string& filename)
     {
         auto resource = std::make_unique<Resource>();
         if (!resource->loadFromFile(filename))
         {
-            return false;
+            throw ResourceLoadException("Failed to load resource: " + filename);
         }
 
         insertResource(id, std::move(resource));
-        return true;
     }
 
 template<typename Resource, typename Identifier>
 template<typename Parameter>
-[[nodiscard]] bool ResourceHolder<Resource, Identifier>::load(Identifier id, const std::string& filename, const Parameter& secondParam)
+void ResourceHolder<Resource, Identifier>::load(Identifier id, const std::string& filename, const Parameter& secondParam)
     {
         auto resource = std::make_unique<Resource>();
         if (!resource->loadFromFile(filename, secondParam))
         {
-            return false;
+            throw ResourceLoadException("Failed to load resource: " + filename);
         }
 
         insertResource(id, std::move(resource));
-        return true;
     }
 
     template<typename Resource, typename Identifier>

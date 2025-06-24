@@ -7,7 +7,7 @@
 #include "PauseState.h"
 #include "GameOptionsState.h"
 #include <algorithm>
-#include <stdexcept>
+#include "GameExceptions.h"
 
 namespace FishGame
 {
@@ -32,10 +32,7 @@ namespace FishGame
         m_pendingList.reserve(10);
 
         // Load resources
-        if (!m_fonts.load(Fonts::Main, "Regular.ttf"))
-        {
-            throw std::runtime_error("Failed to load font: Regular.ttf");
-        }
+        m_fonts.load(Fonts::Main, "Regular.ttf");
 
         initializeGraphics();
 
@@ -91,10 +88,7 @@ namespace FishGame
         m_spriteManager = std::make_unique<SpriteManager>(*m_spriteTextures);
 
         // Load all sprite textures
-        if (!m_spriteManager->loadTextures(""))
-        {
-			//throw std::runtime_error("Failed to load sprite textures");
-        }
+        m_spriteManager->loadTextures("");
 
         // Configure sprite scales
         SpriteScaleConfig scaleConfig;
@@ -242,7 +236,8 @@ namespace FishGame
         auto found = m_stateFactories.find(id);
         if (found == m_stateFactories.end())
         {
-            throw std::runtime_error("State factory not found for StateID: " +
+            throw StateNotFoundException(
+                "State factory not found for StateID: " +
                 std::to_string(static_cast<int>(id)));
         }
 
