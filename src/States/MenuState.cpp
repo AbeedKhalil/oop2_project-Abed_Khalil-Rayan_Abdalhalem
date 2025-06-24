@@ -88,7 +88,7 @@ namespace FishGame
     {
         auto& window = getGame().getWindow();
         m_backgroundSprite.setTexture(
-            getGame().getSpriteManager().getTexture(TextureID::Background));
+            getGame().getSpriteManager().getTexture(TextureID::Background1));
 
         sf::Vector2f windowSize(window.getSize());
         sf::Vector2f texSize(m_backgroundSprite.getTexture()->getSize());

@@ -22,6 +22,7 @@ namespace FishGame
         , m_entities()
         , m_bonusItems()
         , m_environment(std::make_unique<EnvironmentSystem>())
+        , m_backgroundSprite()
         , m_timeLimit(sf::Time::Zero)
         , m_timeElapsed(sf::Time::Zero)
         , m_objective()
@@ -54,6 +55,14 @@ namespace FishGame
         m_scoreText.setCharacterSize(28);
         m_scoreText.setFillColor(sf::Color::Green);
         m_scoreText.setPosition(50.0f, 150.0f);
+
+        // Background image for bonus stage
+        auto& window = getGame().getWindow();
+        m_backgroundSprite.setTexture(
+            getGame().getSpriteManager().getTexture(TextureID::Background6));
+        sf::Vector2f winSize(window.getSize());
+        sf::Vector2f texSize(m_backgroundSprite.getTexture()->getSize());
+        m_backgroundSprite.setScale(winSize.x / texSize.x, winSize.y / texSize.y);
 
         // Timer bar
         m_timerBackground.setSize(sf::Vector2f(400.0f, 20.0f));
@@ -236,6 +245,8 @@ namespace FishGame
     void BonusStageState::render()
     {
         auto& window = getGame().getWindow();
+
+        window.draw(m_backgroundSprite);
 
         // Draw environment
         window.draw(*m_environment);

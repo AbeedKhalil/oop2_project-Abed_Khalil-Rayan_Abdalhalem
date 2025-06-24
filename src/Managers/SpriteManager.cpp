@@ -43,7 +43,12 @@ namespace FishGame
         {TextureID::PowerUpExtraLife, "PowerupLife.png"},
 
         // Environment
-        {TextureID::Background, "Background1.png"},
+        {TextureID::Background1, "Background1.png"},
+        {TextureID::Background2, "Background2.png"},
+        {TextureID::Background3, "Background3.png"},
+        {TextureID::Background4, "Background4.png"},
+        {TextureID::Background5, "Background5.png"},
+        {TextureID::Background6, "Background6.png"},
         {TextureID::GameTitle, "GameTitle.png"},
 
         // Menu sprites

@@ -4,6 +4,7 @@
 #include "BonusItem.h"
 #include "EnvironmentSystem.h"
 #include "Player.h"
+#include <SFML/Graphics.hpp>
 #include <memory>
 #include <vector>
 #include <random>
@@ -79,6 +80,7 @@ namespace FishGame
         std::vector<std::unique_ptr<Entity>> m_entities;
         std::vector<std::unique_ptr<BonusItem>> m_bonusItems;
         std::unique_ptr<EnvironmentSystem> m_environment;
+        sf::Sprite m_backgroundSprite;
 
         // Stage state
         sf::Time m_timeLimit = sf::Time::Zero;

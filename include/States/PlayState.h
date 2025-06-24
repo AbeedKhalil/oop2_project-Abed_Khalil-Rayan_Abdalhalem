@@ -169,6 +169,7 @@ namespace FishGame
         void reverseControls();
         void showMessage(const std::string& message);
         void centerText(sf::Text& text);
+        void updateBackground(int level);
 
     private:
         // ==================== Core Game Objects ====================

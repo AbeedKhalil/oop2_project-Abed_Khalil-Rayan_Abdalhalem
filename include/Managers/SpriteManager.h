@@ -51,7 +51,14 @@ namespace FishGame
         PowerUpExtraLife,
 
         // Environment
-        Background,
+        Background1,
+        Background2,
+        Background3,
+        Background4,
+        Background5,
+        Background6,
+        // legacy identifier kept for compatibility
+        Background = Background1,
         GameTitle
         , NewGame
         , NewGameHover
