@@ -67,6 +67,8 @@ namespace FishGame
         State m_state;
         int m_puffLoops;
 
+        sf::Time m_idleTimer;
+
         bool m_isExploding;
         sf::Time m_stateTimer;
         float m_explosionRadius;
@@ -76,6 +78,12 @@ namespace FishGame
         static constexpr float m_explosionDuration = 0.4f; // 5 frames * 0.08s
         static constexpr int m_maxPuffLoops = 3;
         static constexpr float m_puffFrameTime = 0.1f;
+
+        static constexpr float m_idleBobAmplitude = 5.f;
+        static constexpr float m_idleBobFrequency = 2.f;
+        static constexpr float m_idleRotationAmplitude = 5.f;
+        static constexpr float m_idleRotationSpeed = 2.f;
+        static constexpr float m_fallSpeed = 20.f;
     };
 
     // Jellyfish - stuns on contact

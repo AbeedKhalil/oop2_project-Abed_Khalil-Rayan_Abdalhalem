@@ -26,11 +26,13 @@ namespace FishGame
         , m_sprite(nullptr)
         , m_state(State::IdleBomb)
         , m_puffLoops(0)
+        , m_idleTimer(sf::Time::Zero)
         , m_isExploding(false)
         , m_stateTimer(sf::Time::Zero)
         , m_explosionRadius(0.f)
     {
         m_radius = m_baseRadius;
+        m_velocity.y = m_fallSpeed;
     }
 
     void Bomb::initializeSprite(SpriteManager& spriteManager)
@@ -79,6 +81,8 @@ namespace FishGame
         if (!m_isAlive || !m_sprite)
             return;
 
+        updatePosition(deltaTime);
+
         m_sprite->setPosition(m_position);
         m_sprite->update(deltaTime);
 
@@ -87,6 +91,14 @@ namespace FishGame
         switch (m_state)
         {
         case State::IdleBomb:
+            m_idleTimer += deltaTime;
+            if (m_sprite)
+            {
+                float bobOffset = std::sin(m_idleTimer.asSeconds() * m_idleBobFrequency) * m_idleBobAmplitude;
+                m_sprite->setPosition(sf::Vector2f(m_position.x, m_position.y + bobOffset));
+                float rot = std::sin(m_idleTimer.asSeconds() * m_idleRotationSpeed) * m_idleRotationAmplitude;
+                m_sprite->setRotation(rot);
+            }
             break;
         case State::Explode:
         {
@@ -116,6 +128,9 @@ namespace FishGame
         default:
             break;
         }
+
+        if (m_position.y > static_cast<float>(Constants::WINDOW_HEIGHT) + 100.f)
+            m_position.y = -100.f;
     }
 
     sf::FloatRect Bomb::getBounds() const
@@ -146,6 +161,9 @@ namespace FishGame
         case State::IdleBomb:
             m_state = State::Explode;
             m_sprite->play("explode");
+            m_sprite->setRotation(0.f);
+            m_sprite->setPosition(m_position);
+            m_idleTimer = sf::Time::Zero;
             m_isExploding = true;
             break;
         case State::Explode:
