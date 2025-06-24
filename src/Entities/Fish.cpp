@@ -360,6 +360,13 @@ namespace FishGame
 
     sf::FloatRect Fish::getBounds() const
     {
+        if (m_renderMode == RenderMode::Sprite)
+        {
+            if (m_animator)
+                return m_animator->getBounds();
+            if (m_sprite)
+                return m_sprite->getBounds();
+        }
         return sf::FloatRect(m_position.x - m_radius, m_position.y - m_radius,
             m_radius * 2.0f, m_radius * 2.0f);
     }
