@@ -100,19 +100,6 @@ namespace FishGame
         m_powerUpsEnabled = enabled;
     }
 
-    void BonusItemManager::spawnStarfish()
-    {
-        auto starfish = std::make_unique<Starfish>();
-
-        float x = m_xDistribution(m_randomEngine);
-        float y = m_yDistribution(m_randomEngine);
-        starfish->setPosition(x, y);
-        if (m_spriteManager)
-            starfish->initializeSprite(*m_spriteManager);
-
-        m_spawnedItems.push_back(std::move(starfish));
-    }
-
     void BonusItemManager::spawnRandomPowerUp()
     {
         if (auto powerUp = createRandomPowerUp())
