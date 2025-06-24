@@ -1,6 +1,7 @@
 #include "PowerUp.h"
 #include "GameConstants.h"
 #include "Utils/DrawHelpers.h"
+#include "SpriteManager.h"
 #include <cmath>
 #include <algorithm>
 #include <iterator>
