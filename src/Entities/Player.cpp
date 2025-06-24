@@ -51,7 +51,9 @@ namespace FishGame
         m_radius = m_baseRadius;
 
         // Start at center of screen
-        m_position = sf::Vector2f(m_windowBounds.x / 2.0f, m_windowBounds.y / 2.0f);
+        m_position = sf::Vector2f(
+            static_cast<float>(m_windowBounds.x) / 2.0f,
+            static_cast<float>(m_windowBounds.y) / 2.0f);
         m_targetPosition = m_position;
     }
 
@@ -425,8 +427,9 @@ namespace FishGame
                 tailOffset = (tailOffset / length) * other.getRadius() * 0.8f;
                 sf::Vector2f tailPos = fishPos + tailOffset;
 
-                float distance = std::sqrt(std::pow(m_position.x - tailPos.x, 2) +
-                    std::pow(m_position.y - tailPos.y, 2));
+                float dx = m_position.x - tailPos.x;
+                float dy = m_position.y - tailPos.y;
+                float distance = std::sqrt(dx * dx + dy * dy);
 
                 if (distance < m_radius + 10.0f)
                 {
@@ -478,7 +481,9 @@ namespace FishGame
 
     void Player::die()
     {
-        m_position = sf::Vector2f(m_windowBounds.x / 2.0f, m_windowBounds.y / 2.0f);
+        m_position = sf::Vector2f(
+            static_cast<float>(m_windowBounds.x) / 2.0f,
+            static_cast<float>(m_windowBounds.y) / 2.0f);
         m_velocity = sf::Vector2f(0.0f, 0.0f);
         m_targetPosition = m_position;
 
@@ -500,7 +505,9 @@ namespace FishGame
     void Player::respawn()
     {
         m_isAlive = true;
-        m_position = sf::Vector2f(m_windowBounds.x / 2.0f, m_windowBounds.y / 2.0f);
+        m_position = sf::Vector2f(
+            static_cast<float>(m_windowBounds.x) / 2.0f,
+            static_cast<float>(m_windowBounds.y) / 2.0f);
         m_velocity = sf::Vector2f(0.0f, 0.0f);
         m_targetPosition = m_position;
         m_invulnerabilityTimer = m_invulnerabilityDuration;
@@ -582,7 +589,8 @@ namespace FishGame
 
     void Player::updateStage()
     {
-        m_radius = m_baseRadius * std::pow(m_growthFactor, m_currentStage - 1);
+        m_radius = static_cast<float>(m_baseRadius *
+            std::pow(m_growthFactor, static_cast<float>(m_currentStage - 1)));
 
         if (m_growthMeter)
         {

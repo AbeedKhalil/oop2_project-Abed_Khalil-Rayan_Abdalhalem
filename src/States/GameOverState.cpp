@@ -69,8 +69,6 @@ namespace FishGame
 
     void GameOverState::render()
     {
-        auto& window = getGame().getWindow();
-
         renderBackground();
         renderParticles();
         renderStats();

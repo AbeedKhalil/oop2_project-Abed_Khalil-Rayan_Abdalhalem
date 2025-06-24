@@ -69,7 +69,7 @@ namespace FishGame
         virtual int getScorePoints() const;
         virtual bool canEat(const Entity& other) const;
         virtual void updateAI(const std::vector<std::unique_ptr<Entity>>& entities,
-            const Entity* player, sf::Time deltaTime);
+            const Entity* player, sf::Time /*deltaTime*/);
 
         void setDirection(float dirX, float dirY);
         void setWindowBounds(const sf::Vector2u& windowSize);
