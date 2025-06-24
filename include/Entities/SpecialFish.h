@@ -51,8 +51,6 @@ namespace FishGame
 
         EntityType getType() const override { return EntityType::LargeFish; }
 
-        bool isSpecialFish() const override { return true; }
-        bool isBarracuda() const override { return true; }
         TextureID getTextureID() const override { return TextureID::Barracuda; }
         int getScorePoints() const override { return Constants::BARRACUDA_POINTS; }
 
@@ -96,7 +94,6 @@ namespace FishGame
 
         EntityType getType() const override { return EntityType::MediumFish; }
 
-        bool isSpecialFish() const override { return true; }
         TextureID getTextureID() const override
         {
             return isInflated() ? TextureID::PufferfishInflated : TextureID::Pufferfish;
@@ -160,7 +157,6 @@ namespace FishGame
         explicit PoisonFish(int currentLevel = 1);
         ~PoisonFish() override = default;
 
-        bool isSpecialFish() const override { return true; }
         TextureID getTextureID() const override { return TextureID::PoisonFish; }
 
         EntityType getType() const override { return EntityType::SmallFish; }
@@ -171,7 +167,6 @@ namespace FishGame
 
         // Get poison effect duration when eaten
         sf::Time getPoisonDuration() const { return m_poisonDuration; }
-        bool isPoisonous() const { return true; }
 
     protected:
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
@@ -197,7 +192,6 @@ namespace FishGame
         explicit Angelfish(int currentLevel = 1);
         ~Angelfish() override = default;
 
-        bool isSpecialFish() const override { return true; }
         EntityType getType() const override { return EntityType::SmallFish; }
         int getPointValue() const { return m_bonusPoints; }
         TextureID getTextureID() const override { return TextureID::Angelfish; }

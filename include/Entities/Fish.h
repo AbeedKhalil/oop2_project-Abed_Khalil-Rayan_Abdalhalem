@@ -44,9 +44,6 @@ namespace FishGame
         bool isPoisoned() const { return m_isPoisoned; }
         bool isStunned() const { return m_isStunned; }
 
-        // Special fish type checking
-        virtual bool isSpecialFish() const { return false; }
-        virtual bool isBarracuda() const { return false; }
 
         // Entity interface implementation
         void update(sf::Time deltaTime) override;
