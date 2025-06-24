@@ -7,6 +7,8 @@
 #include <numeric>
 #include <algorithm>
 #include <iterator>
+#include <ranges>
+#include <execution>
 
 namespace FishGame
 {
@@ -259,19 +261,20 @@ namespace FishGame
         m_bell.setPosition(m_position);
 
         // Update tentacles with wave motion
-        for (size_t i = 0; i < m_tentacles.size(); ++i)
-        {
-            float angle = (360.0f / m_tentacleCount) * i * Constants::DEG_TO_RAD;
-            float wave = std::sin(m_tentacleWave + i * 0.5f) * 10.0f;
+        auto tentIdx = std::views::iota(size_t{ 0 }, m_tentacles.size());
+        std::for_each(std::execution::unseq, tentIdx.begin(), tentIdx.end(),
+            [this](size_t i)
+            {
+                float angle = (360.0f / m_tentacleCount) * i * Constants::DEG_TO_RAD;
+                float wave = std::sin(m_tentacleWave + i * 0.5f) * 10.0f;
 
-            sf::Vector2f tentaclePos(
-                m_position.x + std::cos(angle) * 15.0f,
-                m_position.y + std::sin(angle) * 15.0f
-            );
+                sf::Vector2f tentaclePos(
+                    m_position.x + std::cos(angle) * 15.0f,
+                    m_position.y + std::sin(angle) * 15.0f);
 
-            m_tentacles[i].setPosition(tentaclePos);
-            m_tentacles[i].setRotation((angle * Constants::RAD_TO_DEG) + 90.0f + wave);
-        }
+                m_tentacles[i].setPosition(tentaclePos);
+                m_tentacles[i].setRotation((angle * Constants::RAD_TO_DEG) + 90.0f + wave);
+            });
 
         // Check boundaries
         if (m_position.y > static_cast<float>(Constants::WINDOW_HEIGHT) + 100.0f)

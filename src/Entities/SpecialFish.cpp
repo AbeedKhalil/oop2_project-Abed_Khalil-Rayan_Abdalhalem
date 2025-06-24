@@ -8,6 +8,8 @@
 #include <algorithm>
 #include <cmath>
 #include <iterator>
+#include <ranges>
+#include <execution>
 
 namespace FishGame
 {
@@ -304,19 +306,20 @@ namespace FishGame
             updateMovement(deltaTime);
 
             // Still update visual elements but not state transitions
-            for (size_t i = 0; i < m_spikes.size(); ++i)
-            {
-                float angle = (360.0f / m_spikeCount) * i * Constants::DEG_TO_RAD;
-                float spikeRadius = m_radius + (m_inflationLevel * 10.0f);
+            auto spikeIdx = std::views::iota(size_t{ 0 }, m_spikes.size());
+            std::for_each(std::execution::unseq, spikeIdx.begin(), spikeIdx.end(),
+                [this](size_t i)
+                {
+                    float angle = (360.0f / m_spikeCount) * i * Constants::DEG_TO_RAD;
+                    float spikeRadius = m_radius + (m_inflationLevel * 10.0f);
 
-                sf::Vector2f spikePos(
-                    m_position.x + std::cos(angle) * spikeRadius,
-                    m_position.y + std::sin(angle) * spikeRadius
-                );
+                    sf::Vector2f spikePos(
+                        m_position.x + std::cos(angle) * spikeRadius,
+                        m_position.y + std::sin(angle) * spikeRadius);
 
-                m_spikes[i].setPosition(spikePos);
-                m_spikes[i].setRotation(angle * Constants::RAD_TO_DEG);
-            }
+                    m_spikes[i].setPosition(spikePos);
+                    m_spikes[i].setRotation(angle * Constants::RAD_TO_DEG);
+                });
             return;
         }
 
@@ -350,19 +353,20 @@ namespace FishGame
         }
 
         // Update spike positions
-        for (size_t i = 0; i < m_spikes.size(); ++i)
-        {
-            float angle = (360.0f / m_spikeCount) * i * Constants::DEG_TO_RAD;
-            float spikeRadius = m_radius + (m_inflationLevel * 10.0f);
+        auto spikeIdx2 = std::views::iota(size_t{ 0 }, m_spikes.size());
+        std::for_each(std::execution::unseq, spikeIdx2.begin(), spikeIdx2.end(),
+            [this](size_t i)
+            {
+                float angle = (360.0f / m_spikeCount) * i * Constants::DEG_TO_RAD;
+                float spikeRadius = m_radius + (m_inflationLevel * 10.0f);
 
-            sf::Vector2f spikePos(
-                m_position.x + std::cos(angle) * spikeRadius,
-                m_position.y + std::sin(angle) * spikeRadius
-            );
+                sf::Vector2f spikePos(
+                    m_position.x + std::cos(angle) * spikeRadius,
+                    m_position.y + std::sin(angle) * spikeRadius);
 
-            m_spikes[i].setPosition(spikePos);
-            m_spikes[i].setRotation(angle * Constants::RAD_TO_DEG);
-        }
+                m_spikes[i].setPosition(spikePos);
+                m_spikes[i].setRotation(angle * Constants::RAD_TO_DEG);
+            });
     }
 
     bool Pufferfish::canEat(const Entity& other) const
@@ -570,22 +574,23 @@ namespace FishGame
 
     void PoisonFish::updatePoisonBubbles(sf::Time /*deltaTime*/)
     {
-        for (size_t i = 0; i < m_poisonBubbles.size(); ++i)
-        {
-            float angle = (60.0f * i + m_wobbleAnimation * 30.0f) * Constants::DEG_TO_RAD;
-            float radius = 18.0f + 3.0f * std::sin(m_wobbleAnimation + i);
+        auto bubbleIdx = std::views::iota(size_t{ 0 }, m_poisonBubbles.size());
+        std::for_each(std::execution::unseq, bubbleIdx.begin(), bubbleIdx.end(),
+            [this](size_t i)
+            {
+                float angle = (60.0f * i + m_wobbleAnimation * 30.0f) * Constants::DEG_TO_RAD;
+                float radius = 18.0f + 3.0f * std::sin(m_wobbleAnimation + i);
 
-            sf::Vector2f bubblePos(
-                m_position.x + std::cos(angle) * radius,
-                m_position.y + std::sin(angle) * radius
-            );
+                sf::Vector2f bubblePos(
+                    m_position.x + std::cos(angle) * radius,
+                    m_position.y + std::sin(angle) * radius);
 
-            m_poisonBubbles[i].setPosition(bubblePos);
+                m_poisonBubbles[i].setPosition(bubblePos);
 
-            // Pulsing effect for bubbles
-            float scale = 1.0f + 0.2f * std::sin(m_wobbleAnimation * 2.0f + i);
-            m_poisonBubbles[i].setScale(scale, scale);
-        }
+                // Pulsing effect for bubbles
+                float scale = 1.0f + 0.2f * std::sin(m_wobbleAnimation * 2.0f + i);
+                m_poisonBubbles[i].setScale(scale, scale);
+            });
     }
 
     void PoisonFish::draw(sf::RenderTarget& target, sf::RenderStates states) const
@@ -653,26 +658,27 @@ namespace FishGame
         m_colorShift += deltaTime.asSeconds() * (m_isFrozen ? 0.5f : 2.0f);
 
         // Update fin positions with more dynamic movement
-        for (size_t i = 0; i < m_fins.size(); ++i)
-        {
-            float finAngle = (m_colorShift + i * 120.0f) * 3.14159f / 180.0f;
-            float finRadius = 20.0f + (m_isEvading ? 10.0f * std::sin(m_colorShift * 5.0f) : 0.0f);
-
-            sf::Vector2f finPos(
-                m_position.x + std::cos(finAngle) * finRadius,
-                m_position.y + std::sin(finAngle) * finRadius
-            );
-
-            m_fins[i].setPosition(finPos);
-            m_fins[i].setRotation(finAngle * Constants::RAD_TO_DEG);
-
-            // Pulse fins when evading (unless frozen)
-            if (m_isEvading && !m_isFrozen)
+        auto finIdx = std::views::iota(size_t{ 0 }, m_fins.size());
+        std::for_each(std::execution::unseq, finIdx.begin(), finIdx.end(),
+            [this](size_t i)
             {
-                float scale = 1.0f + 0.3f * std::sin(m_colorShift * 10.0f);
-                m_fins[i].setScale(scale, scale);
-            }
-        }
+                float finAngle = (m_colorShift + i * 120.0f) * 3.14159f / 180.0f;
+                float finRadius = 20.0f + (m_isEvading ? 10.0f * std::sin(m_colorShift * 5.0f) : 0.0f);
+
+                sf::Vector2f finPos(
+                    m_position.x + std::cos(finAngle) * finRadius,
+                    m_position.y + std::sin(finAngle) * finRadius);
+
+                m_fins[i].setPosition(finPos);
+                m_fins[i].setRotation(finAngle * Constants::RAD_TO_DEG);
+
+                // Pulse fins when evading (unless frozen)
+                if (m_isEvading && !m_isFrozen)
+                {
+                    float scale = 1.0f + 0.3f * std::sin(m_colorShift * 10.0f);
+                    m_fins[i].setScale(scale, scale);
+                }
+            });
     }
 
     void Angelfish::updateAI(const std::vector<std::unique_ptr<Entity>>& entities,
