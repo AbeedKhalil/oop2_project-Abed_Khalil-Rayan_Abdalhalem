@@ -31,8 +31,6 @@ namespace FishGame
     protected:
         HazardType m_hazardType;
         float m_damageAmount;
-        sf::Time m_activationDelay;
-        bool m_isActivated;
     };
 
     // Bomb hazard - explodes on contact
