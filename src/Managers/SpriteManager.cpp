@@ -3,6 +3,8 @@
 #include "Fish.h"
 #include "Player.h"
 #include <algorithm>
+#include <future>
+#include <vector>
 #include "GameExceptions.h"
 
 namespace FishGame
@@ -71,18 +73,31 @@ namespace FishGame
 void SpriteManager::loadTextures(const std::string& assetPath)
 {
         m_textureHolder.reserve(s_textureFiles.size());
-        // Use STL algorithm to load all textures
-        std::for_each(s_textureFiles.begin(), s_textureFiles.end(),
-            [this, &assetPath](const auto& pair)
-            {
-                const auto& [id, filename] = pair;
 
-                // Prepend asset directory if provided
-                std::string fullPath = assetPath.empty() ? filename
-                    : assetPath + "/" + filename;
+        // Load textures in parallel using std::async
+        std::vector<std::future<std::pair<TextureID, std::unique_ptr<sf::Texture>>>> futures;
+        futures.reserve(s_textureFiles.size());
 
-                m_textureHolder.load(id, fullPath);
-            });
+        for (const auto& [id, filename] : s_textureFiles)
+        {
+            futures.emplace_back(std::async(std::launch::async,
+                [&, id, filename]() {
+                    std::string fullPath = assetPath.empty() ? filename
+                        : assetPath + "/" + filename;
+                    auto tex = std::make_unique<sf::Texture>();
+                    if (!tex->loadFromFile(fullPath))
+                    {
+                        throw ResourceLoadException("Failed to load texture: " + fullPath);
+                    }
+                    return std::make_pair(id, std::move(tex));
+                }));
+        }
+
+        for (auto& fut : futures)
+        {
+            auto result = fut.get();
+            m_textureHolder.insert(result.first, std::move(result.second));
+        }
 }
 
     const sf::Texture& SpriteManager::getTexture(TextureID id) const

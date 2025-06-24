@@ -24,7 +24,8 @@ namespace FishGame
 
                 // Calculate position based on pattern
                 sf::Vector2f position = calculatePosition(
-                    config.pattern, basePosition, index, config.spacing);
+                    config.pattern, basePosition, static_cast<std::size_t>(index),
+                    config.spacing);
 
                 fish->setPosition(position);
                 config.applyToFish(*fish, index);
@@ -47,13 +48,13 @@ namespace FishGame
         {
         case SpawnPattern::WaveFormation:
             return sf::Vector2f(
-                base.x + index * spacing,
-                base.y + std::sin(index * 0.5f) * 30.0f
+                base.x + static_cast<float>(index) * spacing,
+                base.y + std::sin(static_cast<float>(index) * 0.5f) * 30.0f
             );
 
         case SpawnPattern::CircleFormation:
         {
-            float angle = (360.0f / 8.0f) * index * Constants::DEG_TO_RAD;
+            float angle = (360.0f / 8.0f) * static_cast<float>(index) * Constants::DEG_TO_RAD;
             return sf::Vector2f(
                 base.x + std::cos(angle) * spacing,
                 base.y + std::sin(angle) * spacing
@@ -61,7 +62,7 @@ namespace FishGame
         }
 
         case SpawnPattern::LineFormation:
-            return sf::Vector2f(base.x, base.y + index * spacing);
+            return sf::Vector2f(base.x, base.y + static_cast<float>(index) * spacing);
 
         case SpawnPattern::EdgeRandom:
         default:

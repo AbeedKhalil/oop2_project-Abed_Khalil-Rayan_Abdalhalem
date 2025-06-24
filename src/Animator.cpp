@@ -244,13 +244,13 @@ Animator createPufferfishAnimator(const sf::Texture& tex)
 {
     Animator a(tex, 187, 123, 5);
 
-    auto makeFrames = [](int rowY, int width, int count, int height)
+    auto makeFrames = [](int rowY, int width, std::size_t count, int height)
         {
             std::vector<sf::IntRect> frames;
             frames.reserve(count);
-            for (int i = 0; i < count; ++i)
+            for (std::size_t i = 0; i < count; ++i)
             {
-                frames.emplace_back(5 + i * width, rowY, width, height);
+                frames.emplace_back(5 + static_cast<int>(i) * width, rowY, width, height);
             }
             return frames;
         };

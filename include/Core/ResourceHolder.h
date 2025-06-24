@@ -37,6 +37,9 @@ namespace FishGame
         template<typename Parameter>
         void load(Identifier id, const std::string& filename, const Parameter& secondParam);
 
+        // Insert already loaded resource (useful for async loading)
+        void insert(Identifier id, std::unique_ptr<Resource> resource);
+
         Resource& get(Identifier id);
         const Resource& get(Identifier id) const;
 
@@ -59,6 +62,12 @@ void ResourceHolder<Resource, Identifier>::load(Identifier id, const std::string
             throw ResourceLoadException("Failed to load resource: " + filename);
         }
 
+        insertResource(id, std::move(resource));
+    }
+
+    template<typename Resource, typename Identifier>
+    void ResourceHolder<Resource, Identifier>::insert(Identifier id, std::unique_ptr<Resource> resource)
+    {
         insertResource(id, std::move(resource));
     }
 

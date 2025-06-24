@@ -30,6 +30,6 @@ if (WIN32)
     target_link_libraries (${CMAKE_PROJECT_NAME} sfml-graphics sfml-main)
     include (cmake/SFML.cmake)
 else()
-    target_link_libraries (${CMAKE_PROJECT_NAME} sfml-graphics)
+    target_link_libraries (${CMAKE_PROJECT_NAME} sfml-graphics pthread)
 endif()
 

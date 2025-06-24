@@ -135,15 +135,15 @@ namespace FishGame
             // Generate positions using STL algorithm
             std::generate(xPositions.begin(), xPositions.end(),
                 [spacing, n = 1]() mutable {
-                    return spacing * n++;
+                    return spacing * static_cast<float>(n++);
                 });
 
             // Create oysters at fixed positions
             std::transform(xPositions.begin(), xPositions.end(), m_oysters.begin(),
                 [this](float x) {
                     auto oyster = std::make_unique<PermanentOyster>();
-                    oyster->setPosition(x, m_windowSize.y - 80.0f);
-                    oyster->m_baseY = m_windowSize.y - 80.0f;
+                    oyster->setPosition(x, static_cast<float>(m_windowSize.y) - 80.0f);
+                    oyster->m_baseY = static_cast<float>(m_windowSize.y) - 80.0f;
                     if (m_spriteManager)
                         oyster->initializeSprites(*m_spriteManager);
                     return oyster;

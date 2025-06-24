@@ -61,7 +61,8 @@ namespace FishGame
         // Check for school spawning - ONLY FOR SMALL FISH
         if (m_schoolingSystem && m_schoolChanceDist(m_randomEngine) < m_specialConfig.schoolSpawnChance)
         {
-            size_t schoolSize = m_schoolSizeDist(m_randomEngine);
+            std::size_t schoolSize =
+                static_cast<std::size_t>(m_schoolSizeDist(m_randomEngine));
 
             // Only spawn schools of small fish
             spawnSchool<SmallFish>(schoolSize);
@@ -105,7 +106,7 @@ namespace FishGame
             float y = std::uniform_real_distribution<float>(
                 100.0f,
                 static_cast<float>(m_windowSize.y) - 100.0f)(m_randomEngine);
-            float x = fromLeft ? -50.0f : m_windowSize.x + 50.0f;
+            float x = fromLeft ? -50.0f : static_cast<float>(m_windowSize.x) + 50.0f;
 
             fish->setPosition(x, y);
             fish->setDirection(fromLeft ? 1.0f : -1.0f, 0.0f);
@@ -143,7 +144,7 @@ namespace FishGame
         float baseY = std::uniform_real_distribution<float>(
             150.0f,
             static_cast<float>(m_windowSize.y) - 150.0f)(m_randomEngine);
-        float baseX = fromLeft ? -50.0f : m_windowSize.x + 50.0f;
+        float baseX = fromLeft ? -50.0f : static_cast<float>(m_windowSize.x) + 50.0f;
 
         // Create formation configuration
         AdvancedSpawnConfig<FishType> spawnConfig;
@@ -187,7 +188,9 @@ namespace FishGame
         SpawnerConfig<Barracuda> barracudaConfig;
         barracudaConfig.spawnRate = m_specialConfig.barracudaSpawnRate * (1.0f + (level - 1) * 0.1f);
         barracudaConfig.minBounds = sf::Vector2f(-50.0f, 100.0f);
-        barracudaConfig.maxBounds = sf::Vector2f(m_windowSize.x + 50.0f, m_windowSize.y - 100.0f);
+        barracudaConfig.maxBounds =
+            sf::Vector2f(static_cast<float>(m_windowSize.x) + 50.0f,
+                        static_cast<float>(m_windowSize.y) - 100.0f);
 
         m_barracudaSpawner.setConfig(barracudaConfig);
         m_barracudaSpawner.setFactory([level]() { return FishFactory<Barracuda>::create(level); });
@@ -196,7 +199,9 @@ namespace FishGame
         SpawnerConfig<Pufferfish> pufferfishConfig;
         pufferfishConfig.spawnRate = m_specialConfig.pufferfishSpawnRate * (1.0f + (level - 1) * 0.15f);
         pufferfishConfig.minBounds = sf::Vector2f(-50.0f, 150.0f);
-        pufferfishConfig.maxBounds = sf::Vector2f(m_windowSize.x + 50.0f, m_windowSize.y - 150.0f);
+        pufferfishConfig.maxBounds =
+            sf::Vector2f(static_cast<float>(m_windowSize.x) + 50.0f,
+                        static_cast<float>(m_windowSize.y) - 150.0f);
 
         m_pufferfishSpawner.setConfig(pufferfishConfig);
         m_pufferfishSpawner.setFactory([level]() { return FishFactory<Pufferfish>::create(level); });
@@ -205,7 +210,9 @@ namespace FishGame
         SpawnerConfig<Angelfish> angelfishConfig;
         angelfishConfig.spawnRate = m_specialConfig.angelfishSpawnRate * (1.0f + (level - 1) * 0.2f);
         angelfishConfig.minBounds = sf::Vector2f(-50.0f, 50.0f);
-        angelfishConfig.maxBounds = sf::Vector2f(m_windowSize.x + 50.0f, m_windowSize.y - 50.0f);
+        angelfishConfig.maxBounds =
+            sf::Vector2f(static_cast<float>(m_windowSize.x) + 50.0f,
+                        static_cast<float>(m_windowSize.y) - 50.0f);
 
         m_angelfishSpawner.setConfig(angelfishConfig);
         m_angelfishSpawner.setFactory([level]() { return FishFactory<Angelfish>::create(level); });
@@ -214,7 +221,9 @@ namespace FishGame
         SpawnerConfig<PoisonFish> poisonFishConfig;
         poisonFishConfig.spawnRate = m_specialConfig.poisonFishSpawnRate * (1.0f + (level - 1) * 0.15f);
         poisonFishConfig.minBounds = sf::Vector2f(-50.0f, 50.0f);
-        poisonFishConfig.maxBounds = sf::Vector2f(m_windowSize.x + 50.0f, m_windowSize.y - 50.0f);
+        poisonFishConfig.maxBounds =
+            sf::Vector2f(static_cast<float>(m_windowSize.x) + 50.0f,
+                        static_cast<float>(m_windowSize.y) - 50.0f);
 
         m_poisonFishSpawner.setConfig(poisonFishConfig);
         m_poisonFishSpawner.setFactory([level]() { return FishFactory<PoisonFish>::create(level); });
