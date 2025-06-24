@@ -5,6 +5,9 @@
 #include "CollisionDetector.h"
 #include "GameConstants.h"
 #include "ExtendedPowerUps.h"
+#include "BonusItem.h"
+#include "Hazard.h"
+#include "Systems/FishCollisionHandler.h"
 #include "OysterManager.h"
 #include <algorithm>
 #include <execution>
@@ -22,6 +25,7 @@ namespace FishGame
         , m_player(std::make_unique<Player>())
         , m_entities()
         , m_bonusItems()
+        , m_hazards()
         , m_environment(std::make_unique<EnvironmentSystem>())
         , m_backgroundSprite()
         , m_timeLimit(sf::Time::Zero)
@@ -87,7 +91,7 @@ namespace FishGame
 
         case BonusStageType::FeedingFrenzy:
             m_timeLimit = sf::seconds(m_feedingFrenzyDuration);
-            m_objective = { "Eat Small Fish!", 20, 0, 50 };
+            m_objective = { "Eat Small Fish!", 0, 0, 50 };
             m_environment->setEnvironment(EnvironmentType::OpenOcean);
             break;
 
@@ -106,6 +110,7 @@ namespace FishGame
         // Reserve containers
         m_entities.reserve(50);
         m_bonusItems.reserve(30);
+        m_hazards.reserve(20);
     }
 
     void BonusStageState::handleEvent(const sf::Event& event)
@@ -188,7 +193,13 @@ namespace FishGame
                 item->update(deltaTime);
             });
 
-        // Handle collisions with time power-ups
+        // Update hazards
+        std::for_each(std::execution::par_unseq, m_hazards.begin(), m_hazards.end(),
+            [deltaTime](auto& hazard) {
+                hazard->update(deltaTime);
+            });
+
+        // Handle collisions with bonus items
         std::for_each(m_bonusItems.begin(), m_bonusItems.end(),
             [this](auto& item) {
                 if (auto* timePU = dynamic_cast<AddTimePowerUp*>(item.get()))
@@ -199,7 +210,28 @@ namespace FishGame
                         m_timeLimit += sf::seconds(3.f);
                     }
                 }
+                else if (CollisionDetector::checkCircleCollision(*m_player, *item))
+                {
+                    item->onCollect();
+                    m_bonusScore += item->getPoints();
+                }
             });
+
+        // Handle collisions with hazards
+        std::for_each(m_hazards.begin(), m_hazards.end(),
+            [this](auto& hazard) {
+                if (CollisionDetector::checkCircleCollision(*m_player, *hazard))
+                {
+                    hazard->onContact(*m_player);
+                    m_player->takeDamage();
+                    completeStage();
+                }
+            });
+
+        ::FishGame::FishCollisionHandler::processFishHazardCollisions(m_entities, m_hazards);
+
+        // Process bomb explosions affecting entities
+        ::FishGame::processBombExplosions(m_entities, m_hazards);
 
         // Remove dead entities
         m_entities.erase(
@@ -212,6 +244,12 @@ namespace FishGame
             std::remove_if(m_bonusItems.begin(), m_bonusItems.end(),
                 [](const auto& item) { return !item->isAlive(); }),
             m_bonusItems.end()
+        );
+
+        m_hazards.erase(
+            std::remove_if(m_hazards.begin(), m_hazards.end(),
+                [](const auto& hazard) { return !hazard->isAlive(); }),
+            m_hazards.end()
         );
 
         // Check completion
@@ -264,6 +302,12 @@ namespace FishGame
                 window.draw(*item);
             });
 
+        // Draw hazards
+        std::for_each(m_hazards.begin(), m_hazards.end(),
+            [&window](const auto& hazard) {
+                window.draw(*hazard);
+            });
+
         // Draw player - cast to drawable
         window.draw(static_cast<const sf::Drawable&>(*m_player));
 
@@ -301,6 +345,8 @@ namespace FishGame
             break;
         case BonusStageType::FeedingFrenzy:
             spawnBonusFish();
+            spawnStarfish();
+            spawnBomb();
             break;
         case BonusStageType::SurvivalChallenge:
             spawnPredatorWave();
@@ -356,13 +402,30 @@ namespace FishGame
     void BonusStageState::updateFeedingFrenzy(sf::Time deltaTime)
     {
         // Spawn more fish periodically
-        static sf::Time spawnTimer = sf::Time::Zero;
-        spawnTimer += deltaTime;
-
-        if (spawnTimer.asSeconds() > 2.0f && m_entities.size() < 20)
+        static sf::Time fishTimer = sf::Time::Zero;
+        fishTimer += deltaTime;
+        if (fishTimer.asSeconds() > 2.0f && m_entities.size() < 20)
         {
-            spawnTimer = sf::Time::Zero;
+            fishTimer = sf::Time::Zero;
             spawnBonusFish();
+        }
+
+        // Spawn starfish collectibles periodically
+        static sf::Time starTimer = sf::Time::Zero;
+        starTimer += deltaTime;
+        if (starTimer.asSeconds() > 4.0f && m_bonusItems.size() < 15)
+        {
+            starTimer = sf::Time::Zero;
+            spawnStarfish();
+        }
+
+        // Spawn bombs periodically
+        static sf::Time bombTimer = sf::Time::Zero;
+        bombTimer += deltaTime;
+        if (bombTimer.asSeconds() > 2.0f && m_hazards.size() < 15)
+        {
+            bombTimer = sf::Time::Zero;
+            spawnBomb();
         }
 
         // Check collisions with fish
@@ -470,21 +533,47 @@ namespace FishGame
             });
     }
 
-    void BonusStageState::spawnTimePowerUp()
-    {
-        auto power = std::make_unique<AddTimePowerUp>();
-        float x = m_xDist(m_randomEngine);
-        float y = m_yDist(m_randomEngine);
-        power->setPosition(x, y);
-        power->m_baseY = y;
-        power->initializeSprite(getGame().getSpriteManager());
-        m_bonusItems.push_back(std::move(power));
-    }
+void BonusStageState::spawnTimePowerUp()
+{
+    auto power = std::make_unique<AddTimePowerUp>();
+    float x = m_xDist(m_randomEngine);
+    float y = m_yDist(m_randomEngine);
+    power->setPosition(x, y);
+    power->m_baseY = y;
+    power->initializeSprite(getGame().getSpriteManager());
+    m_bonusItems.push_back(std::move(power));
+}
+
+void BonusStageState::spawnStarfish()
+{
+    auto starfish = std::make_unique<Starfish>();
+    float x = m_xDist(m_randomEngine);
+    float y = m_yDist(m_randomEngine);
+    starfish->setPosition(x, y);
+    starfish->m_baseY = y;
+    starfish->initializeSprite(getGame().getSpriteManager());
+    m_bonusItems.push_back(std::move(starfish));
+}
+
+void BonusStageState::spawnBomb()
+{
+    auto bomb = std::make_unique<Bomb>();
+    bomb->initializeSprite(getGame().getSpriteManager());
+    float x = m_xDist(m_randomEngine);
+    float y = m_yDist(m_randomEngine);
+    bomb->setPosition(x, y);
+    m_hazards.push_back(std::move(bomb));
+}
 
     void BonusStageState::checkCompletion()
     {
-        if (m_timeElapsed >= m_timeLimit ||
-            m_objective.currentCount >= m_objective.targetCount)
+        bool timeUp = m_timeElapsed >= m_timeLimit;
+
+        bool objectiveMet = m_objective.currentCount >= m_objective.targetCount;
+        if (m_stageType == BonusStageType::FeedingFrenzy)
+            objectiveMet = false;
+
+        if (timeUp || objectiveMet)
         {
             completeStage();
         }
