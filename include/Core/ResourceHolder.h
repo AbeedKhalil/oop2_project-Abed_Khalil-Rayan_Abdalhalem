@@ -13,8 +13,7 @@ namespace FishGame
 {
     enum class Fonts
     {
-        Main,
-        Score
+        Main
     };
 
     // Generic resource holder template
