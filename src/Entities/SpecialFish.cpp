@@ -109,7 +109,6 @@ namespace FishGame
         float scale = spriteManager.getScaleConfig().large * 1.5f;
         m_animator->setScale({ scale, scale });
         m_animator->setPosition(m_position);
-        setRenderMode(RenderMode::Sprite);
 
         m_facingRight = m_velocity.x > 0.f;
         m_currentAnimation = m_facingRight ? "swimRight" : "swimLeft";
@@ -130,7 +129,7 @@ namespace FishGame
     {
         AdvancedFish::update(deltaTime);
 
-        if (m_animator && getRenderMode() == RenderMode::Sprite)
+        if (m_animator)
         {
             bool newFacingRight = m_velocity.x > 0.f;
             if (newFacingRight != m_facingRight)
@@ -287,7 +286,6 @@ namespace FishGame
         float scale = spriteManager.getScaleConfig().medium;
         m_animator->setScale({ scale, scale });
         m_animator->setPosition(m_position);
-        setRenderMode(RenderMode::Sprite);
 
         m_facingRight = m_velocity.x > 0.f;
         m_currentAnimation = m_facingRight ? "swimRight" : "swimLeft";

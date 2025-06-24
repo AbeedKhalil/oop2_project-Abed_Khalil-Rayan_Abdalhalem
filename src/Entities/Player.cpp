@@ -79,7 +79,6 @@ namespace FishGame
         const sf::Texture& tex = spriteManager.getTexture(getTextureID());
         m_animator = std::make_unique<Animator>(createFishAnimator(tex));
         m_animator->setPosition(m_position);
-        setRenderMode(RenderMode::Sprite);
         m_currentAnimation = "idleLeft";
         m_animator->play(m_currentAnimation);
     }
@@ -130,7 +129,7 @@ namespace FishGame
         constrainToWindow();
 
         // Auto-orient sprite based on velocity
-        if (m_autoOrient && m_animator && m_renderMode == RenderMode::Sprite && m_eatAnimationTimer <= sf::Time::Zero)
+        if (m_autoOrient && m_animator && m_eatAnimationTimer <= sf::Time::Zero)
         {
             if (std::abs(m_velocity.x) > m_orientationThreshold)
             {
@@ -150,7 +149,7 @@ namespace FishGame
         checkStageAdvancement();
         updateVisualEffects(deltaTime);
 
-        if (m_renderMode == RenderMode::Sprite && m_animator)
+        if (m_animator)
         {
             m_animator->update(deltaTime);
 
@@ -597,7 +596,7 @@ namespace FishGame
             m_growthMeter->setStage(m_currentStage);
         }
 
-        if (m_animator && m_renderMode == RenderMode::Sprite && m_spriteManager)
+        if (m_animator && m_spriteManager)
         {
             float stageScale = 1.0f;
             const auto& cfg = m_spriteManager->getScaleConfig();

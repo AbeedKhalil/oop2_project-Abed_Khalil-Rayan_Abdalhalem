@@ -97,7 +97,6 @@ namespace FishGame
             auto config = spriteManager.getSpriteConfig<Entity>(TextureID::Starfish);
             sprite->configure(config);
             setSpriteComponent(std::move(sprite));
-            setRenderMode(RenderMode::Sprite);
         }
     }
 
@@ -106,7 +105,7 @@ namespace FishGame
         if (!updateLifetime(deltaTime))
             return;
 
-        if (getRenderMode() == RenderMode::Sprite && getSpriteComponent())
+        if (getSpriteComponent())
         {
             getSpriteComponent()->update(deltaTime);
         }
@@ -137,7 +136,7 @@ namespace FishGame
 
     void Starfish::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        if (getRenderMode() == RenderMode::Sprite && getSpriteComponent())
+        if (getSpriteComponent())
         {
             target.draw(*getSpriteComponent(), states);
         }
