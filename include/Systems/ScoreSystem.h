@@ -3,6 +3,7 @@
 #include <SFML/Graphics.hpp>
 #include <memory>
 #include <vector>
+#include <cmath>
 
 namespace FishGame
 {
@@ -98,6 +99,8 @@ namespace FishGame
     template<typename... Multipliers>
     int calculateTotalScore(int baseScore, Multipliers... multipliers)
     {
-        return baseScore * (... * multipliers);
+        float total = static_cast<float>(baseScore);
+        ((total *= multipliers), ...);
+        return static_cast<int>(std::round(total));
     }
 }
