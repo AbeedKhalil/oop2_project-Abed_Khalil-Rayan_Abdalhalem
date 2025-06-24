@@ -3,7 +3,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 #include <memory>
-#include <map>
+#include <unordered_map>
 #include <string>
 #include <stdexcept>
 #include <cassert>
@@ -41,11 +41,13 @@ namespace FishGame
         Resource& get(Identifier id);
         const Resource& get(Identifier id) const;
 
+        void reserve(std::size_t count);
+
     private:
         void insertResource(Identifier id, std::unique_ptr<Resource> resource);
 
     private:
-        std::map<Identifier, std::unique_ptr<Resource>> m_resourceMap;
+        std::unordered_map<Identifier, std::unique_ptr<Resource>> m_resourceMap;
     };
 
     // Template implementations
@@ -108,6 +110,12 @@ void ResourceHolder<Resource, Identifier>::load(Identifier id, const std::string
         {
             throw std::runtime_error("ResourceHolder::insertResource - Failed to insert resource");
         }
+    }
+
+    template<typename Resource, typename Identifier>
+    void ResourceHolder<Resource, Identifier>::reserve(std::size_t count)
+    {
+        m_resourceMap.reserve(count);
     }
 
     // Type aliases for convenience
