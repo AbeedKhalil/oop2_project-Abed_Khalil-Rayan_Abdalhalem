@@ -23,7 +23,7 @@ void Animator::addClipRow(const std::string& name, int rowY, int startFrame, int
     Time frameTime, bool loop, bool reverse)
 {
     std::vector<IntRect> frames;
-    frames.reserve(count);
+    frames.reserve(static_cast<std::size_t>(count));
     for (int i = 0; i < count; ++i)
     {
         int idx = reverse ? startFrame + count - 1 - i : startFrame + i;

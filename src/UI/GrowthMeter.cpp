@@ -4,6 +4,7 @@
 #include <sstream>
 #include <iomanip>
 #include <array>
+#include <cmath>
 
 namespace FishGame
 {

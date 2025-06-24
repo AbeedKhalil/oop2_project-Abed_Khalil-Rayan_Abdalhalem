@@ -23,9 +23,11 @@ namespace FishGame
         , m_score(0)
         , m_currentStage(1)
         , m_growthProgress(0.0f)
+        , m_autoOrient(true)
         , m_points(0)
         , m_targetPosition(0.0f, 0.0f)
-        , m_autoOrient(true)
+        , m_controlsReversed(false)
+        , m_poisonColorTimer(sf::Time::Zero)
         , m_growthMeter(nullptr)
         , m_frenzySystem(nullptr)
         , m_powerUpManager(nullptr)
@@ -45,8 +47,6 @@ namespace FishGame
         , m_currentAnimation()
         , m_facingRight(false)
         , m_turnAnimationTimer(sf::Time::Zero)
-        , m_controlsReversed(false)
-        , m_poisonColorTimer(sf::Time::Zero)
     {
         m_radius = m_baseRadius;
 

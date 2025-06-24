@@ -23,8 +23,8 @@ namespace FishGame
         , m_stateStack()
         , m_pendingList()
         , m_stateFactories()
-        , m_metrics()
         , m_spriteManager(nullptr)
+        , m_metrics()
     {
         m_window.setFramerateLimit(m_frameRateLimit);
 

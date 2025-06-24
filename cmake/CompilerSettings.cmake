@@ -20,7 +20,7 @@ if (MSVC)
         /w14928 # illegal copy-initialization; more than one user-defined conversion has been implicitly applied
         /we4996 # warning as error: [[deprecated]]
     )
-elseif (CMAKE_CXX_COMPILER_ID MATCHES ".*Clang")
+elseif (CMAKE_CXX_COMPILER_ID MATCHES ".*Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     add_compile_options (
         -Wall
         -Wextra # reasonable and standard
