@@ -138,7 +138,7 @@ namespace FishGame
 
         // Timing constants
         static constexpr float m_normalStateDuration = 5.0f;  // 5 seconds normal
-        static constexpr float m_puffedStateDuration = 3.0f;  // 3 seconds puffed
+        static constexpr float m_puffedStateDuration = 5.0f;  // 5 seconds puffed
         static constexpr float m_inflationSpeed = 3.0f;
         static constexpr float m_deflationSpeed = 3.0f;
         static constexpr float m_inflatedRadiusMultiplier = 2.0f;

@@ -432,35 +432,38 @@ namespace FishGame
                 // Transition to puffed state
                 transitionToInflated();
             }
-            else
+            else if (m_inflationLevel > 0.0f)
             {
-                // Deflate if needed
-                if (m_inflationLevel > 0.0f)
-                {
-                    m_inflationLevel = std::max(0.0f, m_inflationLevel - m_deflationSpeed * deltaTime.asSeconds());
-
-                    // Update radius
-                    m_radius = m_normalRadius * (1.0f + m_inflationLevel * (m_inflatedRadiusMultiplier - 1.0f));
-                }
+                // Continue deflating back to normal size
+                m_inflationLevel = std::max(0.0f, m_inflationLevel - m_deflationSpeed * deltaTime.asSeconds());
+                m_radius = m_normalRadius * (1.0f + m_inflationLevel * (m_inflatedRadiusMultiplier - 1.0f));
             }
         }
         else
         {
             // Puffed state
-            if (m_stateTimer.asSeconds() >= m_puffedStateDuration)
+            if (m_stateTimer.asSeconds() < m_puffedStateDuration)
             {
-                // Transition to normal state
-                transitionToNormal();
-            }
-            else
-            {
-                // Inflate if needed
+                // Inflate until fully puffed
                 if (m_inflationLevel < 1.0f)
                 {
                     m_inflationLevel = std::min(1.0f, m_inflationLevel + m_inflationSpeed * deltaTime.asSeconds());
-
-                    // Update radius
                     m_radius = m_normalRadius * (1.0f + m_inflationLevel * (m_inflatedRadiusMultiplier - 1.0f));
+                }
+            }
+            else
+            {
+                // After puff duration elapsed, start deflating but remain puffed
+                if (m_inflationLevel > 0.0f)
+                {
+                    m_inflationLevel = std::max(0.0f, m_inflationLevel - m_deflationSpeed * deltaTime.asSeconds());
+                    m_radius = m_normalRadius * (1.0f + m_inflationLevel * (m_inflatedRadiusMultiplier - 1.0f));
+                }
+
+                // When back to normal size, switch to normal state
+                if (m_inflationLevel <= 0.0f)
+                {
+                    transitionToNormal();
                 }
             }
         }
