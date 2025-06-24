@@ -220,8 +220,8 @@ namespace FishGame
         // Register bonus stage
         m_stateFactories[StateID::BonusStage] = [this]() -> std::unique_ptr<State>
             {
-                // Default to treasure hunt, level 1
-                return std::make_unique<BonusStageState>(*this, BonusStageType::TreasureHunt, 1);
+                // Default to feeding frenzy, level 1
+                return std::make_unique<BonusStageState>(*this, BonusStageType::FeedingFrenzy, 1);
             };
 
         // TODO: Register additional states as they are implemented

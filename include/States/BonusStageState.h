@@ -4,6 +4,7 @@
 #include "BonusItem.h"
 #include "EnvironmentSystem.h"
 #include "Player.h"
+#include "Hazard.h"
 #include <SFML/Graphics.hpp>
 #include <memory>
 #include <vector>
@@ -55,6 +56,8 @@ namespace FishGame
         void spawnBonusFish();
         void spawnPredatorWave();
         void spawnTimePowerUp();
+        void spawnStarfish();
+        void spawnBomb();
 
         // Completion handling
         void checkCompletion();
@@ -79,6 +82,7 @@ namespace FishGame
         std::unique_ptr<Player> m_player;
         std::vector<std::unique_ptr<Entity>> m_entities;
         std::vector<std::unique_ptr<BonusItem>> m_bonusItems;
+        std::vector<std::unique_ptr<Hazard>> m_hazards;
         std::unique_ptr<EnvironmentSystem> m_environment;
         sf::Sprite m_backgroundSprite;
 
