@@ -20,26 +20,32 @@ namespace FishGame
         , m_powerUpsEnabled(true)
         , m_spawnedItems()
         , m_randomEngine(std::random_device{}())
-        , m_positionDist(0.0f, 1.0f)  // Initialize with valid range
+        , m_xDistribution(0.0f, 1.0f)  // Initialize with valid range
+        , m_yDistribution(0.0f, 1.0f)  // Initialize with valid range
     {
         m_spawnedItems.reserve(10);
 
-        // Update position distribution based on window size with validation
-        float minPos = 100.0f;
-        float maxX = static_cast<float>(windowSize.x) - 100.0f;
-        float maxY = static_cast<float>(windowSize.y) - 100.0f;
+        // Update position distributions based on window size with validation
+        float margin = 100.0f;
+        float maxX = static_cast<float>(windowSize.x) - margin;
+        float maxY = static_cast<float>(windowSize.y) - margin;
 
-        // Ensure valid range (min < max)
-        if (maxX > minPos && maxY > minPos)
-        {
-            m_positionDist = std::uniform_real_distribution<float>(minPos, std::min(maxX, maxY));
-        }
+        if (maxX > margin)
+            m_xDistribution = std::uniform_real_distribution<float>(margin, maxX);
         else
         {
-            // Fallback: use entire window with small margin
-            float margin = 10.0f;
-            float safeMax = std::max(static_cast<float>(std::min(windowSize.x, windowSize.y)) - margin, margin + 1.0f);
-            m_positionDist = std::uniform_real_distribution<float>(margin, safeMax);
+            float safeMargin = 10.0f;
+            m_xDistribution = std::uniform_real_distribution<float>(safeMargin,
+                std::max(static_cast<float>(windowSize.x) - safeMargin, safeMargin + 1.0f));
+        }
+
+        if (maxY > margin)
+            m_yDistribution = std::uniform_real_distribution<float>(margin, maxY);
+        else
+        {
+            float safeMargin = 10.0f;
+            m_yDistribution = std::uniform_real_distribution<float>(safeMargin,
+                std::max(static_cast<float>(windowSize.y) - safeMargin, safeMargin + 1.0f));
         }
     }
 
@@ -98,8 +104,8 @@ namespace FishGame
     {
         auto starfish = std::make_unique<Starfish>();
 
-        float x = m_positionDist(m_randomEngine);
-        float y = m_positionDist(m_randomEngine);
+        float x = m_xDistribution(m_randomEngine);
+        float y = m_yDistribution(m_randomEngine);
         starfish->setPosition(x, y);
         if (m_spriteManager)
             starfish->initializeSprite(*m_spriteManager);
@@ -111,8 +117,8 @@ namespace FishGame
     {
         if (auto powerUp = createRandomPowerUp())
         {
-            float x = m_positionDist(m_randomEngine);
-            float y = m_positionDist(m_randomEngine);
+            float x = m_xDistribution(m_randomEngine);
+            float y = m_yDistribution(m_randomEngine);
             powerUp->setPosition(x, y);
 
             powerUp->m_baseY = y;
