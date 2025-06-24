@@ -173,6 +173,9 @@ namespace FishGame
         case TextureID::MediumFish:
             m_animator = std::make_unique<Animator>(createMediumFishAnimator(tex));
             break;
+        case TextureID::LargeFish:
+            m_animator = std::make_unique<Animator>(createLargeFishAnimator(tex));
+            break;
         default:
             return;
         }
