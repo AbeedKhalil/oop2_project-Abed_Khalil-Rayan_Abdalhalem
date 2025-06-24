@@ -222,7 +222,7 @@ namespace FishGame
     private:
         void updateErraticMovement(sf::Time deltaTime);
         void updateEvasiveMovement(const std::vector<std::unique_ptr<Entity>>& entities,
-            const Entity* player, sf::Time deltaTime);
+            const Entity* player);
         sf::Vector2f calculateEscapeVector(const std::vector<const Entity*>& threats);
 
     private:

@@ -25,7 +25,9 @@ namespace FishGame
         m_pauseText.setFillColor(sf::Color::White);
         sf::FloatRect bounds = m_pauseText.getLocalBounds();
         m_pauseText.setOrigin(bounds.width / 2.f, bounds.height / 2.f);
-        m_pauseText.setPosition(window.getSize().x / 2.f, window.getSize().y / 2.f - 40.f);
+        float winWidth = static_cast<float>(window.getSize().x);
+        float winHeight = static_cast<float>(window.getSize().y);
+        m_pauseText.setPosition(winWidth / 2.f, winHeight / 2.f - 40.f);
 
         m_instructionText.setFont(font);
         m_instructionText.setString("Press P or Esc to resume");
@@ -33,7 +35,7 @@ namespace FishGame
         m_instructionText.setFillColor(sf::Color::White);
         bounds = m_instructionText.getLocalBounds();
         m_instructionText.setOrigin(bounds.width / 2.f, bounds.height / 2.f);
-        m_instructionText.setPosition(window.getSize().x / 2.f, window.getSize().y / 2.f + 40.f);
+        m_instructionText.setPosition(winWidth / 2.f, winHeight / 2.f + 40.f);
     }
 
     void PauseState::handleEvent(const sf::Event& event)
