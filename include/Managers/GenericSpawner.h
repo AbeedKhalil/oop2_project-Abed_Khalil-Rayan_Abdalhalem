@@ -31,7 +31,6 @@ namespace FishGame
             : m_config(config)
             , m_factory(nullptr)
             , m_spawnTimer(sf::Time::Zero)
-            , m_enabled(true)
             , m_spawnBuffer()
             , m_randomEngine(std::random_device{}())
             , m_xDist(config.minBounds.x, config.maxBounds.x)
@@ -50,7 +49,7 @@ namespace FishGame
 
         void update(sf::Time deltaTime)
         {
-            if (!m_enabled || m_config.spawnRate <= 0.0f)
+            if (m_config.spawnRate <= 0.0f)
                 return;
 
             m_spawnTimer += deltaTime;
@@ -73,9 +72,6 @@ namespace FishGame
             return result;
         }
 
-        void setEnabled(bool enabled) { m_enabled = enabled; }
-        bool isEnabled() const { return m_enabled; }
-        void setSpawnRate(float rate) { m_config.spawnRate = rate; }
 
     private:
         std::unique_ptr<T> spawn()
@@ -99,7 +95,6 @@ namespace FishGame
         ConfigType m_config;
         FactoryFunc m_factory;
         sf::Time m_spawnTimer;
-        bool m_enabled;
         std::vector<std::unique_ptr<T>> m_spawnBuffer;
 
         std::mt19937 m_randomEngine;
