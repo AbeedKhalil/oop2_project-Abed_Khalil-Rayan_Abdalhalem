@@ -78,7 +78,7 @@ namespace FishGame
         void initializeSprite(SpriteManager& spriteManager);
         void initializeAnimation(SpriteManager& spriteManager);
         void updateVisualState();
-        void playEatAnimation();
+        virtual void playEatAnimation();
 
         // Base color for sprite
         void setBaseColor(const sf::Color& color);
