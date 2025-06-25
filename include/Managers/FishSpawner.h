@@ -2,7 +2,7 @@
 
 #include "GenericFish.h"
 #include "GenericSpawner.h"
-#include <map>
+#include <unordered_map>
 #include <memory>
 #include <random>
 
@@ -49,9 +49,9 @@ namespace FishGame
         GenericSpawner<LargeFish> m_largeSpawner;
 
         // Configuration maps
-        std::map<int, SpawnConfig> m_smallFishConfig;
-        std::map<int, SpawnConfig> m_mediumFishConfig;
-        std::map<int, SpawnConfig> m_largeFishConfig;
+        std::unordered_map<int, SpawnConfig> m_smallFishConfig;
+        std::unordered_map<int, SpawnConfig> m_mediumFishConfig;
+        std::unordered_map<int, SpawnConfig> m_largeFishConfig;
 
         int m_currentLevel;
         std::mt19937 m_randomEngine;

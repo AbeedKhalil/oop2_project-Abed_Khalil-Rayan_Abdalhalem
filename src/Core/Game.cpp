@@ -30,6 +30,8 @@ namespace FishGame
 
         // Reserve capacity for better performance
         m_pendingList.reserve(10);
+        m_stateStack.reserve(10);
+        m_stateFactories.reserve(10);
 
         // Load resources
         m_fonts.load(Fonts::Main, "Regular.ttf");

@@ -2,7 +2,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <memory>
-#include <map>
+#include <unordered_map>
 #include <vector>
 #include <functional>
 #include <type_traits>
@@ -98,7 +98,7 @@ namespace FishGame
 
         std::vector<StatePtr> m_stateStack;
         std::vector<std::pair<StateAction, StateID>> m_pendingList;
-        std::map<StateID, StateFactory> m_stateFactories;
+        std::unordered_map<StateID, StateFactory> m_stateFactories;
 
         std::unique_ptr<SpriteManager> m_spriteManager;
 
