@@ -111,10 +111,6 @@ namespace FishGame
         bool m_isFrozen;
         sf::Vector2f m_velocityBeforeFreeze;
 
-        // State durations
-        static constexpr float m_defaultPoisonDuration = 5.0f;
-        static constexpr float m_defaultStunDuration = 1.0f;
-
         // Fleeing behavior
         bool m_isFleeing;
         float m_fleeSpeed;
