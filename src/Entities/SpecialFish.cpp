@@ -120,47 +120,14 @@ namespace FishGame
 
     void Barracuda::playEatAnimation()
     {
-        if (!m_animator)
-            return;
-
-        std::string eat = m_facingRight ? "eatRight" : "eatLeft";
-        m_animator->play(eat);
-        m_currentAnimation = eat;
+        // Delegate to base so eat timers and state flags are handled
+        Fish::playEatAnimation();
     }
 
     void Barracuda::update(sf::Time deltaTime)
     {
+        // Base class handles movement, turning and animation updates
         AdvancedFish::update(deltaTime);
-
-        if (m_animator && getRenderMode() == RenderMode::Sprite)
-        {
-            bool newFacingRight = m_velocity.x > 0.f;
-            if (newFacingRight != m_facingRight)
-            {
-                m_facingRight = newFacingRight;
-                std::string turn = m_facingRight ? "turnLeftToRight" : "turnRightToLeft";
-                m_animator->play(turn);
-                m_currentAnimation = turn;
-                m_turning = true;
-                m_turnTimer = sf::Time::Zero;
-            }
-
-            m_animator->update(deltaTime);
-
-            if (m_turning)
-            {
-                m_turnTimer += deltaTime;
-                if (m_turnTimer.asSeconds() >= m_turnDuration)
-                {
-                    std::string swim = m_facingRight ? "swimRight" : "swimLeft";
-                    m_animator->play(swim);
-                    m_currentAnimation = swim;
-                    m_turning = false;
-                }
-            }
-
-            m_animator->setPosition(m_position);
-        }
     }
 
     void Barracuda::draw(sf::RenderTarget& target, sf::RenderStates states) const
