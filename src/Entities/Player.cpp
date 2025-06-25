@@ -481,6 +481,8 @@ namespace FishGame
 
     void Player::die()
     {
+        // Mark the player as dead so update() ignores further actions
+        m_isAlive = false;
         m_position = sf::Vector2f(
             static_cast<float>(m_windowBounds.x) / 2.0f,
             static_cast<float>(m_windowBounds.y) / 2.0f);
