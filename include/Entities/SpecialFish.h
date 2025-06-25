@@ -60,7 +60,7 @@ namespace FishGame
 
         void update(sf::Time deltaTime) override;
         void initializeSprite(SpriteManager& spriteManager);
-        void playEatAnimation();
+        void playEatAnimation() override;
     protected:
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 

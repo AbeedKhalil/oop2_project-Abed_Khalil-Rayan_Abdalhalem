@@ -126,6 +126,8 @@ namespace FishGame
         std::string eat = m_facingRight ? "eatRight" : "eatLeft";
         m_animator->play(eat);
         m_currentAnimation = eat;
+        m_eating = true;
+        m_eatTimer = sf::seconds(m_eatDuration);
     }
 
     void Barracuda::update(sf::Time deltaTime)
