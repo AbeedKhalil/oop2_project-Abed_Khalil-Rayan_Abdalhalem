@@ -142,7 +142,7 @@ void StageIntroState::setupItems() {
     add(TextureID::Barracuda, "  Barracuda is fast and dangerous");
     break;
   case 6:
-      add(TextureID::Bomb, "Avoid bombs!");
+      add(TextureID::Bomb, "Avoid bombs!!");
       break;
   default:
       add(TextureID::SmallFish, "Eat small fish to grow");
