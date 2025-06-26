@@ -64,6 +64,9 @@ namespace FishGame
         void completeStage();
         int calculateBonus() const;
 
+        // Camera handling
+        void updateCamera();
+
         // Template helper for spawning entities
         template<typename EntityType, typename... Args>
         void spawnEntity(std::vector<std::unique_ptr<Entity>>& container,
@@ -120,5 +123,10 @@ namespace FishGame
         static constexpr float m_feedingFrenzyDuration = 15.0f;
         static constexpr float m_survivalDuration = 60.0f;
         static constexpr float m_instructionDuration = 5.0f;
+
+        // Camera and world
+        sf::View m_view{};
+        sf::Vector2f m_worldSize{};
+        static constexpr float m_cameraSmoothing = 0.1f;
     };
 }
