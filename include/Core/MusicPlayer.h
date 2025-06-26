@@ -27,8 +27,17 @@ public:
     void setVolume(float volume);
 
 private:
-    sf::Music m_music;
+    using MusicPtr = std::unique_ptr<sf::Music>;
+
+    /// Pre-loaded music tracks for fast playback
+    std::unordered_map<MusicID, MusicPtr> m_musicTracks;
+
+    /// Mapping from music ID to file name
     std::unordered_map<MusicID, std::string> m_filenames;
+
+    /// Currently playing music (non-owning pointer)
+    sf::Music* m_current;
+
     float m_volume;
 };
 
