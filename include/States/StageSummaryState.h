@@ -16,6 +16,7 @@ template<> struct is_state<StageSummaryState> : std::true_type {};
 struct StageSummaryConfig {
     int nextLevel = 1;
     int levelScore = 0;
+    bool pushBonusStage = false;
     std::unordered_map<TextureID, int> counts;
     static StageSummaryConfig& getInstance() {
         static StageSummaryConfig instance;
@@ -29,7 +30,8 @@ public:
     ~StageSummaryState() override = default;
 
     static void configure(int nextLevel, int levelScore,
-                          const std::unordered_map<TextureID, int>& counts);
+                          const std::unordered_map<TextureID, int>& counts,
+                          bool pushBonusStage);
 
     void handleEvent(const sf::Event& event) override;
     bool update(sf::Time deltaTime) override;
