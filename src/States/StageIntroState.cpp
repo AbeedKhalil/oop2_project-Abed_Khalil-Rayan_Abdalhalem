@@ -3,6 +3,17 @@
 #include <string>
 
 namespace {
+FishGame::TextureID backgroundForLevel(int level) {
+  static const FishGame::TextureID backgrounds[] = {
+      FishGame::TextureID::Background1,
+      FishGame::TextureID::Background2,
+      FishGame::TextureID::Background3,
+      FishGame::TextureID::Background4,
+      FishGame::TextureID::Background5};
+  int index = ((level - 1) / 2) % 5;
+  return backgrounds[index];
+}
+
 sf::IntRect firstFrameRect(FishGame::TextureID id) {
   using namespace FishGame;
   switch (id) {
@@ -14,6 +25,10 @@ sf::IntRect firstFrameRect(FishGame::TextureID id) {
     return {1, 1, 172, 108};
   case TextureID::LargeFish:
     return {1, 1, 201, 148};
+  case TextureID::PearlOysterClosed:
+    return {1, 1, 101, 101};
+  case TextureID::PearlOysterOpen:
+    return {1 + 4 * 101, 1, 101, 101};
   default:
     return {};
   }
@@ -35,7 +50,8 @@ void StageIntroState::configure(int level, bool pushPlay) {
 void StageIntroState::onActivate() {
   auto &manager = getGame().getSpriteManager();
   auto &window = getGame().getWindow();
-  m_backgroundSprite.setTexture(manager.getTexture(TextureID::StageIntro));
+  m_backgroundSprite.setTexture(
+      manager.getTexture(backgroundForLevel(m_level)));
   auto texSize = m_backgroundSprite.getTexture()->getSize();
   m_backgroundSprite.setScale(
       static_cast<float>(window.getSize().x) / texSize.x,
@@ -70,6 +86,10 @@ void StageIntroState::setupItems() {
     break;
   case 2:
     add(TextureID::PowerUpSpeedBoost, "Grab power-ups for bonuses");
+    add(TextureID::PearlOysterClosed, "Oyster closed - stay away");
+    add(TextureID::PearlOysterOpen, "Oyster open - collect pearls");
+    add(TextureID::WhitePearl, "White pearl worth 100 points");
+    add(TextureID::BlackPearl, "Black pearl worth 500 points");
     break;
   default:
     
