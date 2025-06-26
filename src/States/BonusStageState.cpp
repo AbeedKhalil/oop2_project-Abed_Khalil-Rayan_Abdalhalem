@@ -141,6 +141,7 @@ namespace FishGame
     {
         if (m_stageComplete)
         {
+            processDeferredActions();
             return false;
         }
 
@@ -364,6 +365,8 @@ namespace FishGame
 
     void BonusStageState::onActivate()
     {
+        // Pause any in-game music and start the bonus stage track
+        getGame().getMusicPlayer().stop();
         getGame().getMusicPlayer().play(MusicID::BonusStage, true);
         // Initial spawn based on stage type
         switch (m_stageType)
