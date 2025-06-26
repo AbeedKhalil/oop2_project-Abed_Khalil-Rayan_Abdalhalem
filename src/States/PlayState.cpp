@@ -4,7 +4,6 @@
 #include "Fish.h"
 #include "ExtendedPowerUps.h"
 #include "GameOverState.h"
-#include "PauseState.h"
 #include "StageIntroState.h"
 #include <algorithm>
 #include <execution>
@@ -197,7 +196,7 @@ namespace FishGame
 
     void PlayState::handleEvent(const sf::Event& event)
     {
-        if (m_isPlayerStunned || getGame().getCurrentState<PauseState>())
+        if (m_isPlayerStunned || getGame().getCurrentState<StageIntroState>())
             return;
 
         // Handle controls reversal
@@ -238,7 +237,8 @@ namespace FishGame
 
             case sf::Keyboard::P:
                 deferAction([this]() {
-                    requestStackPush(StateID::Pause);
+                    StageIntroState::configure(m_gameState.currentLevel, false);
+                    requestStackPush(StateID::StageIntro);
                     });
                 break;
 
