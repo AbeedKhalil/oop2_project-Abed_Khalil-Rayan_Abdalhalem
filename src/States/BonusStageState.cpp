@@ -73,6 +73,11 @@ namespace FishGame
         sf::Vector2f texSize(m_backgroundSprite.getTexture()->getSize());
         m_backgroundSprite.setScale(winSize.x / texSize.x, winSize.y / texSize.y);
 
+        m_worldSize = winSize;
+        m_view = window.getDefaultView();
+        m_view.zoom(0.8f);
+        m_view.setCenter(m_worldSize * 0.5f);
+
         // Timer bar
         m_timerBackground.setSize(sf::Vector2f(400.0f, 20.0f));
         m_timerBackground.setPosition(50.0f, 130.0f);
@@ -290,6 +295,7 @@ namespace FishGame
         scoreStream << "Bonus Score: " << m_bonusScore;
         m_scoreText.setString(scoreStream.str());
 
+        updateCamera();
         processDeferredActions();
         return false;
     }
@@ -297,6 +303,8 @@ namespace FishGame
     void BonusStageState::render()
     {
         auto& window = getGame().getWindow();
+        auto defaultView = window.getView();
+        window.setView(m_view);
 
         window.draw(m_backgroundSprite);
 
@@ -323,6 +331,8 @@ namespace FishGame
 
         // Draw player - cast to drawable
         window.draw(static_cast<const sf::Drawable&>(*m_player));
+
+        window.setView(defaultView);
 
         // Draw UI
         window.draw(m_objectiveText);
@@ -392,6 +402,8 @@ namespace FishGame
         m_instructionText.setOrigin(b.width / 2.f, b.height / 2.f);
         auto win = getGame().getWindow().getSize();
         m_instructionText.setPosition(win.x / 2.f, win.y - 60.f);
+
+        updateCamera();
     }
 
     void BonusStageState::updateTreasureHunt(sf::Time deltaTime)
@@ -635,5 +647,36 @@ void BonusStageState::spawnBomb()
     int BonusStageState::calculateBonus() const
     {
         return m_bonusScore;
+    }
+
+    void BonusStageState::updateCamera()
+    {
+        if (!m_player)
+            return;
+
+        sf::Vector2f target = m_player->getPosition();
+        sf::Vector2f halfSize = m_view.getSize() * 0.5f;
+
+        if (m_worldSize.x > m_view.getSize().x)
+        {
+            target.x = std::clamp(target.x, halfSize.x, m_worldSize.x - halfSize.x);
+        }
+        else
+        {
+            target.x = m_worldSize.x * 0.5f;
+        }
+
+        if (m_worldSize.y > m_view.getSize().y)
+        {
+            target.y = std::clamp(target.y, halfSize.y, m_worldSize.y - halfSize.y);
+        }
+        else
+        {
+            target.y = m_worldSize.y * 0.5f;
+        }
+
+        sf::Vector2f current = m_view.getCenter();
+        sf::Vector2f newCenter = current + (target - current) * m_cameraSmoothing;
+        m_view.setCenter(newCenter);
     }
 }
