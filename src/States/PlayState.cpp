@@ -967,7 +967,9 @@ namespace FishGame
     void PlayState::advanceLevel()
     {
         int levelScore = m_scoreSystem->getCurrentScore();
-        StageSummaryState::configure(m_gameState.currentLevel + 1, levelScore, m_levelCounts);
+        const auto& fishCounts = m_scoreSystem->getFishCounts();
+        StageSummaryState::configure(m_gameState.currentLevel + 1,
+                                     levelScore, fishCounts);
         m_levelCounts.clear();
 
         m_gameState.currentLevel++;
