@@ -125,11 +125,21 @@ void StageIntroState::setupItems() {
     add(TextureID::Jellyfish, "Jellyfish will stun you");
     break;
   case 5:
-    add(TextureID::Barracuda, "Barracuda is fast and dangerous");
+    add(TextureID::Barracuda, "  Barracuda is fast and dangerous");
     break;
+  case 6:
+      add(TextureID::Bomb, "Avoid bombs!");
+      break;
   default:
-    
-    add(TextureID::PoisonFish, "Avoid poison fish!");
+      add(TextureID::SmallFish, "Eat small fish to grow");
+      add(TextureID::MediumFish, "Eat Medium fish to become the king of the stage!");
+      add(TextureID::LargeFish, "Eat Large fish to Win the level");
+      add(TextureID::PoisonFish, "Avoid poison fish!");
+      add(TextureID::Angelfish, "Eat angelfish to grow to next staage");
+      add(TextureID::Pufferfish, "Pufferfish inflates when threatened");
+      add(TextureID::PufferfishInflated, "Avoid it while puffed!");
+      add(TextureID::Barracuda, "  Barracuda is fast and dangerous");
+      add(TextureID::Jellyfish, "\nJellyfish will stun you");
     break;
   }
 
@@ -160,13 +170,10 @@ void StageIntroState::setupItems() {
 }
 
 void StageIntroState::handleEvent(const sf::Event &event) {
-  if (event.type == sf::Event::MouseButtonPressed)
-    exitState();
-  else if (event.type == sf::Event::KeyPressed)
-    exitState();
-  else if (event.type == sf::Event::KeyReleased &&
-           event.key.code == sf::Keyboard::P)
-    exitState();
+    if (event.type == sf::Event::KeyPressed ||
+        event.type == sf::Event::MouseButtonPressed) {
+        exitState();
+    }
 }
 
 bool StageIntroState::update(sf::Time deltaTime) {
