@@ -3,6 +3,7 @@
 #include <SFML/Audio.hpp>
 #include <unordered_map>
 #include <string>
+#include <thread>
 
 namespace FishGame {
 
@@ -26,6 +27,8 @@ public:
     void stop();
     void setVolume(float volume);
 
+    static constexpr float FadeDuration = 0.5f; ///< seconds
+
 private:
     using MusicPtr = std::unique_ptr<sf::Music>;
 
@@ -37,6 +40,9 @@ private:
 
     /// Currently playing music (non-owning pointer)
     sf::Music* m_current;
+
+    /// Background cross fade thread
+    std::jthread m_fadeThread;
 
     float m_volume;
 };
