@@ -1,5 +1,6 @@
 #include "MenuState.h"
 #include "Game.h"
+#include "StageIntroState.h"
 #include <cmath>
 #include <algorithm>
 #include <numeric>
@@ -44,8 +45,9 @@ namespace FishGame
         const std::array<std::tuple<TextureID, TextureID, MenuAction>, static_cast<size_t>(MenuOption::Count)> menuData = { {
             {TextureID::NewGame, TextureID::NewGameHover, [this]() {
                 deferAction([this]() {
+                    StageIntroState::configure(1, true);
                     requestStackPop();
-                    requestStackPush(StateID::Play);
+                    requestStackPush(StateID::StageIntro);
                 });
             }},
             {TextureID::GameOptions, TextureID::GameOptionsHover, [this]() {
