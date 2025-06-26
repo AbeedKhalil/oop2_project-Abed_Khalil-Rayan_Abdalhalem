@@ -15,7 +15,7 @@ namespace FishGame
         , m_specialConfig()
         , m_schoolingSystem(nullptr)
         , m_schoolChanceDist(0.0f, 1.0f)
-        , m_schoolSizeDist(2, 3)  // Reduced from (2, 4) to (2, 3) - smaller schools
+        , m_schoolSizeDist(1, 2)  // Reduced from (2, 3) to (1, 2) - spawn fewer small fish
     {
         // Initialize special spawn timers
         m_specialSpawnTimers["barracuda"] = sf::Time::Zero;
@@ -126,6 +126,7 @@ namespace FishGame
 
         // Create a new school
         SchoolConfig config;
+        config.minMembers = count;      // Ensure small schools remain valid
         config.maxMembers = count + 2;  // Allow some growth
 
         if constexpr (std::is_same_v<FishType, SmallFish>)
