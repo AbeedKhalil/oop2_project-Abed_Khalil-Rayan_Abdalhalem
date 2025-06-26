@@ -48,6 +48,9 @@ private:
 
   sf::Sprite m_backgroundSprite;
   sf::Sprite m_overlaySprite;
+  sf::Sprite m_nextButtonSprite;
+  sf::Text m_nextText;
+  bool m_buttonHovered{false};
   std::vector<Item> m_items;
   sf::Time m_elapsed;
   int m_level;

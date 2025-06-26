@@ -47,7 +47,9 @@ private:
 
     sf::Sprite m_overlaySprite;
     sf::Text m_scoreText;
+    sf::Sprite m_nextButtonSprite;
     sf::Text m_nextText;
+    bool m_buttonHovered{false};
     std::vector<Item> m_items;
 };
 } // namespace FishGame

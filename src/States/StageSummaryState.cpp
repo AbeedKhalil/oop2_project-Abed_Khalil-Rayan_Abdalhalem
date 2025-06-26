@@ -38,7 +38,7 @@ sf::IntRect firstFrameRect(TextureID id) {
 
 namespace FishGame {
 StageSummaryState::StageSummaryState(Game& game)
-    : State(game), m_overlaySprite(), m_scoreText(), m_nextText(), m_items() {}
+    : State(game), m_overlaySprite(), m_scoreText(), m_nextButtonSprite(), m_nextText(), m_items() {}
 
 void StageSummaryState::configure(int nextLevel, int levelScore,
                                   const std::unordered_map<TextureID, int>& counts) {
@@ -65,12 +65,19 @@ void StageSummaryState::onActivate() {
     m_scoreText.setOrigin(bounds.width/2.f, bounds.height/2.f);
     m_scoreText.setPosition(window.getSize().x/2.f, 150.f);
 
+    m_nextButtonSprite.setTexture(manager.getTexture(TextureID::Button));
+    auto b = m_nextButtonSprite.getLocalBounds();
+    m_nextButtonSprite.setOrigin(b.width/2.f, b.height/2.f);
+    m_nextButtonSprite.setScale(Constants::MENU_BUTTON_SCALE, Constants::MENU_BUTTON_SCALE);
+    m_nextButtonSprite.setPosition(window.getSize().x/2.f, window.getSize().y - 120.f);
+
     m_nextText.setFont(font);
-    m_nextText.setString("Next");
+    m_nextText.setString("NEXT");
     m_nextText.setCharacterSize(36);
     auto nb = m_nextText.getLocalBounds();
     m_nextText.setOrigin(nb.width/2.f, nb.height/2.f);
-    m_nextText.setPosition(window.getSize().x/2.f, window.getSize().y - 120.f);
+    m_nextText.setPosition(m_nextButtonSprite.getPosition());
+    m_buttonHovered = false;
 
     setupItems();
 }
@@ -115,9 +122,17 @@ void StageSummaryState::setupItems() {
 void StageSummaryState::handleEvent(const sf::Event& event) {
     if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter) {
         exitState();
+    } else if (event.type == sf::Event::MouseMoved) {
+        sf::Vector2f pos(static_cast<float>(event.mouseMove.x), static_cast<float>(event.mouseMove.y));
+        bool hover = m_nextButtonSprite.getGlobalBounds().contains(pos);
+        if (hover != m_buttonHovered) {
+            m_buttonHovered = hover;
+            auto &manager = getGame().getSpriteManager();
+            m_nextButtonSprite.setTexture(manager.getTexture(hover ? TextureID::ButtonHover : TextureID::Button));
+        }
     } else if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
         sf::Vector2f pos(static_cast<float>(event.mouseButton.x), static_cast<float>(event.mouseButton.y));
-        if (m_nextText.getGlobalBounds().contains(pos)) {
+        if (m_nextButtonSprite.getGlobalBounds().contains(pos)) {
             exitState();
         }
     }
@@ -144,6 +159,7 @@ void StageSummaryState::render() {
         window.draw(item.sprite);
         window.draw(item.text);
     }
+    window.draw(m_nextButtonSprite);
     window.draw(m_nextText);
 }
 
