@@ -44,6 +44,7 @@ private:
   void exitState();
 
   sf::Sprite m_backgroundSprite;
+  sf::Sprite m_overlaySprite;
   std::vector<Item> m_items;
   sf::Time m_elapsed;
   int m_level;
