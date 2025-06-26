@@ -15,6 +15,9 @@
 
 namespace FishGame
 {
+    // Select appropriate background music for the given level
+    static MusicID musicForLevel(int level);
+
     PlayState::PlayState(Game& game)
         : State(game)
         , m_player(std::make_unique<Player>())
