@@ -1350,6 +1350,11 @@ void PlayState::centerText(sf::Text& text)
             updateBackground(m_gameState.currentLevel);
             getGame().getMusicPlayer().play(musicForLevel(m_gameState.currentLevel), true);
         }
+        else
+        {
+            // Resume in-game music after pause or stage intro
+            getGame().getMusicPlayer().play(musicForLevel(m_gameState.currentLevel), true);
+        }
 
         // Ensure camera starts centered on the player
         updateCamera();
