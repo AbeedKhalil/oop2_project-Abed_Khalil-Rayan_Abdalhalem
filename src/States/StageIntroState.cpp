@@ -100,7 +100,15 @@ void StageIntroState::setupItems() {
   case 3:
     add(TextureID::PoisonFish, "Avoid poison fish!");
     add(TextureID::Angelfish, "Eat angelfish to grow to next staage");
-	break;
+    break;
+  case 4:
+    add(TextureID::Pufferfish, "Pufferfish inflates when threatened");
+    add(TextureID::PufferfishInflated, "Avoid it while puffed!");
+    add(TextureID::Jellyfish, "Jellyfish will stun you");
+    break;
+  case 5:
+    add(TextureID::Barracuda, "Barracuda is fast and dangerous");
+    break;
   default:
     
     add(TextureID::PoisonFish, "Avoid poison fish!");

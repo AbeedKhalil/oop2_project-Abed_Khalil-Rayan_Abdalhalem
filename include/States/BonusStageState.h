@@ -97,6 +97,7 @@ namespace FishGame
         sf::Text m_objectiveText;
         sf::Text m_timerText;
         sf::Text m_scoreText;
+        sf::Text m_instructionText;
         sf::RectangleShape m_timerBar;
         sf::RectangleShape m_timerBackground;
 
@@ -107,6 +108,9 @@ namespace FishGame
 
         sf::Time m_timePowerUpTimer{ sf::Time::Zero };
 
+        sf::Time m_instructionTimer{ sf::Time::Zero };
+        bool m_showInstructions{ false };
+
         // Short grace period after collecting a pearl to avoid instant failure
         sf::Time m_oysterSafetyTimer{ sf::Time::Zero };
 
@@ -115,5 +119,6 @@ namespace FishGame
         static constexpr float m_treasureHuntDuration = 30.0f;
         static constexpr float m_feedingFrenzyDuration = 15.0f;
         static constexpr float m_survivalDuration = 60.0f;
+        static constexpr float m_instructionDuration = 5.0f;
     };
 }
