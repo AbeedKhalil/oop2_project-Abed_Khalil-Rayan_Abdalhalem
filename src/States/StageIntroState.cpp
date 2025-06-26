@@ -63,16 +63,17 @@ void StageIntroState::setupItems() {
   switch (m_level) {
   case 1:
     add(TextureID::SmallFish, "Eat small fish to grow");
+    add(TextureID::MediumFish, "Eat Medium fish to become the king of the stage!");
+    add(TextureID::LargeFish, "Eat Large fish to Win the level");
     add(TextureID::Starfish, "Collect starfish for points");
+    add(TextureID::PowerUpExtraLife, "Extra life may appear");
     break;
   case 2:
-    add(TextureID::MediumFish, "Medium fish now appear");
     add(TextureID::PowerUpSpeedBoost, "Grab power-ups for bonuses");
     break;
   default:
-    add(TextureID::LargeFish, "Large fish roam the waters");
+    
     add(TextureID::PoisonFish, "Avoid poison fish!");
-    add(TextureID::PowerUpExtraLife, "Extra life may appear");
     break;
   }
 
@@ -89,16 +90,16 @@ void StageIntroState::setupItems() {
 
     sf::FloatRect b = item.sprite.getLocalBounds();
     item.sprite.setOrigin(b.width / 2.f, b.height / 2.f);
-    item.sprite.setPosition(xLeft, startY + i * 80.f);
+    item.sprite.setPosition(xLeft, startY + i * 100.f);
 
     float scale = 0.75f;
     if (item.tex == TextureID::Starfish)
-      scale = 0.25f;
+      scale = 0.02f;
     item.sprite.setScale(scale, scale);
 
     b = item.text.getLocalBounds();
     item.text.setOrigin(0.f, b.height / 2.f);
-    item.text.setPosition(xText, startY + i * 80.f);
+    item.text.setPosition(xText, startY + i * 100.f);
   }
 }
 
@@ -110,11 +111,6 @@ void StageIntroState::handleEvent(const sf::Event &event) {
 }
 
 bool StageIntroState::update(sf::Time deltaTime) {
-  m_elapsed += deltaTime;
-  if (m_elapsed.asSeconds() >= DISPLAY_TIME) {
-    exitState();
-  }
-
   processDeferredActions();
   return false;
 }
