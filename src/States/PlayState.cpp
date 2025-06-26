@@ -5,6 +5,7 @@
 #include "ExtendedPowerUps.h"
 #include "GameOverState.h"
 #include "PauseState.h"
+#include "StageIntroState.h"
 #include <algorithm>
 #include <execution>
 #include <sstream>
@@ -975,6 +976,9 @@ namespace FishGame
 
         m_hud.messageText.setString("");
         m_bonusStageTriggered = false;
+
+        StageIntroState::configure(m_gameState.currentLevel, false);
+        deferAction([this]() { requestStackPush(StateID::StageIntro); });
     }
 
     void PlayState::resetLevel()

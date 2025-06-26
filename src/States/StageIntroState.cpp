@@ -1,0 +1,127 @@
+#include "StageIntroState.h"
+#include "Game.h"
+#include <string>
+
+namespace FishGame
+{
+    StageIntroState::StageIntroState(Game& game)
+        : State(game)
+        , m_backgroundSprite()
+        , m_items()
+        , m_elapsed(sf::Time::Zero)
+        , m_level(StageIntroConfig::getInstance().level)
+        , m_pushPlay(StageIntroConfig::getInstance().pushPlay)
+    {
+    }
+
+    void StageIntroState::configure(int level, bool pushPlay)
+    {
+        auto& cfg = StageIntroConfig::getInstance();
+        cfg.level = level;
+        cfg.pushPlay = pushPlay;
+    }
+
+    void StageIntroState::onActivate()
+    {
+        auto& manager = getGame().getSpriteManager();
+        auto& window = getGame().getWindow();
+        m_backgroundSprite.setTexture(manager.getTexture(TextureID::StageIntro));
+        auto texSize = m_backgroundSprite.getTexture()->getSize();
+        m_backgroundSprite.setScale(
+            static_cast<float>(window.getSize().x) / texSize.x,
+            static_cast<float>(window.getSize().y) / texSize.y);
+
+        setupItems();
+        m_elapsed = sf::Time::Zero;
+    }
+
+    void StageIntroState::setupItems()
+    {
+        m_items.clear();
+        auto& manager = getGame().getSpriteManager();
+        auto& font = getGame().getFonts().get(Fonts::Main);
+
+        auto add = [&](TextureID tex, const std::string& str)
+        {
+            Item item;
+            item.sprite.setTexture(manager.getTexture(tex));
+            item.text.setFont(font);
+            item.text.setString(str);
+            item.text.setCharacterSize(28);
+            m_items.push_back(std::move(item));
+        };
+
+        switch (m_level)
+        {
+        case 1:
+            add(TextureID::SmallFish, "Eat small fish to grow");
+            add(TextureID::Starfish, "Collect starfish for points");
+            break;
+        case 2:
+            add(TextureID::MediumFish, "Medium fish now appear");
+            add(TextureID::PowerUpSpeedBoost, "Grab power-ups for bonuses");
+            break;
+        default:
+            add(TextureID::LargeFish, "Large fish roam the waters");
+            add(TextureID::PoisonFish, "Avoid poison fish!");
+            add(TextureID::PowerUpExtraLife, "Extra life may appear");
+            break;
+        }
+
+        float startY = 300.f;
+        float xLeft = 300.f;
+        float xText = 400.f;
+        for (std::size_t i = 0; i < m_items.size(); ++i)
+        {
+            auto& item = m_items[i];
+            sf::FloatRect b = item.sprite.getLocalBounds();
+            item.sprite.setOrigin(b.width / 2.f, b.height / 2.f);
+            item.sprite.setPosition(xLeft, startY + i * 80.f);
+            item.sprite.setScale(0.75f, 0.75f);
+
+            b = item.text.getLocalBounds();
+            item.text.setOrigin(0.f, b.height / 2.f);
+            item.text.setPosition(xText, startY + i * 80.f);
+        }
+    }
+
+    void StageIntroState::handleEvent(const sf::Event& event)
+    {
+        if (event.type == sf::Event::KeyPressed || event.type == sf::Event::MouseButtonPressed)
+        {
+            exitState();
+        }
+    }
+
+    bool StageIntroState::update(sf::Time deltaTime)
+    {
+        m_elapsed += deltaTime;
+        if (m_elapsed.asSeconds() >= DISPLAY_TIME)
+        {
+            exitState();
+        }
+
+        processDeferredActions();
+        return false;
+    }
+
+    void StageIntroState::exitState()
+    {
+        deferAction([this]() {
+            requestStackPop();
+            if (m_pushPlay)
+                requestStackPush(StateID::Play);
+        });
+    }
+
+    void StageIntroState::render()
+    {
+        auto& window = getGame().getWindow();
+        window.draw(m_backgroundSprite);
+        for (auto& item : m_items)
+        {
+            window.draw(item.sprite);
+            window.draw(item.text);
+        }
+    }
+}

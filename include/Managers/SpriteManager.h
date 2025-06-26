@@ -66,6 +66,7 @@ namespace FishGame
         , ExitHover
         , Intro1
         , Intro2
+        , StageIntro
         , Background = Background1
     };
 
