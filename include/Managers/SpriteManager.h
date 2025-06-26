@@ -67,6 +67,8 @@ namespace FishGame
         , Intro1
         , Intro2
         , StageIntro
+        , Button
+        , ButtonHover
         , Background = Background1
     };
 
