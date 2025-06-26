@@ -81,7 +81,7 @@ void StageIntroState::onActivate() {
   auto b = m_nextButtonSprite.getLocalBounds();
   m_nextButtonSprite.setOrigin(b.width / 2.f, b.height / 2.f);
   m_nextButtonSprite.setScale(Constants::MENU_BUTTON_SCALE, Constants::MENU_BUTTON_SCALE);
-  m_nextButtonSprite.setPosition(window.getSize().x / 2.f, window.getSize().y - 120.f);
+  m_nextButtonSprite.setPosition(window.getSize().x / 2.f, window.getSize().y - 110.f);
 
   m_nextText.setFont(font);
   m_nextText.setString("NEXT");
@@ -182,7 +182,7 @@ void StageIntroState::setupItems() {
 }
 
 void StageIntroState::handleEvent(const sf::Event &event) {
-    if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter)
+    if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::P)
         exitState();
     else if (event.type == sf::Event::MouseMoved) {
         sf::Vector2f pos(static_cast<float>(event.mouseMove.x), static_cast<float>(event.mouseMove.y));
