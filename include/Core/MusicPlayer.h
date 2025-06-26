@@ -1,7 +1,7 @@
 #pragma once
 
 #include <SFML/Audio.hpp>
-#include <map>
+#include <unordered_map>
 #include <string>
 
 namespace FishGame {
@@ -28,7 +28,7 @@ public:
 
 private:
     sf::Music m_music;
-    std::map<MusicID, std::string> m_filenames;
+    std::unordered_map<MusicID, std::string> m_filenames;
     float m_volume;
 };
 
