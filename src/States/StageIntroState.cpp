@@ -37,7 +37,7 @@ sf::IntRect firstFrameRect(FishGame::TextureID id) {
 
 namespace FishGame {
 StageIntroState::StageIntroState(Game &game)
-    : State(game), m_backgroundSprite(), m_items(), m_elapsed(sf::Time::Zero),
+    : State(game), m_backgroundSprite(), m_overlaySprite(), m_items(), m_elapsed(sf::Time::Zero),
       m_level(StageIntroConfig::getInstance().level),
       m_pushPlay(StageIntroConfig::getInstance().pushPlay) {}
 
@@ -56,6 +56,12 @@ void StageIntroState::onActivate() {
   m_backgroundSprite.setScale(
       static_cast<float>(window.getSize().x) / texSize.x,
       static_cast<float>(window.getSize().y) / texSize.y);
+
+  m_overlaySprite.setTexture(manager.getTexture(TextureID::StageIntro));
+  auto overlaySize = m_overlaySprite.getTexture()->getSize();
+  m_overlaySprite.setScale(
+      static_cast<float>(window.getSize().x) / overlaySize.x,
+      static_cast<float>(window.getSize().y) / overlaySize.y);
 
   setupItems();
   m_elapsed = sf::Time::Zero;
@@ -85,12 +91,16 @@ void StageIntroState::setupItems() {
     add(TextureID::PowerUpExtraLife, "Extra life may appear");
     break;
   case 2:
-    add(TextureID::PowerUpSpeedBoost, "Grab power-ups for bonuses");
     add(TextureID::PearlOysterClosed, "Oyster closed - stay away");
     add(TextureID::PearlOysterOpen, "Oyster open - collect pearls");
     add(TextureID::WhitePearl, "White pearl worth 100 points");
     add(TextureID::BlackPearl, "Black pearl worth 500 points");
+    add(TextureID::PowerUpSpeedBoost, "Grab speed power-up to become faster");
     break;
+  case 3:
+    add(TextureID::PoisonFish, "Avoid poison fish!");
+    add(TextureID::Angelfish, "Eat angelfish to grow to next staage");
+	break;
   default:
     
     add(TextureID::PoisonFish, "Avoid poison fish!");
@@ -146,6 +156,7 @@ void StageIntroState::exitState() {
 void StageIntroState::render() {
   auto &window = getGame().getWindow();
   window.draw(m_backgroundSprite);
+  window.draw(m_overlaySprite);
   for (auto &item : m_items) {
     window.draw(item.sprite);
     window.draw(item.text);
