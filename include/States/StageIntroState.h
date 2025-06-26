@@ -3,6 +3,7 @@
 #include "GameConstants.h"
 #include "State.h"
 #include "StateUtils.h"
+#include "Managers/SpriteManager.h"
 #include <string>
 #include <vector>
 
