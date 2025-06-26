@@ -95,7 +95,11 @@ void StageSummaryState::setupItems() {
         auto b = item.sprite.getLocalBounds();
         item.sprite.setOrigin(b.width/2.f, b.height/2.f);
         item.sprite.setPosition(spriteX, startY + spacing*index);
-        item.sprite.setScale(0.5f, 0.5f);
+
+        float scale = 0.5f;
+        if (kv.first == TextureID::Starfish)
+            scale = 0.02f;
+        item.sprite.setScale(scale, scale);
 
         item.text.setFont(font);
         item.text.setString(std::to_string(kv.second));
