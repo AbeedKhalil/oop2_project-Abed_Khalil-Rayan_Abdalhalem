@@ -5,6 +5,7 @@
 #include "ExtendedPowerUps.h"
 #include "GameOverState.h"
 #include "StageIntroState.h"
+#include "StageSummaryState.h"
 #include <algorithm>
 #include <execution>
 #include <sstream>
@@ -707,6 +708,7 @@ namespace FishGame
             {
                 if (state->m_player->attemptEat(fish))
                 {
+                    state->m_levelCounts[fish.getTextureID()]++;
                     fish.destroy();
                     state->createParticleEffect(fish.getPosition(), Constants::EAT_PARTICLE_COLOR);
                 }
@@ -722,6 +724,7 @@ namespace FishGame
         {
             if (state->m_player->canEat(fish) && state->m_player->attemptEat(fish))
             {
+                state->m_levelCounts[fish.getTextureID()]++;
                 state->createParticleEffect(fish.getPosition(),
                     Constants::ANGELFISH_PARTICLE_COLOR, Constants::ANGELFISH_PARTICLE_COUNT);
                 fish.destroy();
@@ -736,6 +739,7 @@ namespace FishGame
                 state->m_player->applyPoisonEffect(poison->getPoisonDuration());
                 state->createParticleEffect(fish.getPosition(), sf::Color::Magenta, 15);
                 state->createParticleEffect(state->m_player->getPosition(), sf::Color::Magenta, 10);
+                state->m_levelCounts[fish.getTextureID()]++;
                 fish.destroy();
             }
         }
@@ -746,6 +750,7 @@ namespace FishGame
 
             if (playerCanEat && state->m_player->attemptEat(fish))
             {
+                state->m_levelCounts[fish.getTextureID()]++;
                 fish.destroy();
                 state->createParticleEffect(fish.getPosition(), Constants::EAT_PARTICLE_COLOR);
             }
@@ -769,6 +774,10 @@ namespace FishGame
         }
         else
         {
+            if (item.getBonusType() == BonusType::Starfish)
+            {
+                state->m_levelCounts[TextureID::Starfish]++;
+            }
             int frenzyMultiplier = state->m_frenzySystem->getMultiplier();
             float powerUpMultiplier = state->m_powerUpManager->getScoreMultiplier();
 
@@ -956,8 +965,12 @@ namespace FishGame
 
     void PlayState::advanceLevel()
     {
+        int levelScore = m_scoreSystem->getCurrentScore();
+        StageSummaryState::configure(m_gameState.currentLevel + 1, levelScore, m_levelCounts);
+        m_levelCounts.clear();
+
         m_gameState.currentLevel++;
-        m_gameState.totalScore += m_scoreSystem->getCurrentScore();
+        m_gameState.totalScore += levelScore;
 
         updateBackground(m_gameState.currentLevel);
 
@@ -977,7 +990,7 @@ namespace FishGame
         m_bonusStageTriggered = false;
 
         StageIntroState::configure(m_gameState.currentLevel, false);
-        deferAction([this]() { requestStackPush(StateID::StageIntro); });
+        deferAction([this]() { requestStackPush(StateID::StageSummary); });
     }
 
     void PlayState::resetLevel()

@@ -16,6 +16,7 @@ namespace FishGame
         None,
         Intro,
         StageIntro,
+        StageSummary,
         Menu,
         Play,
         Pause,
