@@ -1334,8 +1334,6 @@ void PlayState::centerText(sf::Text& text)
 
             m_hud.messageText.setString("");
             m_initialized = true;
-            StageIntroState::configure(m_gameState.currentLevel, false);
-            deferAction([this]() { requestStackPush(StateID::StageIntro); });
             getGame().getMusicPlayer().play(musicForLevel(m_gameState.currentLevel), true);
         }
         else if (!m_initialized)

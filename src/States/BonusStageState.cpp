@@ -10,6 +10,7 @@
 #include "FishCollisionHandler.h"
 #include "OysterManager.h"
 #include "MusicPlayer.h"
+#include "StageIntroState.h"
 #include <algorithm>
 #include <execution>
 #include <sstream>
@@ -643,9 +644,11 @@ void BonusStageState::spawnBomb()
             }
         }
 
-        // Return to play state after delay
+        // Show intro for the next level when returning to PlayState
         deferAction([this]() {
             requestStackPop();
+            StageIntroState::configure(m_playerLevel + 1, false);
+            requestStackPush(StateID::StageIntro);
             });
     }
 
