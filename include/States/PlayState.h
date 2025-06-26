@@ -28,6 +28,7 @@
 
 namespace FishGame
 {
+    enum class TextureID;
     // Template trait specialization
     class PlayState;
     template<> struct is_state<PlayState> : std::true_type {};
@@ -197,6 +198,7 @@ namespace FishGame
         // State tracking
         GameStateData m_gameState;
         HUDElements m_hud;
+        std::unordered_map<TextureID, int> m_levelCounts;
 
         // Effect states
         bool m_isPlayerFrozen;
