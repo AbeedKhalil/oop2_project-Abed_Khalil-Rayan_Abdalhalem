@@ -29,6 +29,8 @@ sf::IntRect firstFrameRect(FishGame::TextureID id) {
     return {1, 1, 101, 101};
   case TextureID::PearlOysterOpen:
     return {1 + 4 * 101, 1, 101, 101};
+  case TextureID::Bomb:
+    return {1, 1, 69, 69};
   case TextureID::Pufferfish:
     return {5, 5, 187, 131};
   case TextureID::PufferfishInflated:
@@ -158,10 +160,13 @@ void StageIntroState::setupItems() {
 }
 
 void StageIntroState::handleEvent(const sf::Event &event) {
-  if (event.type == sf::Event::KeyPressed ||
-      event.type == sf::Event::MouseButtonPressed) {
+  if (event.type == sf::Event::MouseButtonPressed)
     exitState();
-  }
+  else if (event.type == sf::Event::KeyPressed)
+    exitState();
+  else if (event.type == sf::Event::KeyReleased &&
+           event.key.code == sf::Keyboard::P)
+    exitState();
 }
 
 bool StageIntroState::update(sf::Time deltaTime) {
