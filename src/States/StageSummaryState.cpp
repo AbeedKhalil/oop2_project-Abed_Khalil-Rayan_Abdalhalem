@@ -75,7 +75,7 @@ void StageSummaryState::onActivate() {
     m_nextText.setString("NEXT");
     m_nextText.setCharacterSize(36);
     auto nb = m_nextText.getLocalBounds();
-    m_nextText.setOrigin(nb.width/2.f, nb.height/2.f);
+    m_nextText.setOrigin(nb.width/2.f, nb.height/2.f + 10.0f);
     m_nextText.setPosition(m_nextButtonSprite.getPosition());
     m_buttonHovered = false;
 
