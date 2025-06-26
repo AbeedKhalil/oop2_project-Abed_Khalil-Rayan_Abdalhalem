@@ -9,6 +9,7 @@
 #include "Hazard.h"
 #include "FishCollisionHandler.h"
 #include "OysterManager.h"
+#include "MusicPlayer.h"
 #include <algorithm>
 #include <execution>
 #include <sstream>
@@ -363,6 +364,7 @@ namespace FishGame
 
     void BonusStageState::onActivate()
     {
+        getGame().getMusicPlayer().play(MusicID::BonusStage, true);
         // Initial spawn based on stage type
         switch (m_stageType)
         {

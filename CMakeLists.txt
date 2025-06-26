@@ -23,13 +23,13 @@ if (WIN32)
     set (SFML_DIR "${SFML_LOCATION}/lib/cmake/SFML")
 endif()
 
-find_package (SFML 2.6 COMPONENTS graphics REQUIRED)
+find_package (SFML 2.6 COMPONENTS graphics audio REQUIRED)
 
 if (WIN32)
     set_target_properties (sfml-main sfml-system sfml-window sfml-graphics sfml-audio sfml-network PROPERTIES MAP_IMPORTED_CONFIG_RELWITHDEBINFO RELEASE)
-    target_link_libraries (${CMAKE_PROJECT_NAME} sfml-graphics sfml-main)
+    target_link_libraries (${CMAKE_PROJECT_NAME} sfml-graphics sfml-audio sfml-main)
     include (cmake/SFML.cmake)
 else()
-    target_link_libraries (${CMAKE_PROJECT_NAME} sfml-graphics pthread)
+    target_link_libraries (${CMAKE_PROJECT_NAME} sfml-graphics sfml-audio pthread)
 endif()
 

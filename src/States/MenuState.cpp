@@ -1,6 +1,7 @@
 #include "MenuState.h"
 #include "Game.h"
 #include "StageIntroState.h"
+#include "MusicPlayer.h"
 #include <cmath>
 #include <algorithm>
 #include <numeric>
@@ -329,6 +330,7 @@ namespace FishGame
     void MenuState::onActivate()
     {
         // Reset state when menu becomes active
+        getGame().getMusicPlayer().play(MusicID::MenuTheme, true);
         m_isTransitioning = false;
         m_transitionAlpha = 255.0f;
         m_animationTime = 0.0f;

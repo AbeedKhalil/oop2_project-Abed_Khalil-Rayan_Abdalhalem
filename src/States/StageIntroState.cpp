@@ -1,5 +1,6 @@
 #include "StageIntroState.h"
 #include "Game.h"
+#include "MusicPlayer.h"
 #include <string>
 
 namespace {
@@ -60,6 +61,7 @@ void StageIntroState::configure(int level, bool pushNext, StateID nextState) {
 }
 
 void StageIntroState::onActivate() {
+  getGame().getMusicPlayer().play(MusicID::InstructionsHelp, false);
   auto &manager = getGame().getSpriteManager();
   auto &window = getGame().getWindow();
   auto &font = getGame().getFonts().get(Fonts::Main);

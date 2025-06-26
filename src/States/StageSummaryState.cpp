@@ -1,5 +1,6 @@
 #include "StageSummaryState.h"
 #include "Game.h"
+#include "MusicPlayer.h"
 #include "StageIntroState.h"
 
 namespace {
@@ -49,6 +50,7 @@ void StageSummaryState::configure(int nextLevel, int levelScore,
 }
 
 void StageSummaryState::onActivate() {
+    getGame().getMusicPlayer().play(MusicID::ScoreSummary, false);
     auto& manager = getGame().getSpriteManager();
     auto& window = getGame().getWindow();
     m_overlaySprite.setTexture(manager.getTexture(TextureID::StageIntro));
