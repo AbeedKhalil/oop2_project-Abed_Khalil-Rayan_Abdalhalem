@@ -107,10 +107,20 @@ void MusicPlayer::stop()
         m_fadeThread.join();
     }
 
+
+    // Stop any music that might still be playing
     if (m_current)
     {
         m_current->stop();
         m_current = nullptr;
+    }
+
+    for (auto& [_, music] : m_musicTracks)
+    {
+        if (music->getStatus() != sf::SoundSource::Stopped)
+        {
+            music->stop();
+        }
     }
 }
 
