@@ -383,6 +383,7 @@ namespace FishGame
 
                 m_scoreSystem->addScore(ScoreEventType::FishEaten, fish->getPointValue(),
                     other.getPosition(), frenzyMultiplier, powerUpMultiplier);
+                m_scoreSystem->recordFish(fish->getTextureID());
             }
 
             if (m_frenzySystem)

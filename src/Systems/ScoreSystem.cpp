@@ -91,6 +91,7 @@ namespace FishGame
         , m_currentScore(0)
         , m_currentChain(0)
         , m_floatingScores()
+        , m_fishCounts()
     {
         m_floatingScores.reserve(20);
     }
@@ -133,6 +134,11 @@ namespace FishGame
         m_currentChain = 0;
     }
 
+    void ScoreSystem::recordFish(TextureID id)
+    {
+        ++m_fishCounts[id];
+    }
+
     void ScoreSystem::registerTailBite(sf::Vector2f position, int frenzyMultiplier, float powerUpMultiplier)
     {
         addScore(ScoreEventType::TailBite, m_tailBiteBonus, position, frenzyMultiplier, powerUpMultiplier);
@@ -169,6 +175,7 @@ namespace FishGame
         m_currentScore = 0;
         m_currentChain = 0;
         m_floatingScores.clear();
+        m_fishCounts.clear();
     }
 
     void ScoreSystem::createFloatingScore(int points, int multiplier, sf::Vector2f position)
