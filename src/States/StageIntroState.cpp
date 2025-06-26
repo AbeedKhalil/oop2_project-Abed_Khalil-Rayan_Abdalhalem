@@ -39,12 +39,14 @@ namespace FishGame {
 StageIntroState::StageIntroState(Game &game)
     : State(game), m_backgroundSprite(), m_overlaySprite(), m_items(), m_elapsed(sf::Time::Zero),
       m_level(StageIntroConfig::getInstance().level),
-      m_pushPlay(StageIntroConfig::getInstance().pushPlay) {}
+      m_pushPlay(StageIntroConfig::getInstance().pushNext),
+      m_nextState(StageIntroConfig::getInstance().nextState) {}
 
-void StageIntroState::configure(int level, bool pushPlay) {
+void StageIntroState::configure(int level, bool pushNext, StateID nextState) {
   auto &cfg = StageIntroConfig::getInstance();
   cfg.level = level;
-  cfg.pushPlay = pushPlay;
+  cfg.pushNext = pushNext;
+  cfg.nextState = nextState;
 }
 
 void StageIntroState::onActivate() {
@@ -83,6 +85,12 @@ void StageIntroState::setupItems() {
   };
 
   switch (m_level) {
+  case 0:
+    add(TextureID::Bomb, "Avoid bombs!");
+    add(TextureID::SmallFish, "Eat small fish for points");
+    add(TextureID::Starfish, "Collect starfish for points");
+    add(TextureID::PowerUpAddTime, "Grab time power-ups to extend time");
+    break;
   case 1:
     add(TextureID::SmallFish, "Eat small fish to grow");
     add(TextureID::MediumFish, "Eat Medium fish to become the king of the stage!");
@@ -157,7 +165,7 @@ void StageIntroState::exitState() {
   deferAction([this]() {
     requestStackPop();
     if (m_pushPlay)
-      requestStackPush(StateID::Play);
+      requestStackPush(m_nextState);
   });
 }
 

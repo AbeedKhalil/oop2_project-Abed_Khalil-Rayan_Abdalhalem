@@ -14,7 +14,9 @@ template <> struct is_state<StageIntroState> : std::true_type {};
 
 struct StageIntroConfig {
   int level = 1;
-  bool pushPlay = true;
+  bool pushNext = true;
+  StateID nextState = StateID::Play;
+
   static StageIntroConfig &getInstance() {
     static StageIntroConfig instance;
     return instance;
@@ -26,7 +28,8 @@ public:
   explicit StageIntroState(Game &game);
   ~StageIntroState() override = default;
 
-  static void configure(int level, bool pushPlay);
+  static void configure(int level, bool pushNext,
+                        StateID nextState = StateID::Play);
 
   void handleEvent(const sf::Event &event) override;
   bool update(sf::Time deltaTime) override;
@@ -49,6 +52,7 @@ private:
   sf::Time m_elapsed;
   int m_level;
   bool m_pushPlay;
+  StateID m_nextState;
   static constexpr float DISPLAY_TIME = 3.0f;
 };
 } // namespace FishGame

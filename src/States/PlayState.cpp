@@ -1062,7 +1062,8 @@ namespace FishGame
 
                 deferAction([this, bonusType]() {
                     m_returningFromBonusStage = true;
-                    requestStackPush(StateID::BonusStage);
+                    StageIntroState::configure(0, true, StateID::BonusStage);
+                    requestStackPush(StateID::StageIntro);
                     });
             }
         }
