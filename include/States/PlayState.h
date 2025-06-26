@@ -236,6 +236,10 @@ namespace FishGame
 
         bool m_initialized;
 
+        // Track resuming of background music after death
+        bool m_musicResumePending{false};
+        sf::Time m_musicResumeTimer{sf::Time::Zero};
+
         // Constants
         static constexpr float m_hazardSpawnInterval = 8.0f;
         static constexpr float m_extendedPowerUpInterval = 15.0f;
