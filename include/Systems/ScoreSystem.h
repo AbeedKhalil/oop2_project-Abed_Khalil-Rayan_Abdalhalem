@@ -4,6 +4,8 @@
 #include <memory>
 #include <vector>
 #include <cmath>
+#include <unordered_map>
+#include "Managers/SpriteManager.h"
 
 namespace FishGame
 {
@@ -71,6 +73,8 @@ namespace FishGame
         // Score tracking
         int getCurrentScore() const { return m_currentScore; }
         void setCurrentScore(int score) { m_currentScore = score; }
+        void recordFish(TextureID id);
+        const std::unordered_map<TextureID,int>& getFishCounts() const { return m_fishCounts; }
         void reset();
 
     private:
@@ -88,6 +92,9 @@ namespace FishGame
 
         // Visual elements
         std::vector<std::unique_ptr<FloatingScore>> m_floatingScores;
+
+        // Fish counts
+        std::unordered_map<TextureID,int> m_fishCounts;
 
         // Bonus values
         static constexpr int m_tailBiteBonus = 75;

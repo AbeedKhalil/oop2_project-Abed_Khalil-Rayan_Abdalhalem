@@ -777,6 +777,7 @@ namespace FishGame
             if (item.getBonusType() == BonusType::Starfish)
             {
                 state->m_levelCounts[TextureID::Starfish]++;
+                state->m_scoreSystem->recordFish(TextureID::Starfish);
             }
             int frenzyMultiplier = state->m_frenzySystem->getMultiplier();
             float powerUpMultiplier = state->m_powerUpManager->getScoreMultiplier();
