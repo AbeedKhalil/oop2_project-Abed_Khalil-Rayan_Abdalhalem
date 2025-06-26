@@ -1,0 +1,1 @@
+﻿configure_file ("MenuTheme.ogg" ${CMAKE_BINARY_DIR} COPYONLY)
