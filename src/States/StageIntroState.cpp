@@ -29,6 +29,14 @@ sf::IntRect firstFrameRect(FishGame::TextureID id) {
     return {1, 1, 101, 101};
   case TextureID::PearlOysterOpen:
     return {1 + 4 * 101, 1, 101, 101};
+  case TextureID::Pufferfish:
+    return {5, 5, 187, 131};
+  case TextureID::PufferfishInflated:
+    return {5, 136, 186, 169};
+  case TextureID::Jellyfish:
+    return {1, 1, 75, 197};
+  case TextureID::Barracuda:
+    return {1, 1, 270, 122};
   default:
     return {};
   }
