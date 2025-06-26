@@ -61,6 +61,10 @@ namespace FishGame
         m_scoreText.setFillColor(sf::Color::Green);
         m_scoreText.setPosition(50.0f, 150.0f);
 
+        m_instructionText.setFont(font);
+        m_instructionText.setCharacterSize(30);
+        m_instructionText.setFillColor(sf::Color::White);
+
         // Background image for bonus stage
         auto& window = getGame().getWindow();
         m_backgroundSprite.setTexture(
@@ -172,6 +176,15 @@ namespace FishGame
         if (m_oysterSafetyTimer > sf::Time::Zero)
         {
             m_oysterSafetyTimer -= deltaTime;
+        }
+
+        if (m_showInstructions)
+        {
+            m_instructionTimer += deltaTime;
+            if (m_instructionTimer.asSeconds() > m_instructionDuration)
+            {
+                m_showInstructions = false;
+            }
         }
 
         // Update entities
@@ -318,6 +331,9 @@ namespace FishGame
         window.draw(m_timerBackground);
         window.draw(m_timerBar);
 
+        if (m_showInstructions)
+            window.draw(m_instructionText);
+
         // Draw completion message
         if (m_stageComplete)
         {
@@ -358,6 +374,24 @@ namespace FishGame
         objStream << m_objective.description << " (" << m_objective.currentCount
             << "/" << m_objective.targetCount << ")";
         m_objectiveText.setString(objStream.str());
+
+        m_showInstructions = true;
+        m_instructionTimer = sf::Time::Zero;
+        if (m_stageType == BonusStageType::FeedingFrenzy)
+        {
+            m_instructionText.setString(
+                "Eat small fish and starfish! Avoid bombs.\nGrab time power-ups for more time.");
+        }
+        else
+        {
+            m_instructionText.setString(
+                "Complete the objective before time runs out!");
+        }
+
+        sf::FloatRect b = m_instructionText.getLocalBounds();
+        m_instructionText.setOrigin(b.width / 2.f, b.height / 2.f);
+        auto win = getGame().getWindow().getSize();
+        m_instructionText.setPosition(win.x / 2.f, win.y - 60.f);
     }
 
     void BonusStageState::updateTreasureHunt(sf::Time deltaTime)
