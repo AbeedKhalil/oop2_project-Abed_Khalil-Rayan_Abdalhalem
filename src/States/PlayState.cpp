@@ -6,6 +6,7 @@
 #include "GameOverState.h"
 #include "StageIntroState.h"
 #include "StageSummaryState.h"
+#include "MusicPlayer.h"
 #include <algorithm>
 #include <execution>
 #include <sstream>
@@ -915,6 +916,7 @@ namespace FishGame
 
     void PlayState::triggerWinSequence()
     {
+        getGame().getMusicPlayer().play(MusicID::StageCleared, false);
         m_gameState.gameWon = true;
         m_gameState.enemiesFleeing = true;
         m_gameState.winTimer = sf::Time::Zero;
@@ -951,6 +953,7 @@ namespace FishGame
             return;
 
         m_gameState.playerLives--;
+        getGame().getMusicPlayer().play(MusicID::PlayerDies, false);
         m_player->die();
 
         if (m_gameState.playerLives <= 0)
@@ -1316,6 +1319,7 @@ void PlayState::centerText(sf::Text& text)
             m_initialized = true;
             StageIntroState::configure(m_gameState.currentLevel, false);
             deferAction([this]() { requestStackPush(StateID::StageIntro); });
+            getGame().getMusicPlayer().play(musicForLevel(m_gameState.currentLevel), true);
         }
         else if (!m_initialized)
         {
@@ -1328,6 +1332,7 @@ void PlayState::centerText(sf::Text& text)
             m_savedLevel = 1;
             m_initialized = true;
             updateBackground(m_gameState.currentLevel);
+            getGame().getMusicPlayer().play(musicForLevel(m_gameState.currentLevel), true);
         }
 
         // Ensure camera starts centered on the player
@@ -1338,6 +1343,17 @@ void PlayState::centerText(sf::Text& text)
     {
         // Show mouse cursor again when leaving play state
         getGame().getWindow().setMouseCursorVisible(true);
+    }
+
+    static MusicID musicForLevel(int level)
+    {
+        int index = ((level - 1) / 3) % 3;
+        switch (index)
+        {
+        case 0: return MusicID::InGame1;
+        case 1: return MusicID::InGame2;
+        default: return MusicID::InGame3;
+        }
     }
 
     void PlayState::updateBackground(int level)

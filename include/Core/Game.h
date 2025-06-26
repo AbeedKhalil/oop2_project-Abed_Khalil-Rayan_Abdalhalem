@@ -7,6 +7,7 @@
 #include <functional>
 #include <type_traits>
 #include "ResourceHolder.h"
+#include "MusicPlayer.h"
 #include "State.h"
 #include "Player.h"
 #include "GameConstants.h"
@@ -32,6 +33,8 @@ namespace FishGame
         const sf::RenderWindow& getWindow() const { return m_window; }
         FontHolder& getFonts() { return m_fonts; }
         SpriteManager& getSpriteManager() { return *m_spriteManager; }
+        MusicPlayer& getMusicPlayer() { return *m_musicPlayer; }
+        const MusicPlayer& getMusicPlayer() const { return *m_musicPlayer; }
 
         // State management
         void pushState(StateID id);
@@ -101,6 +104,7 @@ namespace FishGame
         std::unordered_map<StateID, StateFactory> m_stateFactories;
 
         std::unique_ptr<SpriteManager> m_spriteManager;
+        std::unique_ptr<MusicPlayer> m_musicPlayer;
 
         // Performance tracking
         struct PerformanceMetrics
