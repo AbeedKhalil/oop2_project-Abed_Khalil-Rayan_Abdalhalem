@@ -126,10 +126,10 @@ namespace FishGame
     {
         if (event.type == sf::Event::KeyPressed)
         {
-            if (event.key.code == sf::Keyboard::Escape)
+            if (event.key.code == sf::Keyboard::P)
             {
                 deferAction([this]() {
-                    requestStackPop();
+                    requestStackPush(StateID::StageIntro);
                     });
             }
         }

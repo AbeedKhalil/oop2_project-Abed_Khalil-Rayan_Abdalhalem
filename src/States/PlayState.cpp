@@ -228,12 +228,12 @@ namespace FishGame
                     });
                 break;
 
-            case sf::Keyboard::Enter:
+            /*case sf::Keyboard::Enter:
                 if (m_gameState.levelComplete)
                 {
                     advanceLevel();
                 }
-                break;
+                break;*/
 
             case sf::Keyboard::P:
                 deferAction([this]() {
@@ -310,8 +310,7 @@ namespace FishGame
             {
                 m_gameState.enemiesFleeing = false;
                 m_gameState.levelComplete = true;
-                showMessage("Level Complete!\nPress ENTER to continue");
-                return;
+                advanceLevel();
             }
 
             if (m_gameState.levelComplete)
