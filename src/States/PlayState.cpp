@@ -987,8 +987,9 @@ namespace FishGame
     {
         int levelScore = m_scoreSystem->getCurrentScore();
         const auto& fishCounts = m_scoreSystem->getFishCounts();
+        bool triggerBonus = (m_gameState.currentLevel % 3 == 0);
         StageSummaryState::configure(m_gameState.currentLevel + 1,
-                                     levelScore, fishCounts);
+                                     levelScore, fishCounts, triggerBonus);
         m_levelCounts.clear();
 
         m_gameState.currentLevel++;

@@ -42,10 +42,12 @@ StageSummaryState::StageSummaryState(Game& game)
     : State(game), m_overlaySprite(), m_scoreText(), m_nextButtonSprite(), m_nextText(), m_items() {}
 
 void StageSummaryState::configure(int nextLevel, int levelScore,
-                                  const std::unordered_map<TextureID, int>& counts) {
+                                  const std::unordered_map<TextureID, int>& counts,
+                                  bool pushBonusStage) {
     auto& cfg = StageSummaryConfig::getInstance();
     cfg.nextLevel = nextLevel;
     cfg.levelScore = levelScore;
+    cfg.pushBonusStage = pushBonusStage;
     cfg.counts = counts;
 }
 
@@ -148,7 +150,13 @@ bool StageSummaryState::update(sf::Time) {
 void StageSummaryState::exitState() {
     deferAction([this]() {
         requestStackPop();
-        StageIntroState::configure(StageSummaryConfig::getInstance().nextLevel, false);
+        auto &cfg = StageSummaryConfig::getInstance();
+        if (cfg.pushBonusStage) {
+            StageIntroState::configure(0, true, StateID::BonusStage);
+        } else {
+            StageIntroState::configure(cfg.nextLevel, false);
+        }
+        cfg.pushBonusStage = false;
         requestStackPush(StateID::StageIntro);
     });
 }
