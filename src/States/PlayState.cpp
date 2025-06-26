@@ -708,7 +708,7 @@ namespace FishGame
             {
                 if (state->m_player->attemptEat(fish))
                 {
-                    state->m_levelCounts[fish.getTextureID()]++;
+                    state->m_levelCounts[puffer->getTextureID()]++;
                     fish.destroy();
                     state->createParticleEffect(fish.getPosition(), Constants::EAT_PARTICLE_COLOR);
                 }
@@ -720,11 +720,11 @@ namespace FishGame
                 state->handlePlayerDeath();
             }
         }
-        else if (dynamic_cast<Angelfish*>(&fish))
+        else if (auto* angelfish = dynamic_cast<Angelfish*>(&fish))
         {
             if (state->m_player->canEat(fish) && state->m_player->attemptEat(fish))
             {
-                state->m_levelCounts[fish.getTextureID()]++;
+                state->m_levelCounts[angelfish->getTextureID()]++;
                 state->createParticleEffect(fish.getPosition(),
                     Constants::ANGELFISH_PARTICLE_COLOR, Constants::ANGELFISH_PARTICLE_COUNT);
                 fish.destroy();
@@ -739,7 +739,7 @@ namespace FishGame
                 state->m_player->applyPoisonEffect(poison->getPoisonDuration());
                 state->createParticleEffect(fish.getPosition(), sf::Color::Magenta, 15);
                 state->createParticleEffect(state->m_player->getPosition(), sf::Color::Magenta, 10);
-                state->m_levelCounts[fish.getTextureID()]++;
+                state->m_levelCounts[poison->getTextureID()]++;
                 fish.destroy();
             }
         }
@@ -750,7 +750,7 @@ namespace FishGame
 
             if (playerCanEat && state->m_player->attemptEat(fish))
             {
-                state->m_levelCounts[fish.getTextureID()]++;
+                state->m_levelCounts[regularFish->getTextureID()]++;
                 fish.destroy();
                 state->createParticleEffect(fish.getPosition(), Constants::EAT_PARTICLE_COLOR);
             }

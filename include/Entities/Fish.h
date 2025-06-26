@@ -84,15 +84,15 @@ namespace FishGame
         void setBaseColor(const sf::Color& color);
         const sf::Color& getBaseColor() const { return m_baseColor; }
 
+        // Get appropriate texture ID for this fish
+        virtual TextureID getTextureID() const;
+
     protected:
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
         void updateMovement(sf::Time deltaTime);
 
         // Sprite-specific updates
         virtual void updateSpriteEffects(sf::Time deltaTime);
-
-        // Get appropriate texture ID for this fish
-        virtual TextureID getTextureID() const;
 
     protected:
         FishSize m_size;
