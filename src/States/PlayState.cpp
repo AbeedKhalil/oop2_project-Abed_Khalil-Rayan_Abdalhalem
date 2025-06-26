@@ -287,6 +287,16 @@ namespace FishGame
     {
         m_gameState.levelTime += deltaTime;
 
+        if (m_musicResumePending)
+        {
+            m_musicResumeTimer -= deltaTime;
+            if (m_musicResumeTimer <= sf::Time::Zero)
+            {
+                m_musicResumePending = false;
+                getGame().getMusicPlayer().play(musicForLevel(m_gameState.currentLevel), true);
+            }
+        }
+
         // Update environment system
         m_environmentSystem->update(deltaTime);
 
@@ -957,6 +967,9 @@ namespace FishGame
 
         m_gameState.playerLives--;
         getGame().getMusicPlayer().play(MusicID::PlayerDies, false);
+        m_musicResumePending = m_gameState.playerLives > 0;
+        if (m_musicResumePending)
+            m_musicResumeTimer = sf::seconds(1.5f);
         m_player->die();
 
         if (m_gameState.playerLives <= 0)
