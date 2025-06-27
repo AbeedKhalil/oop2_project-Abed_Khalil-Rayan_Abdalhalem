@@ -84,6 +84,7 @@ void StageIntroState::onActivate() {
   m_nextButtonSprite.setOrigin(b.width / 2.f, b.height / 2.f);
   m_nextButtonSprite.setScale(Constants::MENU_BUTTON_SCALE, Constants::MENU_BUTTON_SCALE);
   m_nextButtonSprite.setPosition(window.getSize().x / 2.f, window.getSize().y - 110.f);
+  m_nextButtonSprite.setColor(sf::Color(128, 128, 128));
 
   m_nextText.setFont(font);
   m_nextText.setString("NEXT");
@@ -91,6 +92,7 @@ void StageIntroState::onActivate() {
   auto nb = m_nextText.getLocalBounds();
   m_nextText.setOrigin(nb.width / 2.f, nb.height / 2.f);
   m_nextText.setPosition(m_nextButtonSprite.getPosition());
+  m_nextText.setFillColor(sf::Color(128, 128, 128));
   m_buttonHovered = false;
   m_elapsed = sf::Time::Zero;
 }
