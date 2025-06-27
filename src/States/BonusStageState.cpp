@@ -172,9 +172,9 @@ namespace FishGame
             break;
         }
 
-        // Spawn time extension power-up periodically
+        // Spawn time extension power-ups periodically
         m_timePowerUpTimer += deltaTime;
-        if (m_timePowerUpTimer.asSeconds() > 8.0f && m_bonusItems.size() < 10)
+        if (m_timePowerUpTimer.asSeconds() > 5.0f && m_bonusItems.size() < 15)
         {
             m_timePowerUpTimer = sf::Time::Zero;
             spawnTimePowerUp();
@@ -385,6 +385,9 @@ namespace FishGame
             break;
         }
 
+        // Spawn a few initial time power-ups
+        spawnTimePowerUp();
+
         // Update initial objective text
         std::ostringstream objStream;
         objStream << m_objective.description << " (" << m_objective.currentCount
@@ -593,13 +596,17 @@ namespace FishGame
 
 void BonusStageState::spawnTimePowerUp()
 {
-    auto power = std::make_unique<AddTimePowerUp>();
-    float x = m_xDist(m_randomEngine);
-    float y = m_yDist(m_randomEngine);
-    power->setPosition(x, y);
-    power->m_baseY = y;
-    power->initializeSprite(getGame().getSpriteManager());
-    m_bonusItems.push_back(std::move(power));
+    // Spawn a couple of time extensions at once to make the stage a bit easier
+    for (int i = 0; i < 2 && m_bonusItems.size() < 30; ++i)
+    {
+        auto power = std::make_unique<AddTimePowerUp>();
+        float x = m_xDist(m_randomEngine);
+        float y = m_yDist(m_randomEngine);
+        power->setPosition(x, y);
+        power->m_baseY = y;
+        power->initializeSprite(getGame().getSpriteManager());
+        m_bonusItems.push_back(std::move(power));
+    }
 }
 
 void BonusStageState::spawnStarfish()
