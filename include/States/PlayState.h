@@ -240,6 +240,9 @@ namespace FishGame
         bool m_musicResumePending{false};
         sf::Time m_musicResumeTimer{sf::Time::Zero};
 
+        bool m_respawnPending{false};
+        sf::Time m_respawnTimer{sf::Time::Zero};
+
         // Constants
         static constexpr float m_hazardSpawnInterval = 8.0f;
         static constexpr float m_extendedPowerUpInterval = 15.0f;
