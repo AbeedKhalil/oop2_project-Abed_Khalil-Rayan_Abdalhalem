@@ -297,6 +297,17 @@ namespace FishGame
             }
         }
 
+        if (m_respawnPending)
+        {
+            m_respawnTimer -= deltaTime;
+            if (m_respawnTimer <= sf::Time::Zero)
+            {
+                m_respawnPending = false;
+                m_player->respawn();
+                createParticleEffect(m_player->getPosition(), Constants::RESPAWN_PARTICLE_COLOR);
+            }
+        }
+
         // Update environment system
         m_environmentSystem->update(deltaTime);
 
@@ -978,8 +989,8 @@ namespace FishGame
         }
         else
         {
-            m_player->respawn();
-            createParticleEffect(m_player->getPosition(), Constants::RESPAWN_PARTICLE_COLOR);
+            m_respawnPending = true;
+            m_respawnTimer = Constants::RESPAWN_DELAY;
         }
     }
 
