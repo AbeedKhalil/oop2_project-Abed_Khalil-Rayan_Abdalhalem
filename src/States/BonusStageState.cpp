@@ -412,6 +412,12 @@ namespace FishGame
         updateCamera();
     }
 
+    void BonusStageState::onDeactivate()
+    {
+        // Stop the bonus stage music when leaving the state
+        getGame().getMusicPlayer().stop();
+    }
+
     void BonusStageState::updateTreasureHunt(sf::Time deltaTime)
     {
         // Spawn more oysters periodically
