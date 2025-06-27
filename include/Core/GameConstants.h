@@ -95,7 +95,7 @@ namespace FishGame
         const sf::Time FPS_UPDATE_INTERVAL = sf::seconds(1.0f);
         const sf::Time SCHOOL_EXTRACT_INTERVAL = sf::seconds(0.1f);
         const sf::Time WIN_SEQUENCE_DURATION = sf::seconds(5.0f);
-        const sf::Time RESPAWN_DELAY = sf::seconds(2.0f);
+        const sf::Time RESPAWN_DELAY = sf::seconds(1.5f);
 
         // ==================== Particle Effects ====================
         constexpr int DEFAULT_PARTICLE_COUNT = 8;

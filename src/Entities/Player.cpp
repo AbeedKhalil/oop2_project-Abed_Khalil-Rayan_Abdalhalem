@@ -570,8 +570,11 @@ namespace FishGame
 
     void Player::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
+        if (!m_isAlive)
+            return;
+
         for (const auto& effect : m_activeEffects)
-        {
+    {
             if (effect.duration > sf::Time::Zero)
             {
                 sf::Transform effectTransform;

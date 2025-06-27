@@ -980,7 +980,7 @@ namespace FishGame
         getGame().getMusicPlayer().play(MusicID::PlayerDies, false);
         m_musicResumePending = m_gameState.playerLives > 0;
         if (m_musicResumePending)
-            m_musicResumeTimer = sf::seconds(1.5f);
+            m_musicResumeTimer = sf::seconds(2.0f);
         m_player->die();
 
         if (m_gameState.playerLives <= 0)
