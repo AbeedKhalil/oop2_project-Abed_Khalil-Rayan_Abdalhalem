@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Entity.h"
+#include "GameConstants.h"
 #include <random>
 #include <SFML/System/Time.hpp>
 
