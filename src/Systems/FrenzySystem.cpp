@@ -1,5 +1,6 @@
 #include "FrenzySystem.h"
 #include "GameConstants.h"
+#include "SoundPlayer.h"
 #include <algorithm>
 #include <sstream>
 #include <iomanip>
@@ -21,6 +22,7 @@ namespace FishGame
         , m_textRotation(0.0f)
         , m_currentColor(sf::Color::White)
         , m_animationTimer(sf::Time::Zero)
+        , m_soundPlayer(nullptr)
     {
         // Setup frenzy text
         m_frenzyText.setFont(font);
@@ -188,6 +190,8 @@ namespace FishGame
                 m_multiplierText.setString("2X Score Multiplier");
                 m_currentColor = sf::Color::Yellow;
                 m_textScale = 1.5f;
+                if (m_soundPlayer)
+                    m_soundPlayer->play(SoundEffectID::FeedingFrenzy);
                 break;
 
             case FrenzyLevel::SuperFrenzy:
@@ -195,6 +199,8 @@ namespace FishGame
                 m_multiplierText.setString("4X Score Multiplier");
                 m_currentColor = sf::Color::Magenta;
                 m_textScale = 2.0f;
+                if (m_soundPlayer)
+                    m_soundPlayer->play(SoundEffectID::SuperFrenzy);
                 break;
             }
 
