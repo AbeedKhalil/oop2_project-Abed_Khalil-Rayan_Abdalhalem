@@ -24,7 +24,9 @@ SoundPlayer::SoundPlayer()
         {SoundEffectID::SpeedEnd, "SpeedEnd.wav"},
         {SoundEffectID::SpeedStart, "SpeedStart.wav"},
         {SoundEffectID::StageIntro, "StageIntro.wav"},
-        {SoundEffectID::StarPickup, "StarPickup.wav"}}
+        {SoundEffectID::StarPickup, "StarPickup.wav"},
+        {SoundEffectID::FeedingFrenzy, "FeedingFrenzy.wav"},
+        {SoundEffectID::SuperFrenzy, "SuperFrenzy.wav"}}
     , m_sounds(16)
     , m_volume(100.f)
 {

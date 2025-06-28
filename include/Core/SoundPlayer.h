@@ -27,7 +27,9 @@ enum class SoundEffectID {
     SpeedEnd,
     SpeedStart,
     StageIntro,
-    StarPickup
+    StarPickup,
+    FeedingFrenzy,
+    SuperFrenzy
 };
 
 class SoundPlayer {

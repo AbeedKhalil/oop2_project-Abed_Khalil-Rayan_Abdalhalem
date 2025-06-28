@@ -59,6 +59,8 @@ namespace FishGame
     {
         initializeSystems();
         m_player->setSoundPlayer(&getGame().getSoundPlayer());
+        if (m_frenzySystem)
+            m_frenzySystem->setSoundPlayer(&getGame().getSoundPlayer());
 
         // Reserve capacity for containers
         m_entities.reserve(Constants::MAX_ENTITIES);
@@ -305,6 +307,7 @@ namespace FishGame
             {
                 m_respawnPending = false;
                 m_player->respawn();
+                m_cameraFrozen = false;
                 createParticleEffect(m_player->getPosition(), Constants::RESPAWN_PARTICLE_COLOR);
             }
         }
@@ -1004,6 +1007,13 @@ namespace FishGame
         if (m_player->isInvulnerable())
             return;
 
+        // Freeze camera at death position
+        m_cameraFrozen = true;
+        m_cameraFreezePos = m_player->getPosition();
+        sf::Vector2f halfSize = m_view.getSize() * 0.5f;
+        m_cameraFreezePos.x = std::clamp(m_cameraFreezePos.x, halfSize.x, m_worldSize.x - halfSize.x);
+        m_cameraFreezePos.y = std::clamp(m_cameraFreezePos.y, halfSize.y, m_worldSize.y - halfSize.y);
+
         m_gameState.playerLives--;
         getGame().getMusicPlayer().play(MusicID::PlayerDies, false);
         m_musicResumePending = m_gameState.playerLives > 0;
@@ -1261,6 +1271,12 @@ namespace FishGame
     {
         if (!m_player)
             return;
+
+        if (m_cameraFrozen)
+        {
+            m_view.setCenter(m_cameraFreezePos);
+            return;
+        }
 
         sf::Vector2f target = m_player->getPosition();
         sf::Vector2f halfSize = m_view.getSize() * 0.5f;
