@@ -61,8 +61,10 @@ namespace FishGame
         constexpr float BARRACUDA_SPAWN_RATE = 0.05f;
         constexpr float PUFFERFISH_SPAWN_RATE = 0.1f;
         constexpr float ANGELFISH_SPAWN_RATE = 0.05f;
-        constexpr float SCHOOL_SPAWN_CHANCE = 0.05f;
-        constexpr float MAX_SCHOOL_SPAWN_CHANCE = 0.10f;
+        // Spawn chance for schools of small fish. Lower values mean schools
+        // appear less frequently and individual spawns are more common.
+        constexpr float SCHOOL_SPAWN_CHANCE = 0.02f;
+        constexpr float MAX_SCHOOL_SPAWN_CHANCE = 0.05f;
         constexpr float POISONFISH_SPAWN_RATE = 0.15f;
 
         // ==================== Visual Settings ====================
