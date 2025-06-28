@@ -154,6 +154,7 @@ namespace FishGame
             {
                 setFrenzyLevel(FrenzyLevel::Frenzy);
                 m_frenzyTimer = sf::seconds(m_frenzyMaintainTime);
+                m_eatHistory.clear();
             }
         }
         else if (m_currentLevel == FrenzyLevel::Frenzy && recentEats >= m_requiredFishCount)
