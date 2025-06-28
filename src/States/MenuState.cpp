@@ -195,8 +195,11 @@ namespace FishGame
 
         if (hoveredOption.has_value())
         {
-            m_hoveredOption = static_cast<MenuOption>(hoveredOption.value());
-            m_selectedOption = static_cast<MenuOption>(hoveredOption.value());
+            auto newOption = static_cast<MenuOption>(hoveredOption.value());
+            if (!m_hoveredOption.has_value() || newOption != *m_hoveredOption)
+                getGame().getSoundPlayer().play(SoundEffectID::MouseOver);
+            m_hoveredOption = newOption;
+            m_selectedOption = newOption;
         }
         else
         {
@@ -216,6 +219,7 @@ namespace FishGame
             [](const auto& item) { return item.sprite.getGlobalBounds(); });
         if (clickedOption.has_value())
         {
+            getGame().getSoundPlayer().play(SoundEffectID::MouseDown);
             m_selectedOption = static_cast<MenuOption>(clickedOption.value());
             selectOption();
         }

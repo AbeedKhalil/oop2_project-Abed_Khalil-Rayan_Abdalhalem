@@ -9,6 +9,7 @@
 #include "StageIntroState.h"
 #include "StageSummaryState.h"
 #include "MusicPlayer.h"
+#include "SoundPlayer.h"
 #include <algorithm>
 #include "GameExceptions.h"
 
@@ -28,6 +29,7 @@ namespace FishGame
         , m_stateFactories()
         , m_spriteManager(nullptr)
         , m_musicPlayer(std::make_unique<MusicPlayer>())
+        , m_soundPlayer(std::make_unique<SoundPlayer>())
         , m_metrics()
     {
         m_window.setFramerateLimit(m_frameRateLimit);

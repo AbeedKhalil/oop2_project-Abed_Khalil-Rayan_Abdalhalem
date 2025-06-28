@@ -62,6 +62,7 @@ void StageIntroState::configure(int level, bool pushNext, StateID nextState) {
 
 void StageIntroState::onActivate() {
   getGame().getMusicPlayer().play(MusicID::InstructionsHelp, false);
+  getGame().getSoundPlayer().play(SoundEffectID::StageIntro);
   auto &manager = getGame().getSpriteManager();
   auto &window = getGame().getWindow();
   auto &font = getGame().getFonts().get(Fonts::Main);
