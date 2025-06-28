@@ -19,7 +19,6 @@ namespace FishGame
         StageSummary,
         Menu,
         Play,
-        Pause,
         GameOver,
 		GameOptions,
         BonusStage
