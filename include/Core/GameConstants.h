@@ -60,6 +60,7 @@ namespace FishGame
         constexpr float AI_DETECTION_RANGE = 80.0f;
         constexpr float AI_FLEE_RANGE = 65.0f;
         constexpr float SPAWN_MARGIN = 50.0f;
+        constexpr float SAFE_SPAWN_PADDING = SPAWN_MARGIN * 2.0f;
 
         // ==================== Spawn Rates ====================
         constexpr float BARRACUDA_SPAWN_RATE = 0.05f;
@@ -79,6 +80,8 @@ namespace FishGame
         constexpr float HUD_LINE_SPACING = 30.0f;
         constexpr float POWERUP_TEXT_X_OFFSET = 300.0f;
         constexpr float FPS_TEXT_X_OFFSET = 100.0f;
+        constexpr float HUD_EFFECTS_TEXT_X = 50.0f;
+        constexpr float HUD_EFFECTS_TEXT_Y_OFFSET = 100.0f;
 
         // ==================== System UI Positions ====================
         constexpr float FRENZY_Y_POSITION = 100.0f;
@@ -138,6 +141,9 @@ namespace FishGame
         constexpr std::size_t BONUS_ENTITIES_RESERVE = 50;
         constexpr std::size_t BONUS_ITEMS_RESERVE = 30;
         constexpr std::size_t BONUS_HAZARDS_RESERVE = 20;
+        constexpr float BONUS_STAGE_TEXT_MARGIN_X = 50.0f;
+        constexpr float BONUS_STAGE_TIMER_Y = 100.0f;
+        constexpr float BONUS_STAGE_SCORE_Y = 150.0f;
 
         // ==================== Stage Summary ====================
         constexpr unsigned int STAGE_SUMMARY_SCORE_FONT_SIZE = 48;
