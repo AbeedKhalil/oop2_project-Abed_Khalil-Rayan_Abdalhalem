@@ -85,11 +85,12 @@ void StageIntroState::onActivate() {
   auto b = m_nextButtonSprite.getLocalBounds();
   m_nextButtonSprite.setOrigin(b.width / 2.f, b.height / 2.f);
   m_nextButtonSprite.setScale(Constants::MENU_BUTTON_SCALE, Constants::MENU_BUTTON_SCALE);
-  m_nextButtonSprite.setPosition(window.getSize().x / 2.f, window.getSize().y - 110.f);
+  m_nextButtonSprite.setPosition(window.getSize().x / 2.f,
+                                 window.getSize().y - Constants::STAGE_INTRO_NEXT_BUTTON_OFFSET);
 
   m_nextText.setFont(font);
   m_nextText.setString("NEXT");
-  m_nextText.setCharacterSize(36);
+  m_nextText.setCharacterSize(Constants::STAGE_INTRO_NEXT_FONT_SIZE);
   auto nb = m_nextText.getLocalBounds();
   m_nextText.setOrigin(nb.width / 2.f, nb.height / 2.f);
   m_nextText.setPosition(m_nextButtonSprite.getPosition());
@@ -109,7 +110,7 @@ void StageIntroState::setupItems() {
     item.sprite.setTexture(manager.getTexture(tex));
     item.text.setFont(font);
     item.text.setString(str);
-    item.text.setCharacterSize(28);
+    item.text.setCharacterSize(Constants::STAGE_INTRO_ITEM_FONT_SIZE);
     m_items.push_back(std::move(item));
   };
 
@@ -160,9 +161,9 @@ void StageIntroState::setupItems() {
     break;
   }
 
-  float startY = 300.f;
-  float xLeft = 300.f;
-  float xText = 400.f;
+  float startY = Constants::STAGE_INTRO_START_Y;
+  float xLeft = Constants::STAGE_INTRO_LEFT_X;
+  float xText = Constants::STAGE_INTRO_TEXT_X;
   std::for_each(m_items.begin(), m_items.end(),
       [&, i = std::size_t{0}](Item &item) mutable {
         sf::IntRect rect = firstFrameRect(item.tex);
@@ -171,14 +172,14 @@ void StageIntroState::setupItems() {
 
         sf::FloatRect b = item.sprite.getLocalBounds();
         item.sprite.setOrigin(b.width / 2.f, b.height / 2.f);
-        item.sprite.setPosition(xLeft, startY + i * 100.f);
+        item.sprite.setPosition(xLeft, startY + i * Constants::STAGE_INTRO_ITEM_SPACING);
 
         float scale = (item.tex == TextureID::Starfish) ? 0.02f : 0.75f;
         item.sprite.setScale(scale, scale);
 
         b = item.text.getLocalBounds();
         item.text.setOrigin(0.f, b.height / 2.f);
-        item.text.setPosition(xText, startY + i * 100.f);
+        item.text.setPosition(xText, startY + i * Constants::STAGE_INTRO_ITEM_SPACING);
         ++i;
       });
 }

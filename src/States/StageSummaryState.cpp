@@ -63,22 +63,24 @@ void StageSummaryState::onActivate() {
 
     auto& font = getGame().getFonts().get(Fonts::Main);
     m_scoreText.setFont(font);
-    m_scoreText.setCharacterSize(48);
+    m_scoreText.setCharacterSize(Constants::STAGE_SUMMARY_SCORE_FONT_SIZE);
     m_scoreText.setFillColor(sf::Color::White);
     m_scoreText.setString("Score: " + std::to_string(StageSummaryConfig::getInstance().levelScore));
     auto bounds = m_scoreText.getLocalBounds();
     m_scoreText.setOrigin(bounds.width/2.f, bounds.height/2.f);
-    m_scoreText.setPosition(window.getSize().x/2.f, 150.f);
+    m_scoreText.setPosition(window.getSize().x/2.f,
+                            Constants::STAGE_SUMMARY_SCORE_Y);
 
     m_nextButtonSprite.setTexture(manager.getTexture(TextureID::Button));
     auto b = m_nextButtonSprite.getLocalBounds();
     m_nextButtonSprite.setOrigin(b.width/2.f, b.height/2.f);
     m_nextButtonSprite.setScale(Constants::MENU_BUTTON_SCALE, Constants::MENU_BUTTON_SCALE);
-    m_nextButtonSprite.setPosition(window.getSize().x/2.f, window.getSize().y - 120.f);
+    m_nextButtonSprite.setPosition(window.getSize().x/2.f,
+                                   window.getSize().y - Constants::STAGE_SUMMARY_NEXT_BUTTON_OFFSET);
 
     m_nextText.setFont(font);
     m_nextText.setString("NEXT");
-    m_nextText.setCharacterSize(36);
+    m_nextText.setCharacterSize(Constants::STAGE_SUMMARY_NEXT_FONT_SIZE);
     auto nb = m_nextText.getLocalBounds();
     m_nextText.setOrigin(nb.width/2.f, nb.height/2.f + 10.0f);
     m_nextText.setPosition(m_nextButtonSprite.getPosition());
@@ -94,10 +96,10 @@ void StageSummaryState::setupItems() {
     auto& manager = getGame().getSpriteManager();
     auto& font = getGame().getFonts().get(Fonts::Main);
 
-    float startY = 250.f;
-    float spacing = 80.f;
-    float spriteX = getGame().getWindow().getSize().x/2.f - 100.f;
-    float textX = getGame().getWindow().getSize().x/2.f + 60.f;
+    float startY = Constants::STAGE_SUMMARY_ITEM_START_Y;
+    float spacing = Constants::STAGE_SUMMARY_ITEM_SPACING;
+    float spriteX = getGame().getWindow().getSize().x/2.f - Constants::STAGE_SUMMARY_SPRITE_X_OFFSET;
+    float textX = getGame().getWindow().getSize().x/2.f + Constants::STAGE_SUMMARY_TEXT_X_OFFSET;
 
     int index = 0;
     std::for_each(cfg.counts.begin(), cfg.counts.end(),
@@ -119,7 +121,7 @@ void StageSummaryState::setupItems() {
             auto tb = item.text.getLocalBounds();
             item.text.setOrigin(tb.width/2.f, tb.height/2.f);
             item.text.setPosition(textX, startY + spacing*index);
-            item.text.setCharacterSize(32);
+            item.text.setCharacterSize(Constants::STAGE_SUMMARY_ITEM_FONT_SIZE);
             m_items.push_back(std::move(item));
             ++index;
         });
