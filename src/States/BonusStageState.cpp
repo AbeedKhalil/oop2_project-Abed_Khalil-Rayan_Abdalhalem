@@ -117,6 +117,7 @@ namespace FishGame
         m_player->setWindowBounds(getGame().getWindow().getSize());
         m_player->setPosition(960.0f, 540.0f);
         m_player->initializeSprite(getGame().getSpriteManager());
+        m_player->setSoundPlayer(&getGame().getSoundPlayer());
 
         // Reserve containers
         m_entities.reserve(50);
