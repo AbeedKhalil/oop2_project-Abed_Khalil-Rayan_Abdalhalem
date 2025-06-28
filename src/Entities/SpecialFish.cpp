@@ -502,6 +502,8 @@ namespace FishGame
         m_isPuffing = true;
         m_puffTimer = sf::Time::Zero;
         m_puffPhase = PuffPhase::Inflating;
+        m_turning = false;
+        m_turnTimer = sf::Time::Zero;
 
         if (m_animator)
         {

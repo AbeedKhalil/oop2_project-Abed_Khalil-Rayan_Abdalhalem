@@ -316,7 +316,13 @@ namespace FishGame
         if (m_animator && m_renderMode == RenderMode::Sprite)
         {
             bool newFacingRight = m_velocity.x > 0.f;
-            if (!m_eating && std::abs(m_velocity.x) > 1.f && newFacingRight != m_facingRight)
+            bool inflatedPuffer = false;
+            if (const auto* puffer = dynamic_cast<const Pufferfish*>(this))
+            {
+                inflatedPuffer = puffer->isInflated();
+            }
+
+            if (!m_eating && std::abs(m_velocity.x) > 1.f && newFacingRight != m_facingRight && !inflatedPuffer)
             {
                 m_facingRight = newFacingRight;
                 std::string turn = m_facingRight ? "turnLeftToRight" : "turnRightToLeft";
@@ -345,9 +351,12 @@ namespace FishGame
                 m_turnTimer += deltaTime;
                 if (m_turnTimer.asSeconds() >= m_turnDuration)
                 {
-                    std::string swim = m_facingRight ? "swimRight" : "swimLeft";
-                    m_animator->play(swim);
-                    m_currentAnimation = swim;
+                    if (!inflatedPuffer)
+                    {
+                        std::string swim = m_facingRight ? "swimRight" : "swimLeft";
+                        m_animator->play(swim);
+                        m_currentAnimation = swim;
+                    }
                     m_turning = false;
                 }
             }
