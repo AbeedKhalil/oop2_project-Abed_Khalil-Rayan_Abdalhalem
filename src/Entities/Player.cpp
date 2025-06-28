@@ -607,8 +607,12 @@ void Player::applyPoisonEffect(sf::Time duration)
 
 void Player::updateStage()
 {
-        if (m_soundPlayer)
-            m_soundPlayer->play(SoundEffectID::PlayerGrow);
+    if (m_soundPlayer && m_currentStage == 1)
+        m_soundPlayer->play(SoundEffectID::StageIntro);
+
+    else if (m_soundPlayer)
+        m_soundPlayer->play(SoundEffectID::PlayerGrow);
+
         m_radius = static_cast<float>(m_baseRadius *
             std::pow(m_growthFactor, static_cast<float>(m_currentStage - 1)));
 
