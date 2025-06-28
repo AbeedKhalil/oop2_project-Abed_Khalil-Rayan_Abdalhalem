@@ -40,16 +40,43 @@ namespace FishGame
     void RandomWanderStrategy::update(Entity& entity, sf::Time deltaTime)
     {
         m_changeTimer -= deltaTime;
+
+        float speed = 100.f;
+        sf::Vector2f pos = entity.getPosition();
+        sf::Vector2f velocity = entity.getVelocity();
+
+        if (auto* fish = dynamic_cast<Fish*>(&entity))
+        {
+            speed = fish->getSpeed();
+
+            const sf::Vector2u win = fish->getWindowBounds();
+            const float margin = 60.f;
+
+            if ((pos.x < margin && velocity.x < 0.f) ||
+                (pos.x > win.x - margin && velocity.x > 0.f))
+            {
+                velocity.x = -velocity.x;
+            }
+
+            if ((pos.y < margin && velocity.y < 0.f) ||
+                (pos.y > win.y - margin && velocity.y > 0.f))
+            {
+                velocity.y = -velocity.y;
+            }
+        }
+
         if (m_changeTimer <= sf::Time::Zero)
         {
-            std::uniform_real_distribution<float> angleDist(0.f, 2.f * 3.14159265f);
+            std::uniform_real_distribution<float> angleDist(0.f, 2.f * Constants::PI);
             float angle = angleDist(m_engine);
-            float speed = 100.f;
-            if (auto* fish = dynamic_cast<Fish*>(&entity))
-                speed = fish->getSpeed();
-            entity.setVelocity(std::cos(angle) * speed, std::sin(angle) * speed);
+
+            velocity.x = std::cos(angle) * speed;
+            velocity.y = std::sin(angle) * speed;
+
             m_changeTimer = sf::seconds(1.f);
         }
+
+        entity.setVelocity(velocity);
         entity.updatePosition(deltaTime);
     }
 }
