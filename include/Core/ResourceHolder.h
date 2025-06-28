@@ -4,8 +4,6 @@
 #include <SFML/Audio.hpp>
 #include <memory>
 #include <unordered_map>
-#include <string>
-#include <stdexcept>
 #include <cassert>
 #include "GameExceptions.h"
 
@@ -90,7 +88,8 @@ void ResourceHolder<Resource, Identifier>::load(Identifier id, const std::string
         auto found = m_resourceMap.find(id);
         if (found == m_resourceMap.end())
         {
-            throw std::runtime_error("ResourceHolder::get - Resource not found");
+            throw ResourceNotFoundException(
+                "ResourceHolder::get - Resource not found");
         }
 
         assert(found->second != nullptr);
@@ -103,7 +102,8 @@ void ResourceHolder<Resource, Identifier>::load(Identifier id, const std::string
         auto found = m_resourceMap.find(id);
         if (found == m_resourceMap.end())
         {
-            throw std::runtime_error("ResourceHolder::get - Resource not found");
+            throw ResourceNotFoundException(
+                "ResourceHolder::get - Resource not found");
         }
 
         assert(found->second != nullptr);
@@ -116,7 +116,8 @@ void ResourceHolder<Resource, Identifier>::load(Identifier id, const std::string
         auto inserted = m_resourceMap.insert(std::make_pair(id, std::move(resource)));
         if (!inserted.second)
         {
-            throw std::runtime_error("ResourceHolder::insertResource - Failed to insert resource");
+            throw ResourceInsertionException(
+                "ResourceHolder::insertResource - Failed to insert resource");
         }
     }
 

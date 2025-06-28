@@ -1,5 +1,4 @@
 #include "Game.h"
-#include "SpriteManager.h"
 #include "IntroState.h"
 #include "MenuState.h"
 #include "PlayState.h"
@@ -7,10 +6,6 @@
 #include "GameOptionsState.h"
 #include "StageIntroState.h"
 #include "StageSummaryState.h"
-#include "MusicPlayer.h"
-#include "SoundPlayer.h"
-#include <algorithm>
-#include "GameExceptions.h"
 
 namespace FishGame
 {

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <SFML/Graphics.hpp>
 #include <algorithm>
 #include <optional>
 #include <functional>
