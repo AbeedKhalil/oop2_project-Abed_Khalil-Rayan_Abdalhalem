@@ -1,5 +1,8 @@
 #include "SoundPlayer.h"
 #include "GameExceptions.h"
+#include <future>
+#include <vector>
+#include <utility>
 
 namespace FishGame {
 

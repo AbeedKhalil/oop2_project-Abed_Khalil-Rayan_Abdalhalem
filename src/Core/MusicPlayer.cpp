@@ -1,6 +1,9 @@
 #include "MusicPlayer.h"
 #include "GameExceptions.h"
 #include <chrono>
+#include <future>
+#include <vector>
+#include <utility>
 
 namespace FishGame {
 
