@@ -2,6 +2,7 @@
 
 #include "BonusItem.h"
 #include "PowerUp.h"
+#include "GameConstants.h"
 #include <vector>
 #include <algorithm>
 
@@ -27,7 +28,7 @@ namespace FishGame
             , m_yDistribution(0.0f, 1.0f)  // Initialize with valid range
         {
             // Set up distributions with validation
-            float margin = 100.0f;
+            float margin = Constants::SAFE_SPAWN_PADDING;
             float maxX = static_cast<float>(windowSize.x) - margin;
             float maxY = static_cast<float>(windowSize.y) - margin;
 

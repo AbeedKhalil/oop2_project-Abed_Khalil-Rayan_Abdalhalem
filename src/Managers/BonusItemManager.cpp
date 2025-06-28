@@ -26,7 +26,7 @@ namespace FishGame
         m_spawnedItems.reserve(10);
 
         // Update position distributions based on window size with validation
-        float margin = 100.0f;
+        float margin = Constants::SAFE_SPAWN_PADDING;
         float maxX = static_cast<float>(windowSize.x) - margin;
         float maxY = static_cast<float>(windowSize.y) - margin;
 

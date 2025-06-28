@@ -11,6 +11,10 @@ namespace FishGame
         constexpr unsigned int WINDOW_HEIGHT = 1080;
         constexpr unsigned int FRAMERATE_LIMIT = 60;
 
+        // Derived window values
+        constexpr float WINDOW_CENTER_X = WINDOW_WIDTH / 2.0f;
+        constexpr float WINDOW_CENTER_Y = WINDOW_HEIGHT / 2.0f;
+
         // ==================== Mathematical Constants ====================
         constexpr float PI = 3.14159265359f;
         constexpr float DEG_TO_RAD = PI / 180.0f;
@@ -56,6 +60,7 @@ namespace FishGame
         constexpr float AI_DETECTION_RANGE = 80.0f;
         constexpr float AI_FLEE_RANGE = 65.0f;
         constexpr float SPAWN_MARGIN = 50.0f;
+        constexpr float SAFE_SPAWN_PADDING = SPAWN_MARGIN * 2.0f;
 
         // ==================== Spawn Rates ====================
         constexpr float BARRACUDA_SPAWN_RATE = 0.05f;
@@ -75,6 +80,8 @@ namespace FishGame
         constexpr float HUD_LINE_SPACING = 30.0f;
         constexpr float POWERUP_TEXT_X_OFFSET = 300.0f;
         constexpr float FPS_TEXT_X_OFFSET = 100.0f;
+        constexpr float HUD_EFFECTS_TEXT_X = 50.0f;
+        constexpr float HUD_EFFECTS_TEXT_Y_OFFSET = 100.0f;
 
         // ==================== System UI Positions ====================
         constexpr float FRENZY_Y_POSITION = 100.0f;
@@ -123,6 +130,40 @@ namespace FishGame
         constexpr float EXTRA_LIFE_HEARTBEAT_SPEED = 3.0f;
         constexpr float SCORE_DOUBLER_POWERUP_DURATION = 10.0f;
         constexpr float SCORE_DOUBLER_MULTIPLIER = 2.0f;
+
+        // ==================== Bonus Stage ====================
+        constexpr float BONUS_TIMER_BAR_WIDTH = 400.0f;
+        constexpr float BONUS_TIMER_BAR_HEIGHT = 20.0f;
+        constexpr float BONUS_TIMER_BAR_X = 50.0f;
+        constexpr float BONUS_TIMER_BAR_Y = 130.0f;
+        constexpr float BONUS_STAGE_PLAYER_X = WINDOW_CENTER_X;
+        constexpr float BONUS_STAGE_PLAYER_Y = WINDOW_CENTER_Y;
+        constexpr std::size_t BONUS_ENTITIES_RESERVE = 50;
+        constexpr std::size_t BONUS_ITEMS_RESERVE = 30;
+        constexpr std::size_t BONUS_HAZARDS_RESERVE = 20;
+        constexpr float BONUS_STAGE_TEXT_MARGIN_X = 50.0f;
+        constexpr float BONUS_STAGE_TIMER_Y = 100.0f;
+        constexpr float BONUS_STAGE_SCORE_Y = 150.0f;
+
+        // ==================== Stage Summary ====================
+        constexpr unsigned int STAGE_SUMMARY_SCORE_FONT_SIZE = 48;
+        constexpr unsigned int STAGE_SUMMARY_NEXT_FONT_SIZE = 36;
+        constexpr float STAGE_SUMMARY_SCORE_Y = 150.0f;
+        constexpr float STAGE_SUMMARY_NEXT_BUTTON_OFFSET = 120.0f;
+        constexpr float STAGE_SUMMARY_ITEM_START_Y = 250.0f;
+        constexpr float STAGE_SUMMARY_ITEM_SPACING = 80.0f;
+        constexpr float STAGE_SUMMARY_SPRITE_X_OFFSET = 100.0f;
+        constexpr float STAGE_SUMMARY_TEXT_X_OFFSET = 60.0f;
+        constexpr unsigned int STAGE_SUMMARY_ITEM_FONT_SIZE = 32;
+
+        // ==================== Stage Intro ====================
+        constexpr float STAGE_INTRO_NEXT_BUTTON_OFFSET = 110.0f;
+        constexpr unsigned int STAGE_INTRO_NEXT_FONT_SIZE = 36;
+        constexpr unsigned int STAGE_INTRO_ITEM_FONT_SIZE = 28;
+        constexpr float STAGE_INTRO_START_Y = 300.0f;
+        constexpr float STAGE_INTRO_LEFT_X = 300.0f;
+        constexpr float STAGE_INTRO_TEXT_X = 400.0f;
+        constexpr float STAGE_INTRO_ITEM_SPACING = 100.0f;
 
         // ==================== Colors - General ====================
         const sf::Color OCEAN_BLUE(0, 100, 150);
