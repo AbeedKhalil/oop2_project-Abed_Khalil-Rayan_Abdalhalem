@@ -5,7 +5,7 @@
 #include <vector>
 #include <cmath>
 #include <unordered_map>
-#include "Managers/SpriteManager.h"
+#include "SpriteManager.h"
 
 namespace FishGame
 {

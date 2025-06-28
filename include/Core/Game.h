@@ -1,14 +1,6 @@
 #pragma once
 
-#include <SFML/Graphics.hpp>
-#include <memory>
-#include <unordered_map>
-#include <vector>
-#include <functional>
-#include <type_traits>
-#include "ResourceHolder.h"
 #include "MusicPlayer.h"
-#include "SoundPlayer.h"
 #include "State.h"
 #include "Player.h"
 

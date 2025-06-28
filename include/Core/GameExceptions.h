@@ -25,4 +25,20 @@ namespace FishGame
         explicit StateNotFoundException(const std::string& message)
             : GameException(message) {}
     };
+
+    class ResourceNotFoundException : public GameException
+    {
+    public:
+        explicit ResourceNotFoundException(const std::string& message)
+            : GameException(message) {
+        }
+    };
+
+    class ResourceInsertionException : public GameException
+    {
+    public:
+        explicit ResourceInsertionException(const std::string& message)
+            : GameException(message) {
+        }
+    };
 }
