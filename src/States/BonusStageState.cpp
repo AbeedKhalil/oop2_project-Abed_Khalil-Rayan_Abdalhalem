@@ -81,14 +81,18 @@ namespace FishGame
         m_view.setCenter(m_worldSize * 0.5f);
 
         // Timer bar
-        m_timerBackground.setSize(sf::Vector2f(400.0f, 20.0f));
-        m_timerBackground.setPosition(50.0f, 130.0f);
+        m_timerBackground.setSize(sf::Vector2f(Constants::BONUS_TIMER_BAR_WIDTH,
+                                             Constants::BONUS_TIMER_BAR_HEIGHT));
+        m_timerBackground.setPosition(Constants::BONUS_TIMER_BAR_X,
+                                     Constants::BONUS_TIMER_BAR_Y);
         m_timerBackground.setFillColor(sf::Color(50, 50, 50));
         m_timerBackground.setOutlineColor(sf::Color::White);
         m_timerBackground.setOutlineThickness(2.0f);
 
-        m_timerBar.setSize(sf::Vector2f(400.0f, 20.0f));
-        m_timerBar.setPosition(50.0f, 130.0f);
+        m_timerBar.setSize(sf::Vector2f(Constants::BONUS_TIMER_BAR_WIDTH,
+                                       Constants::BONUS_TIMER_BAR_HEIGHT));
+        m_timerBar.setPosition(Constants::BONUS_TIMER_BAR_X,
+                               Constants::BONUS_TIMER_BAR_Y);
         m_timerBar.setFillColor(sf::Color::Green);
 
         // Configure stage based on type
@@ -115,14 +119,15 @@ namespace FishGame
 
         // Initialize player
         m_player->setWindowBounds(getGame().getWindow().getSize());
-        m_player->setPosition(960.0f, 540.0f);
+        m_player->setPosition(Constants::BONUS_STAGE_PLAYER_X,
+                              Constants::BONUS_STAGE_PLAYER_Y);
         m_player->initializeSprite(getGame().getSpriteManager());
         m_player->setSoundPlayer(&getGame().getSoundPlayer());
 
         // Reserve containers
-        m_entities.reserve(50);
-        m_bonusItems.reserve(30);
-        m_hazards.reserve(20);
+        m_entities.reserve(Constants::BONUS_ENTITIES_RESERVE);
+        m_bonusItems.reserve(Constants::BONUS_ITEMS_RESERVE);
+        m_hazards.reserve(Constants::BONUS_HAZARDS_RESERVE);
     }
 
     void BonusStageState::handleEvent(const sf::Event& event)
@@ -285,7 +290,8 @@ namespace FishGame
         m_timerText.setString(timerStream.str());
 
         float timerPercent = 1.0f - (m_timeElapsed.asSeconds() / m_timeLimit.asSeconds());
-        m_timerBar.setSize(sf::Vector2f(400.0f * timerPercent, 20.0f));
+        m_timerBar.setSize(sf::Vector2f(Constants::BONUS_TIMER_BAR_WIDTH * timerPercent,
+                                        Constants::BONUS_TIMER_BAR_HEIGHT));
 
         if (timerPercent < 0.3f)
         {
@@ -588,8 +594,8 @@ namespace FishGame
         std::generate_n(std::back_inserter(m_entities), 2, [this, i = 0]() mutable {
             auto barracuda = std::make_unique<Barracuda>(m_playerLevel);
             float angle = (360.0f / 2.0f) * i * Constants::DEG_TO_RAD;
-            float x = 960.0f + std::cos(angle) * 500.0f;
-            float y = 540.0f + std::sin(angle) * 300.0f;
+            float x = Constants::WINDOW_CENTER_X + std::cos(angle) * 500.0f;
+            float y = Constants::WINDOW_CENTER_Y + std::sin(angle) * 300.0f;
             barracuda->setPosition(x, y);
             barracuda->setWindowBounds(getGame().getWindow().getSize());
             barracuda->initializeSprite(getGame().getSpriteManager());
