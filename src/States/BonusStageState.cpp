@@ -249,7 +249,8 @@ namespace FishGame
                 }
             });
 
-        ::FishGame::FishCollisionHandler::processFishHazardCollisions(m_entities, m_hazards);
+        ::FishGame::FishCollisionHandler::processFishHazardCollisions(
+            m_entities, m_hazards, &getGame().getSoundPlayer());
 
         // Process bomb explosions affecting entities
         ::FishGame::processBombExplosions(m_entities, m_hazards);
