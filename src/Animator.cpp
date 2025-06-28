@@ -26,11 +26,13 @@ void Animator::addClipRow(const std::string& name, int rowY, int startFrame, int
 {
     std::vector<IntRect> frames;
     frames.reserve(static_cast<std::size_t>(count));
-    for (int i = 0; i < count; ++i)
-    {
-        int idx = reverse ? startFrame + count - 1 - i : startFrame + i;
-        frames.emplace_back(m_startX + idx * m_frameW, rowY, m_frameW, m_frameH);
-    }
+    std::generate_n(std::back_inserter(frames), count,
+        [&, i = 0]() mutable
+        {
+            int idx = reverse ? startFrame + count - 1 - i : startFrame + i;
+            ++i;
+            return IntRect(m_startX + idx * m_frameW, rowY, m_frameW, m_frameH);
+        });
     addClip(name, frames, frameTime, loop, false, pingPong);
 }
 

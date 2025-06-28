@@ -601,16 +601,17 @@ namespace FishGame
 void BonusStageState::spawnTimePowerUp()
 {
     // Spawn a couple of time extensions at once to make the stage a bit easier
-    for (int i = 0; i < 2 && m_bonusItems.size() < 30; ++i)
-    {
-        auto power = std::make_unique<AddTimePowerUp>();
-        float x = m_xDist(m_randomEngine);
-        float y = m_yDist(m_randomEngine);
-        power->setPosition(x, y);
-        power->m_baseY = y;
-        power->initializeSprite(getGame().getSpriteManager());
-        m_bonusItems.push_back(std::move(power));
-    }
+    int spawnCount = std::min(2, static_cast<int>(30 - m_bonusItems.size()));
+    std::generate_n(std::back_inserter(m_bonusItems), spawnCount,
+        [this]() {
+            auto power = std::make_unique<AddTimePowerUp>();
+            float x = m_xDist(m_randomEngine);
+            float y = m_yDist(m_randomEngine);
+            power->setPosition(x, y);
+            power->m_baseY = y;
+            power->initializeSprite(getGame().getSpriteManager());
+            return power;
+        });
 }
 
 void BonusStageState::spawnStarfish()
