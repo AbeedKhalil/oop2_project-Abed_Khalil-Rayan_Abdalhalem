@@ -243,6 +243,10 @@ namespace FishGame
         bool m_respawnPending{false};
         sf::Time m_respawnTimer{sf::Time::Zero};
 
+        // Camera freeze when player dies
+        bool m_cameraFrozen{false};
+        sf::Vector2f m_cameraFreezePos;
+
         // Constants
         static constexpr float m_hazardSpawnInterval = 8.0f;
         static constexpr float m_extendedPowerUpInterval = 15.0f;
