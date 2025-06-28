@@ -2,6 +2,7 @@
 
 #include "BonusItem.h"
 #include "PowerUp.h"
+#include "GameConstants.h"
 #include <vector>
 #include <algorithm>
 
