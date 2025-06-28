@@ -17,3 +17,6 @@ configure_file ("SpeedEnd.wav" ${CMAKE_BINARY_DIR} COPYONLY)
 configure_file ("SpeedStart.wav" ${CMAKE_BINARY_DIR} COPYONLY)
 configure_file ("StageIntro.wav" ${CMAKE_BINARY_DIR} COPYONLY)
 configure_file ("StarPickup.wav" ${CMAKE_BINARY_DIR} COPYONLY)
+
+configure_file ("FeedingFrenzy.wav" ${CMAKE_BINARY_DIR} COPYONLY)
+configure_file ("SuperFrenzy.wav" ${CMAKE_BINARY_DIR} COPYONLY)
