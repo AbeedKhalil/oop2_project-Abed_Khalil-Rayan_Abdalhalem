@@ -105,17 +105,17 @@ namespace FishGame
         std::uniform_int_distribution<int> dirDist(0, 1);
 
         m_backgroundFish.resize(8);
-        for (auto& fish : m_backgroundFish)
-        {
-            float r = radiusDist(m_randomEngine);
-            fish.shape.setRadius(r);
-            fish.shape.setOrigin(r, r);
-            fish.shape.setFillColor(sf::Color(255, 255, 255, 150));
-            fish.shape.setPosition(xDist(m_randomEngine), yDist(m_randomEngine));
+        std::for_each(m_backgroundFish.begin(), m_backgroundFish.end(),
+            [&](BackgroundFish& fish) {
+                float r = radiusDist(m_randomEngine);
+                fish.shape.setRadius(r);
+                fish.shape.setOrigin(r, r);
+                fish.shape.setFillColor(sf::Color(255, 255, 255, 150));
+                fish.shape.setPosition(xDist(m_randomEngine), yDist(m_randomEngine));
 
-            float dir = dirDist(m_randomEngine) ? 1.f : -1.f;
-            fish.velocity = sf::Vector2f(dir * speedDist(m_randomEngine), 0.f);
-        }
+                float dir = dirDist(m_randomEngine) ? 1.f : -1.f;
+                fish.velocity = sf::Vector2f(dir * speedDist(m_randomEngine), 0.f);
+            });
     }
 
     void MenuState::handleEvent(const sf::Event& event)
@@ -291,17 +291,17 @@ namespace FishGame
     {
         auto size = getGame().getWindow().getSize();
 
-        for (auto& fish : m_backgroundFish)
-        {
-            fish.shape.move(fish.velocity * deltaTime.asSeconds());
-            sf::Vector2f pos = fish.shape.getPosition();
-            float r = fish.shape.getRadius();
-            if (fish.velocity.x > 0.f && pos.x - r > static_cast<float>(size.x))
-                pos.x = -r;
-            else if (fish.velocity.x < 0.f && pos.x + r < 0.f)
-                pos.x = static_cast<float>(size.x) + r;
-            fish.shape.setPosition(pos);
-        }
+        std::for_each(m_backgroundFish.begin(), m_backgroundFish.end(),
+            [&](BackgroundFish& fish) {
+                fish.shape.move(fish.velocity * deltaTime.asSeconds());
+                sf::Vector2f pos = fish.shape.getPosition();
+                float r = fish.shape.getRadius();
+                if (fish.velocity.x > 0.f && pos.x - r > static_cast<float>(size.x))
+                    pos.x = -r;
+                else if (fish.velocity.x < 0.f && pos.x + r < 0.f)
+                    pos.x = static_cast<float>(size.x) + r;
+                fish.shape.setPosition(pos);
+            });
     }
 
     void MenuState::updateOptionText()

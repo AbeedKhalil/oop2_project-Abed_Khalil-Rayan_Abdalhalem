@@ -2,6 +2,7 @@
 #include "Game.h"
 #include "MusicPlayer.h"
 #include <string>
+#include <algorithm>
 
 namespace {
 FishGame::TextureID backgroundForLevel(int level) {
@@ -162,27 +163,24 @@ void StageIntroState::setupItems() {
   float startY = 300.f;
   float xLeft = 300.f;
   float xText = 400.f;
-  for (std::size_t i = 0; i < m_items.size(); ++i) {
-    auto &item = m_items[i];
+  std::for_each(m_items.begin(), m_items.end(),
+      [&, i = std::size_t{0}](Item &item) mutable {
+        sf::IntRect rect = firstFrameRect(item.tex);
+        if (rect.width > 0)
+          item.sprite.setTextureRect(rect);
 
-    // Display only the first frame of the sprite sheet for fish
-    sf::IntRect rect = firstFrameRect(item.tex);
-    if (rect.width > 0)
-      item.sprite.setTextureRect(rect);
+        sf::FloatRect b = item.sprite.getLocalBounds();
+        item.sprite.setOrigin(b.width / 2.f, b.height / 2.f);
+        item.sprite.setPosition(xLeft, startY + i * 100.f);
 
-    sf::FloatRect b = item.sprite.getLocalBounds();
-    item.sprite.setOrigin(b.width / 2.f, b.height / 2.f);
-    item.sprite.setPosition(xLeft, startY + i * 100.f);
+        float scale = (item.tex == TextureID::Starfish) ? 0.02f : 0.75f;
+        item.sprite.setScale(scale, scale);
 
-    float scale = 0.75f;
-    if (item.tex == TextureID::Starfish)
-      scale = 0.02f;
-    item.sprite.setScale(scale, scale);
-
-    b = item.text.getLocalBounds();
-    item.text.setOrigin(0.f, b.height / 2.f);
-    item.text.setPosition(xText, startY + i * 100.f);
-  }
+        b = item.text.getLocalBounds();
+        item.text.setOrigin(0.f, b.height / 2.f);
+        item.text.setPosition(xText, startY + i * 100.f);
+        ++i;
+      });
 }
 
 void StageIntroState::handleEvent(const sf::Event &event) {
