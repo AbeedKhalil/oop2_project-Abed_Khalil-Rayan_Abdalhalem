@@ -21,26 +21,28 @@ namespace FishGame
         m_sprites[0].setTexture(manager.getTexture(TextureID::Intro1));
         m_sprites[1].setTexture(manager.getTexture(TextureID::Intro2));
 
-        for (auto& sprite : m_sprites)
+        std::for_each(m_sprites.begin(), m_sprites.end(), [&](sf::Sprite& sprite)
         {
             auto size = sprite.getTexture()->getSize();
             sprite.setScale(
                 static_cast<float>(window.getSize().x) / size.x,
                 static_cast<float>(window.getSize().y) / size.y);
-        }
+        });
 
         m_currentIndex = 0;
         m_elapsed = sf::Time::Zero;
         m_fadeTime = 0.f;
         m_isFading = false;
-        for (auto& sprite : m_sprites)
+        std::for_each(m_sprites.begin(), m_sprites.end(), [](sf::Sprite& sprite)
+        {
             sprite.setColor(sf::Color::White);
+        });
     }
 
     void IntroState::handleEvent(const sf::Event& event)
     {
-        if (event.type == sf::Event::KeyPressed ||
-            event.type == sf::Event::MouseButtonPressed)
+        if (event.type == sf::Event::KeyPressed &&
+            event.key.code == sf::Keyboard::Enter)
         {
             deferAction([this]() {
                 requestStackPop();

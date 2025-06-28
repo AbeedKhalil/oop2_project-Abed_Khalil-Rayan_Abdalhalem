@@ -2,6 +2,7 @@
 #include "Game.h"
 #include "MusicPlayer.h"
 #include "StageIntroState.h"
+#include <algorithm>
 
 namespace {
 using FishGame::TextureID;
@@ -99,29 +100,29 @@ void StageSummaryState::setupItems() {
     float textX = getGame().getWindow().getSize().x/2.f + 60.f;
 
     int index = 0;
-    for (const auto& kv : cfg.counts) {
-        Item item;
-        item.sprite.setTexture(manager.getTexture(kv.first));
-        sf::IntRect rect = firstFrameRect(kv.first);
-        if (rect.width > 0) item.sprite.setTextureRect(rect);
-        auto b = item.sprite.getLocalBounds();
-        item.sprite.setOrigin(b.width/2.f, b.height/2.f);
-        item.sprite.setPosition(spriteX, startY + spacing*index);
+    std::for_each(cfg.counts.begin(), cfg.counts.end(),
+        [&](const auto& kv) {
+            Item item;
+            item.sprite.setTexture(manager.getTexture(kv.first));
+            sf::IntRect rect = firstFrameRect(kv.first);
+            if (rect.width > 0)
+                item.sprite.setTextureRect(rect);
+            auto b = item.sprite.getLocalBounds();
+            item.sprite.setOrigin(b.width/2.f, b.height/2.f);
+            item.sprite.setPosition(spriteX, startY + spacing*index);
 
-        float scale = 0.5f;
-        if (kv.first == TextureID::Starfish)
-            scale = 0.02f;
-        item.sprite.setScale(scale, scale);
+            float scale = (kv.first == TextureID::Starfish) ? 0.02f : 0.5f;
+            item.sprite.setScale(scale, scale);
 
-        item.text.setFont(font);
-        item.text.setString(std::to_string(kv.second));
-        auto tb = item.text.getLocalBounds();
-        item.text.setOrigin(tb.width/2.f, tb.height/2.f);
-        item.text.setPosition(textX, startY + spacing*index);
-        item.text.setCharacterSize(32);
-        m_items.push_back(std::move(item));
-        ++index;
-    }
+            item.text.setFont(font);
+            item.text.setString(std::to_string(kv.second));
+            auto tb = item.text.getLocalBounds();
+            item.text.setOrigin(tb.width/2.f, tb.height/2.f);
+            item.text.setPosition(textX, startY + spacing*index);
+            item.text.setCharacterSize(32);
+            m_items.push_back(std::move(item));
+            ++index;
+        });
 }
 
 void StageSummaryState::handleEvent(const sf::Event& event) {
@@ -166,10 +167,10 @@ void StageSummaryState::render() {
     auto& window = getGame().getWindow();
     window.draw(m_overlaySprite);
     window.draw(m_scoreText);
-    for (auto& item : m_items) {
+    std::for_each(m_items.begin(), m_items.end(), [&window](const Item& item) {
         window.draw(item.sprite);
         window.draw(item.text);
-    }
+    });
     window.draw(m_nextButtonSprite);
     window.draw(m_nextText);
 }

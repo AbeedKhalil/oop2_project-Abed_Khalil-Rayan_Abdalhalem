@@ -1,5 +1,6 @@
 #include "SoundPlayer.h"
 #include "GameExceptions.h"
+#include <algorithm>
 
 namespace FishGame {
 
@@ -31,17 +32,17 @@ SoundPlayer::SoundPlayer()
     , m_volume(100.f)
 {
     m_soundBuffers.reserve(m_filenames.size());
-    for (const auto& [id, file] : m_filenames) {
+    std::for_each(m_filenames.begin(), m_filenames.end(), [this](const auto& p) {
         auto buffer = std::make_unique<sf::SoundBuffer>();
-        if (!buffer->loadFromFile(file)) {
-            throw ResourceLoadException("Failed to load sound: " + file);
+        if (!buffer->loadFromFile(p.second)) {
+            throw ResourceLoadException("Failed to load sound: " + p.second);
         }
-        m_soundBuffers.emplace(id, std::move(buffer));
-    }
+        m_soundBuffers.emplace(p.first, std::move(buffer));
+    });
 
-    for (auto& sound : m_sounds) {
+    std::for_each(m_sounds.begin(), m_sounds.end(), [this](sf::Sound& sound) {
         sound.setVolume(m_volume);
-    }
+    });
 }
 
 void SoundPlayer::play(SoundEffectID effect)
@@ -50,13 +51,13 @@ void SoundPlayer::play(SoundEffectID effect)
     if (it == m_soundBuffers.end())
         return;
 
-    for (auto& sound : m_sounds) {
-        if (sound.getStatus() != sf::Sound::Playing) {
-            sound.setBuffer(*it->second);
-            sound.setVolume(m_volume);
-            sound.play();
-            return;
-        }
+    auto soundIt = std::find_if(m_sounds.begin(), m_sounds.end(),
+        [](const sf::Sound& s) { return s.getStatus() != sf::Sound::Playing; });
+    if (soundIt != m_sounds.end()) {
+        soundIt->setBuffer(*it->second);
+        soundIt->setVolume(m_volume);
+        soundIt->play();
+        return;
     }
 
     // If all sounds are playing, restart the first one
@@ -69,9 +70,9 @@ void SoundPlayer::play(SoundEffectID effect)
 void SoundPlayer::setVolume(float volume)
 {
     m_volume = volume;
-    for (auto& sound : m_sounds) {
+    std::for_each(m_sounds.begin(), m_sounds.end(), [this](sf::Sound& sound) {
         sound.setVolume(m_volume);
-    }
+    });
 }
 
 } // namespace FishGame
