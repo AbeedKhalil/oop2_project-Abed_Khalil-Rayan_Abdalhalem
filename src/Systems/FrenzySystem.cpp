@@ -154,6 +154,8 @@ namespace FishGame
             {
                 setFrenzyLevel(FrenzyLevel::Frenzy);
                 m_frenzyTimer = sf::seconds(m_frenzyMaintainTime);
+                // Reset history so player must eat additional fish for Super Frenzy
+                m_eatHistory.clear();
             }
         }
         else if (m_currentLevel == FrenzyLevel::Frenzy && recentEats >= m_requiredFishCount)
