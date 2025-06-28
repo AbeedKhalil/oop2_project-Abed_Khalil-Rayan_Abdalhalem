@@ -17,7 +17,6 @@
 #include "BonusStageState.h"
 #include "GameConstants.h"
 #include "StateUtils.h"
-#include "PauseState.h"
 #include <vector>
 #include <random>
 #include <unordered_map>

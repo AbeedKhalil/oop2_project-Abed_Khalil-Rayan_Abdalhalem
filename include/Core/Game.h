@@ -11,7 +11,6 @@
 #include "SoundPlayer.h"
 #include "State.h"
 #include "Player.h"
-#include "GameConstants.h"
 
 namespace FishGame
 {
