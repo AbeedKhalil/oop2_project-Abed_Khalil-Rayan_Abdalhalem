@@ -73,6 +73,24 @@ namespace FishGame
     private:
         static void handleFishToFishCollision(Fish& fish1, Fish& fish2)
         {
+            // Pufferfish pushback
+            if (auto* puffer1 = dynamic_cast<Pufferfish*>(&fish1))
+            {
+                if (puffer1->isInflated() && puffer1->canPushEntity(fish2))
+                {
+                    puffer1->pushEntity(fish2);
+                    return;
+                }
+            }
+            if (auto* puffer2 = dynamic_cast<Pufferfish*>(&fish2))
+            {
+                if (puffer2->isInflated() && puffer2->canPushEntity(fish1))
+                {
+                    puffer2->pushEntity(fish1);
+                    return;
+                }
+            }
+
             // Handle eating
             if (fish1.canEat(fish2))
             {
