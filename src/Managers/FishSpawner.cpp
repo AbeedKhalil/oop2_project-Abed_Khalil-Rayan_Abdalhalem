@@ -19,9 +19,6 @@ namespace FishGame
         , m_randomEngine(std::random_device{}())
         , m_spriteManager(&spriteManager)
     {
-        // Initialize spawn configurations for each level
-        // Emphasize medium fish by reducing small fish spawn rates
-
         // Level 1: Easier difficulty
         // Fewer small fish and more medium fish
         m_smallFishConfig[1] = { 0.04f, 100.0f, m_windowSize.y - 100.0f};

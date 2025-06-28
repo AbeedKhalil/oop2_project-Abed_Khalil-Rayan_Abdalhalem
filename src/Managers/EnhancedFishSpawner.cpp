@@ -15,7 +15,7 @@ namespace FishGame
         , m_specialConfig()
         , m_schoolingSystem(nullptr)
         , m_schoolChanceDist(0.0f, 1.0f)
-        , m_schoolSizeDist(1, 2)  // Reduced from (2, 3) to (1, 2) - spawn fewer small fish
+        , m_schoolSizeDist(2, 3)
     {
         // Initialize special spawn timers
         m_specialSpawnTimers["barracuda"] = sf::Time::Zero;
