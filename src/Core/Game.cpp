@@ -134,7 +134,7 @@ namespace FishGame
             };
 
         // Update states until one returns false (blocks updates below)
-        [[maybe_unused]] auto it = std::find_if(m_stateStack.rbegin(), m_stateStack.rend(),
+        std::find_if(m_stateStack.rbegin(), m_stateStack.rend(),
             [&updateState](const StatePtr& state)
             {
                 return !updateState(state);
