@@ -504,6 +504,8 @@ namespace FishGame
                             m_objective.currentCount++;
                             m_bonusScore += m_objective.pointsPerItem;
 
+                            getGame().getSoundPlayer().play(SoundEffectID::Bite1);
+
                             // Update objective text
                             std::ostringstream objStream;
                             objStream << m_objective.description << " (" << m_objective.currentCount
