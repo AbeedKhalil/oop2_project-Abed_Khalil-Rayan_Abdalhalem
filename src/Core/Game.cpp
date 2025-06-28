@@ -4,7 +4,6 @@
 #include "MenuState.h"
 #include "PlayState.h"
 #include "GameOverState.h"
-#include "PauseState.h"
 #include "GameOptionsState.h"
 #include "StageIntroState.h"
 #include "StageSummaryState.h"
@@ -236,7 +235,6 @@ namespace FishGame
 
         // TODO: Register additional states as they are implemented
         registerState<GameOptionsState>(StateID::GameOptions);
-        registerState<PauseState>(StateID::Pause);
         registerState<GameOverState>(StateID::GameOver);
         // registerState<CreditsState>(StateID::Credits);
     }
