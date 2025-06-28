@@ -680,7 +680,8 @@ namespace FishGame
             });
 
         // Fish vs hazards - using the global FishCollisionHandler from FishCollisionHandler.h
-        ::FishGame::FishCollisionHandler::processFishHazardCollisions(m_entities, m_hazards);
+        ::FishGame::FishCollisionHandler::processFishHazardCollisions(
+            m_entities, m_hazards, &getGame().getSoundPlayer());
 
         // Bomb explosions
         processBombExplosions(m_entities, m_hazards);

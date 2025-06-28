@@ -3,6 +3,7 @@
 #include "Fish.h"
 #include "SpecialFish.h"
 #include "Hazard.h"
+#include "SoundPlayer.h"
 #include "CollisionDetector.h"
 #include <type_traits>
 #include <functional>
@@ -45,23 +46,24 @@ namespace FishGame
 
         // Template method for fish-to-hazard collisions
         template<typename EntityContainer, typename HazardContainer>
-        static void processFishHazardCollisions(EntityContainer& entities, HazardContainer& hazards)
+        static void processFishHazardCollisions(EntityContainer& entities,
+            HazardContainer& hazards, SoundPlayer* soundPlayer = nullptr)
         {
             std::for_each(entities.begin(), entities.end(),
-                [&hazards](auto& entity)
+                [&hazards, soundPlayer](auto& entity)
                 {
                     if (auto* fish = dynamic_cast<Fish*>(entity.get()))
                     {
                         if (!fish->isAlive()) return;
 
                         std::for_each(hazards.begin(), hazards.end(),
-                            [fish](auto& hazard)
+                            [fish, soundPlayer](auto& hazard)
                             {
                                 if (!hazard->isAlive()) return;
 
                                 if (CollisionDetector::checkCircleCollision(*fish, *hazard))
                                 {
-                                    handleFishToHazardCollision(*fish, *hazard);
+                                    handleFishToHazardCollision(*fish, *hazard, soundPlayer);
                                 }
                             });
                     }
@@ -94,14 +96,19 @@ namespace FishGame
             }
         }
 
-        static void handleFishToHazardCollision(Fish& fish, Hazard& hazard)
+        static void handleFishToHazardCollision(Fish& fish, Hazard& hazard, SoundPlayer* soundPlayer)
         {
             switch (hazard.getHazardType())
             {
             case HazardType::Bomb:
                 if (auto* bomb = dynamic_cast<Bomb*>(&hazard))
                 {
+                    bool wasExploding = bomb->isExploding();
                     bomb->onContact(fish);
+                    if (!wasExploding && bomb->isExploding() && soundPlayer)
+                    {
+                        soundPlayer->play(SoundEffectID::MineExplode);
+                    }
                 }
                 break;
 
