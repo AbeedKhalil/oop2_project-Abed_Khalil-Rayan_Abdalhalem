@@ -41,8 +41,8 @@ namespace FishGame
 
     void IntroState::handleEvent(const sf::Event& event)
     {
-        if (event.type == sf::Event::KeyPressed ||
-            event.type == sf::Event::MouseButtonPressed)
+        if (event.type == sf::Event::KeyPressed &&
+            event.key.code == sf::Keyboard::Enter)
         {
             deferAction([this]() {
                 requestStackPop();
