@@ -22,16 +22,28 @@ MusicPlayer::MusicPlayer()
     // Reserve to avoid rehashing during preload
     m_musicTracks.reserve(m_filenames.size());
 
-    // Pre-load music files for smoother playback
+    // Load music tracks asynchronously for faster startup
+    std::vector<std::future<std::pair<MusicID, MusicPtr>>> futures;
+    futures.reserve(m_filenames.size());
+
     for (const auto& [id, file] : m_filenames)
     {
-        auto music = std::make_unique<sf::Music>();
-        if (!music->openFromFile(file))
-        {
-            throw ResourceLoadException("Failed to load music: " + file);
-        }
-        music->setVolume(m_volume);
-        m_musicTracks.emplace(id, std::move(music));
+        futures.emplace_back(std::async(std::launch::async,
+            [id, file]() {
+                auto music = std::make_unique<sf::Music>();
+                if (!music->openFromFile(file))
+                {
+                    throw ResourceLoadException("Failed to load music: " + file);
+                }
+                return std::make_pair(id, std::move(music));
+            }));
+    }
+
+    for (auto& fut : futures)
+    {
+        auto result = fut.get();
+        result.second->setVolume(m_volume);
+        m_musicTracks.emplace(result.first, std::move(result.second));
     }
 }
 

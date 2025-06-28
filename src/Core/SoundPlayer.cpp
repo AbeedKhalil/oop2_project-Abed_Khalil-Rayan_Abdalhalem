@@ -31,12 +31,25 @@ SoundPlayer::SoundPlayer()
     , m_volume(100.f)
 {
     m_soundBuffers.reserve(m_filenames.size());
+
+    // Load buffers in parallel using std::async for faster startup
+    std::vector<std::future<std::pair<SoundEffectID, BufferPtr>>> futures;
+    futures.reserve(m_filenames.size());
+
     for (const auto& [id, file] : m_filenames) {
-        auto buffer = std::make_unique<sf::SoundBuffer>();
-        if (!buffer->loadFromFile(file)) {
-            throw ResourceLoadException("Failed to load sound: " + file);
-        }
-        m_soundBuffers.emplace(id, std::move(buffer));
+        futures.emplace_back(std::async(std::launch::async,
+            [id, file]() {
+                auto buffer = std::make_unique<sf::SoundBuffer>();
+                if (!buffer->loadFromFile(file)) {
+                    throw ResourceLoadException("Failed to load sound: " + file);
+                }
+                return std::make_pair(id, std::move(buffer));
+            }));
+    }
+
+    for (auto& fut : futures) {
+        auto result = fut.get();
+        m_soundBuffers.emplace(result.first, std::move(result.second));
     }
 
     for (auto& sound : m_sounds) {
