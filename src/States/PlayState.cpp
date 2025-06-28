@@ -59,6 +59,8 @@ namespace FishGame
     {
         initializeSystems();
         m_player->setSoundPlayer(&getGame().getSoundPlayer());
+        if (m_frenzySystem)
+            m_frenzySystem->setSoundPlayer(&getGame().getSoundPlayer());
 
         // Reserve capacity for containers
         m_entities.reserve(Constants::MAX_ENTITIES);
