@@ -52,7 +52,8 @@ namespace FishGame
         , m_randomEngine(std::random_device{}())
         , m_angleDist(0.0f, 360.0f)
         , m_speedDist(Constants::MIN_PARTICLE_SPEED, Constants::MAX_PARTICLE_SPEED)
-        , m_positionDist(100.0f, 1820.0f)
+        , m_positionDist(Constants::SAFE_SPAWN_PADDING,
+            Constants::WINDOW_WIDTH - Constants::SAFE_SPAWN_PADDING)
         , m_hazardTypeDist(0, 1)
         , m_powerUpTypeDist(0, 2)
         , m_initialized(false)
@@ -192,7 +193,9 @@ namespace FishGame
         initText(m_hud.fpsText, Constants::HUD_FONT_SIZE,
             sf::Vector2f(window.getSize().x - Constants::FPS_TEXT_X_OFFSET, Constants::HUD_MARGIN));
         initText(m_hud.effectsText, 18,
-            sf::Vector2f(50.0f, window.getSize().y - 100.0f), sf::Color::Yellow);
+            sf::Vector2f(Constants::HUD_EFFECTS_TEXT_X,
+                window.getSize().y - Constants::HUD_EFFECTS_TEXT_Y_OFFSET),
+            sf::Color::Yellow);
 
         // Special handling for message text
         m_hud.messageText.setFont(font);
@@ -616,7 +619,9 @@ namespace FishGame
     sf::Vector2f PlayState::generateRandomPosition()
     {
         return sf::Vector2f(m_positionDist(m_randomEngine),
-            std::uniform_real_distribution<float>(100.0f, 980.0f)(m_randomEngine));
+            std::uniform_real_distribution<float>(Constants::SAFE_SPAWN_PADDING,
+                Constants::WINDOW_HEIGHT - Constants::SAFE_SPAWN_PADDING)(
+                    m_randomEngine));
     }
 
     void PlayState::checkCollisions()

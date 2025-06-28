@@ -42,8 +42,10 @@ namespace FishGame
         , m_timerBackground()
         , m_randomEngine(static_cast<std::mt19937::result_type>(
             std::chrono::steady_clock::now().time_since_epoch().count()))
-        , m_xDist(100.0f, 1820.0f)
-        , m_yDist(100.0f, 980.0f)
+        , m_xDist(Constants::SAFE_SPAWN_PADDING,
+            Constants::WINDOW_WIDTH - Constants::SAFE_SPAWN_PADDING)
+        , m_yDist(Constants::SAFE_SPAWN_PADDING,
+            Constants::WINDOW_HEIGHT - Constants::SAFE_SPAWN_PADDING)
     {
         // Initialize UI
         auto& font = getGame().getFonts().get(Fonts::Main);
@@ -51,17 +53,20 @@ namespace FishGame
         m_objectiveText.setFont(font);
         m_objectiveText.setCharacterSize(32);
         m_objectiveText.setFillColor(sf::Color::Yellow);
-        m_objectiveText.setPosition(50.0f, 50.0f);
+        m_objectiveText.setPosition(Constants::BONUS_STAGE_TEXT_MARGIN_X,
+            Constants::BONUS_STAGE_TEXT_MARGIN_X);
 
         m_timerText.setFont(font);
         m_timerText.setCharacterSize(Constants::HUD_FONT_SIZE);
         m_timerText.setFillColor(sf::Color::White);
-        m_timerText.setPosition(50.0f, 100.0f);
+        m_timerText.setPosition(Constants::BONUS_STAGE_TEXT_MARGIN_X,
+            Constants::BONUS_STAGE_TIMER_Y);
 
         m_scoreText.setFont(font);
         m_scoreText.setCharacterSize(28);
         m_scoreText.setFillColor(sf::Color::Green);
-        m_scoreText.setPosition(50.0f, 150.0f);
+        m_scoreText.setPosition(Constants::BONUS_STAGE_TEXT_MARGIN_X,
+            Constants::BONUS_STAGE_SCORE_Y);
 
         m_instructionText.setFont(font);
         m_instructionText.setCharacterSize(30);
@@ -366,7 +371,8 @@ namespace FishGame
 
             sf::FloatRect bounds = completeText.getLocalBounds();
             completeText.setOrigin(bounds.width / 2.0f, bounds.height / 2.0f);
-            completeText.setPosition(960.0f, 540.0f);
+            completeText.setPosition(Constants::WINDOW_CENTER_X,
+                Constants::WINDOW_CENTER_Y);
 
             window.draw(completeText);
         }
@@ -578,7 +584,8 @@ namespace FishGame
         std::generate_n(std::back_inserter(m_entities), 5, [this] {
             auto fish = std::make_unique<SmallFish>(m_playerLevel);
             bool fromLeft = m_randomEngine() % 2 == 0;
-            float x = fromLeft ? -50.0f : 1970.0f;
+            float x = fromLeft ? -Constants::SPAWN_MARGIN :
+                Constants::WINDOW_WIDTH + Constants::SPAWN_MARGIN;
             float y = m_yDist(m_randomEngine);
             fish->setPosition(x, y);
             fish->setDirection(fromLeft ? 1.0f : -1.0f, 0.0f);
