@@ -58,6 +58,7 @@ namespace FishGame
         , m_initialized(false)
     {
         initializeSystems();
+        m_player->setSoundPlayer(&getGame().getSoundPlayer());
 
         // Reserve capacity for containers
         m_entities.reserve(Constants::MAX_ENTITIES);
@@ -721,6 +722,7 @@ namespace FishGame
                 if (!state->m_player->hasRecentlyTakenDamage())
                 {
                     puffer->pushEntity(*state->m_player);
+                    state->getGame().getSoundPlayer().play(SoundEffectID::PufferBounce);
                     int penalty = Constants::PUFFERFISH_SCORE_PENALTY;
                     state->m_scoreSystem->setCurrentScore(
                         std::max(0, state->m_scoreSystem->getCurrentScore() - penalty)
@@ -734,6 +736,8 @@ namespace FishGame
                 if (state->m_player->attemptEat(fish))
                 {
                     state->m_levelCounts[puffer->getTextureID()]++;
+                    SoundEffectID effect = SoundEffectID::Bite2;
+                    state->getGame().getSoundPlayer().play(effect);
                     fish.destroy();
                     state->createParticleEffect(fish.getPosition(), Constants::EAT_PARTICLE_COLOR);
                 }
@@ -750,6 +754,7 @@ namespace FishGame
             if (state->m_player->canEat(fish) && state->m_player->attemptEat(fish))
             {
                 state->m_levelCounts[angelfish->getTextureID()]++;
+                state->getGame().getSoundPlayer().play(SoundEffectID::Bite1);
                 state->createParticleEffect(fish.getPosition(),
                     Constants::ANGELFISH_PARTICLE_COLOR, Constants::ANGELFISH_PARTICLE_COUNT);
                 fish.destroy();
@@ -762,6 +767,7 @@ namespace FishGame
                 state->reverseControls();
                 state->m_controlReverseTimer = poison->getPoisonDuration();
                 state->m_player->applyPoisonEffect(poison->getPoisonDuration());
+                state->getGame().getSoundPlayer().play(SoundEffectID::PlayerPoison);
                 state->createParticleEffect(fish.getPosition(), sf::Color::Magenta, 15);
                 state->createParticleEffect(state->m_player->getPosition(), sf::Color::Magenta, 10);
                 state->m_levelCounts[poison->getTextureID()]++;
@@ -776,6 +782,20 @@ namespace FishGame
             if (playerCanEat && state->m_player->attemptEat(fish))
             {
                 state->m_levelCounts[regularFish->getTextureID()]++;
+                SoundEffectID effect = SoundEffectID::Bite1;
+                switch (regularFish->getSize())
+                {
+                case FishSize::Small:
+                    effect = SoundEffectID::Bite1;
+                    break;
+                case FishSize::Medium:
+                    effect = SoundEffectID::Bite2;
+                    break;
+                case FishSize::Large:
+                    effect = SoundEffectID::Bite3;
+                    break;
+                }
+                state->getGame().getSoundPlayer().play(effect);
                 fish.destroy();
                 state->createParticleEffect(fish.getPosition(), Constants::EAT_PARTICLE_COLOR);
             }
@@ -803,6 +823,7 @@ namespace FishGame
             {
                 state->m_levelCounts[TextureID::Starfish]++;
                 state->m_scoreSystem->recordFish(TextureID::Starfish);
+                state->getGame().getSoundPlayer().play(SoundEffectID::StarPickup);
             }
             int frenzyMultiplier = state->m_frenzySystem->getMultiplier();
             float powerUpMultiplier = state->m_powerUpManager->getScoreMultiplier();
@@ -825,6 +846,7 @@ namespace FishGame
             if (auto* bomb = dynamic_cast<Bomb*>(&hazard))
             {
                 bomb->onContact(*state->m_player);
+                state->getGame().getSoundPlayer().play(SoundEffectID::MineExplode);
                 state->m_player->takeDamage();
                 state->handlePlayerDeath();
                 state->createParticleEffect(state->m_player->getPosition(), sf::Color::Red, 20);
@@ -838,6 +860,7 @@ namespace FishGame
                 state->m_isPlayerStunned = true;
                 state->m_stunTimer = jelly->getStunDuration();
                 state->m_player->setVelocity(0.0f, 0.0f);
+                state->getGame().getSoundPlayer().play(SoundEffectID::PlayerStunned);
                 state->createParticleEffect(state->m_player->getPosition(), sf::Color(255, 255, 0, 150), 10);
             }
             break;
@@ -861,17 +884,20 @@ namespace FishGame
         case PowerUpType::SpeedBoost:
             m_powerUpManager->activatePowerUp(powerUp.getPowerUpType(), powerUp.getDuration());
             m_player->applySpeedBoost(m_powerUpManager->getSpeedMultiplier(), powerUp.getDuration());
+            getGame().getSoundPlayer().play(SoundEffectID::SpeedStart);
             createParticleEffect(powerUp.getPosition(), Constants::SPEED_BOOST_COLOR);
             break;
 
         case PowerUpType::Freeze:
             m_powerUpManager->activatePowerUp(powerUp.getPowerUpType(), powerUp.getDuration());
             applyFreeze();
+            // sound handled in applyFreeze
             createParticleEffect(powerUp.getPosition(), sf::Color::Cyan, 20);
             break;
 
         case PowerUpType::ExtraLife:
             m_gameState.playerLives++;
+            getGame().getSoundPlayer().play(SoundEffectID::LifePowerup);
             createParticleEffect(powerUp.getPosition(), sf::Color::Green, 15);
             break;
 
@@ -892,6 +918,7 @@ namespace FishGame
         else if (oyster->canBeEaten())
         {
             oyster->onCollect();
+            getGame().getSoundPlayer().play(SoundEffectID::OysterPearl);
 
             int points = oyster->hasBlackPearl()
                 ? Constants::BLACK_OYSTER_POINTS
@@ -915,6 +942,7 @@ namespace FishGame
     {
         m_isPlayerFrozen = true;
         m_freezeTimer = sf::seconds(5.0f);
+        getGame().getSoundPlayer().play(SoundEffectID::FreezePowerup);
 
         StateUtils::applyToEntities(m_entities, [](Entity& entity) {
             if (auto* fish = dynamic_cast<Fish*>(&entity))

@@ -4,6 +4,7 @@
 #include "PowerUp.h"
 #include "SpecialFish.h"
 #include "Animator.h"
+#include "SoundPlayer.h"
 #include "CollisionDetector.h"
 #include "GenericFish.h"
 #include <SFML/Window.hpp>
@@ -33,6 +34,7 @@ namespace FishGame
         , m_powerUpManager(nullptr)
         , m_scoreSystem(nullptr)
         , m_spriteManager(nullptr)
+        , m_soundPlayer(nullptr)
         , m_invulnerabilityTimer(sf::Time::Zero)
         , m_damageCooldown(sf::Time::Zero)
         , m_speedMultiplier(1.0f)
@@ -109,7 +111,11 @@ namespace FishGame
         if (m_damageCooldown > sf::Time::Zero)
             m_damageCooldown -= deltaTime;
         if (m_speedBoostTimer > sf::Time::Zero)
+        {
             m_speedBoostTimer -= deltaTime;
+            if (m_speedBoostTimer <= sf::Time::Zero && m_soundPlayer)
+                m_soundPlayer->play(SoundEffectID::SpeedEnd);
+        }
 
         // Handle input
         handleInput();
@@ -516,19 +522,25 @@ namespace FishGame
         m_invulnerabilityTimer = m_invulnerabilityDuration;
         m_controlsReversed = false;
         m_poisonColorTimer = sf::Time::Zero;
+        if (m_soundPlayer)
+            m_soundPlayer->play(SoundEffectID::PlayerSpawn);
     }
 
-    void Player::applySpeedBoost(float multiplier, sf::Time duration)
-    {
-        m_speedMultiplier = multiplier;
-        m_speedBoostTimer = duration;
-    }
+void Player::applySpeedBoost(float multiplier, sf::Time duration)
+{
+    m_speedMultiplier = multiplier;
+    m_speedBoostTimer = duration;
+    if (m_soundPlayer)
+        m_soundPlayer->play(SoundEffectID::SpeedStart);
+}
 
-    void Player::applyPoisonEffect(sf::Time duration)
-    {
-        m_poisonColorTimer = duration;
-        m_controlsReversed = true;
-    }
+void Player::applyPoisonEffect(sf::Time duration)
+{
+    m_poisonColorTimer = duration;
+    m_controlsReversed = true;
+    if (m_soundPlayer)
+        m_soundPlayer->play(SoundEffectID::PlayerPoison);
+}
 
     void Player::triggerEatEffect()
     {
@@ -593,8 +605,14 @@ namespace FishGame
         }
     }
 
-    void Player::updateStage()
-    {
+void Player::updateStage()
+{
+    if (m_soundPlayer && m_currentStage == 1)
+        m_soundPlayer->play(SoundEffectID::StageIntro);
+
+    else if (m_soundPlayer)
+        m_soundPlayer->play(SoundEffectID::PlayerGrow);
+
         m_radius = static_cast<float>(m_baseRadius *
             std::pow(m_growthFactor, static_cast<float>(m_currentStage - 1)));
 
