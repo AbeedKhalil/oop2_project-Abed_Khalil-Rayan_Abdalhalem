@@ -431,6 +431,13 @@ namespace FishGame
         if (!otherFish)
             return false;
 
+        // Special case: don't eat an inflated pufferfish
+        if (const auto* puffer = dynamic_cast<const Pufferfish*>(otherFish))
+        {
+            if (puffer->isInflated())
+                return false;
+        }
+
         // Can eat smaller fish
         return static_cast<int>(m_size) > static_cast<int>(otherFish->getSize());
     }
