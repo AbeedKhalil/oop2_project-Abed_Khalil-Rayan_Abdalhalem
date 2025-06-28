@@ -19,9 +19,7 @@ namespace FishGame
         float pufferfishSpawnRate = 0.15f;
         float angelfishSpawnRate = 0.2f;
         float poisonFishSpawnRate = 0.12f;
-        // Chance to spawn a school of small fish. Keeping this low makes
-        // individual spawns more likely than schools by default.
-        float schoolSpawnChance = 0.02f;
+        float schoolSpawnChance = 0.05f;
     };
 
     class EnhancedFishSpawner : public FishSpawner
