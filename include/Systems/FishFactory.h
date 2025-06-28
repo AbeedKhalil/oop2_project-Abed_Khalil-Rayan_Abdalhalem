@@ -40,24 +40,6 @@ namespace FishGame
             }
         }
 
-        // Create with custom attributes from another fish
-        template<typename SourceFish>
-        static std::unique_ptr<FishType> createFrom(const SourceFish& source, int level)
-        {
-            auto fish = create(level);
-            if (fish)
-            {
-                // Copy common attributes
-                fish->setPosition(source.getPosition());
-                fish->setVelocity(source.getVelocity());
-
-                if constexpr (std::is_base_of_v<Fish, SourceFish>)
-                {
-                    fish->setWindowBounds(source.getWindowBounds());
-                }
-            }
-            return fish;
-        }
     };
 
     // Note: SchoolingFishFactory is defined in SchoolingSystem.h to avoid circular dependencies
