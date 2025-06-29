@@ -140,6 +140,13 @@ void Animator::draw(RenderTarget& target, RenderStates states) const
     target.draw(m_sprite, states);
 }
 
+sf::IntRect Animator::getCurrentFrame() const
+{
+    if (m_current && !m_current->frames.empty())
+        return m_current->frames[m_index];
+    return sf::IntRect();
+}
+
 // Factory helpers -------------------------------------------------
 
 Animator createFishAnimator(const sf::Texture& tex)

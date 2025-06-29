@@ -452,6 +452,8 @@ namespace FishGame
         m_poisonColorTimer = sf::Time::Zero;
         if (m_soundPlayer)
             m_soundPlayer->play(SoundEffectID::PlayerSpawn);
+
+        startThinking(FishSize::Small);
     }
 
 void Player::applySpeedBoost(float multiplier, sf::Time duration)
@@ -488,20 +490,30 @@ void Player::triggerEatEffect()
             return;
 
         m_thinkingCloudSprite.setTexture(m_spriteManager->getTexture(TextureID::ThinkingCloud));
+        m_thinkingCloudSprite.setScale(0.5f, 0.5f);
         sf::FloatRect cb = m_thinkingCloudSprite.getLocalBounds();
         m_thinkingCloudSprite.setOrigin(cb.width / 2.f, cb.height);
 
-        TextureID fishTex = TextureID::SmallFish;
-        switch (size)
+        if (m_animator)
         {
-        case FishSize::Medium: fishTex = TextureID::MediumFish; break;
-        case FishSize::Large: fishTex = TextureID::LargeFish; break;
-        default: fishTex = TextureID::SmallFish; break;
+            m_thinkingFishSprite.setTexture(m_animator->getTexture());
+            m_thinkingFishSprite.setTextureRect(m_animator->getCurrentFrame());
         }
-        m_thinkingFishSprite.setTexture(m_spriteManager->getTexture(fishTex));
+        else
+        {
+            TextureID fishTex = TextureID::SmallFish;
+            switch (size)
+            {
+            case FishSize::Medium: fishTex = TextureID::MediumFish; break;
+            case FishSize::Large: fishTex = TextureID::LargeFish; break;
+            default: fishTex = TextureID::SmallFish; break;
+            }
+            m_thinkingFishSprite.setTexture(m_spriteManager->getTexture(fishTex));
+        }
         sf::FloatRect fb = m_thinkingFishSprite.getLocalBounds();
         m_thinkingFishSprite.setOrigin(fb.width / 2.f, fb.height / 2.f);
-        m_thinkingFishSprite.setScale(0.5f, 0.5f);
+        float scaleX = m_facingRight ? -0.5f : 0.5f;
+        m_thinkingFishSprite.setScale(scaleX, 0.5f);
 
         m_thinkingTimer = sf::seconds(3.f);
     }

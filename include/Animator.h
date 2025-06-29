@@ -27,6 +27,9 @@ public:
     sf::Vector2f getScale() const { return m_scale; }
     void setColor(const sf::Color& color) { m_sprite.setColor(color); }
 
+    const sf::Texture& getTexture() const { return m_texture; }
+    sf::IntRect getCurrentFrame() const;
+
 private:
     struct Clip
     {
