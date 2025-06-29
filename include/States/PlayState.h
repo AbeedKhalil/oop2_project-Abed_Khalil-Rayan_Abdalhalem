@@ -21,6 +21,7 @@
 #include "GameConstants.h"
 #include "StateUtils.h"
 #include <vector>
+#include <functional>
 #include <random>
 #include <unordered_map>
 #include <optional>

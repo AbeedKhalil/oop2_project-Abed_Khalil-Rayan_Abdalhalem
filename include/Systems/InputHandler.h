@@ -1,6 +1,7 @@
 #pragma once
 
 #include <SFML/Window/Event.hpp>
+#include <functional>
 
 namespace FishGame
 {
