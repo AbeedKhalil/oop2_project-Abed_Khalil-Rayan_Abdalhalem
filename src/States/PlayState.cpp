@@ -3,6 +3,7 @@
 #include "CollisionDetector.h"
 #include "Fish.h"
 #include "ExtendedPowerUps.h"
+#include "SpawnSystem.h"
 #include "GameOverState.h"
 #include "StageIntroState.h"
 #include "StageSummaryState.h"
@@ -51,10 +52,9 @@ namespace FishGame
         , m_randomEngine(std::random_device{}())
         , m_angleDist(0.0f, 360.0f)
         , m_speedDist(Constants::MIN_PARTICLE_SPEED, Constants::MAX_PARTICLE_SPEED)
-        , m_positionDist(Constants::SAFE_SPAWN_PADDING,
-            Constants::WINDOW_WIDTH - Constants::SAFE_SPAWN_PADDING)
-        , m_hazardTypeDist(0, 1)
-        , m_powerUpTypeDist(0, 2)
+        , m_spawnSystem(std::make_unique<SpawnSystem>(
+            getGame().getSpriteManager(), m_randomEngine,
+            m_gameState.currentLevel, getGame().getFonts().get(Fonts::Main)))
         , m_initialized(false)
     {
         initializeSystems();
@@ -314,12 +314,14 @@ namespace FishGame
 
             if (shouldSpawnSpecialEntity(m_hazardSpawnTimer, m_hazardSpawnInterval))
             {
-                spawnRandomHazard();
+                if (auto hazard = m_spawnSystem->spawnRandomHazard())
+                    m_hazards.push_back(std::move(hazard));
             }
 
             if (shouldSpawnSpecialEntity(m_extendedPowerUpSpawnTimer, m_extendedPowerUpInterval))
             {
-                spawnRandomPowerUp();
+                if (auto powerUp = m_spawnSystem->spawnRandomPowerUp())
+                    m_bonusItems.push_back(std::move(powerUp));
             }
         }
 
@@ -472,85 +474,6 @@ namespace FishGame
         return false;
     }
 
-    void PlayState::spawnRandomHazard()
-    {
-        std::unique_ptr<Hazard> hazard;
-
-        switch (m_hazardTypeDist(m_randomEngine))
-        {
-        case 0:
-            if (m_gameState.currentLevel >= 6)
-            {
-                hazard = std::make_unique<Bomb>();
-                static_cast<Bomb*>(hazard.get())->initializeSprite(getGame().getSpriteManager());
-            }
-            break;
-        case 1:
-            if (m_gameState.currentLevel >= 4)
-            {
-                hazard = std::make_unique<Jellyfish>();
-                static_cast<Jellyfish*>(hazard.get())->initializeSprite(getGame().getSpriteManager());
-                hazard->setVelocity(0.0f, 20.0f);
-            }
-            break;
-        }
-
-        if (hazard)
-        {
-            hazard->setPosition(generateRandomPosition());
-            m_hazards.push_back(std::move(hazard));
-        }
-    }
-
-    void PlayState::spawnRandomPowerUp()
-    {
-        std::unique_ptr<PowerUp> powerUp;
-
-        int type = m_powerUpTypeDist(m_randomEngine);
-        if (m_gameState.currentLevel < 2 && (type == 0 || type == 2))
-            type = 1; // Freeze and SpeedBoost unlocked from level 2
-
-        switch (type)
-        {
-        case 0:
-            powerUp = std::make_unique<FreezePowerUp>();
-            if (auto* freeze = dynamic_cast<FreezePowerUp*>(powerUp.get()))
-            {
-                freeze->setFont(getGame().getFonts().get(Fonts::Main));
-            }
-            break;
-        case 1:
-            powerUp = std::make_unique<ExtraLifePowerUp>();
-            if (auto* life = dynamic_cast<ExtraLifePowerUp*>(powerUp.get()))
-            {
-                life->initializeSprite(getGame().getSpriteManager());
-            }
-            break;
-        case 2:
-            powerUp = std::make_unique<SpeedBoostPowerUp>();
-            if (auto* speed = dynamic_cast<SpeedBoostPowerUp*>(powerUp.get()))
-            {
-                speed->initializeSprite(getGame().getSpriteManager());
-            }
-            break;
-        }
-
-        if (powerUp)
-        {
-            sf::Vector2f pos = generateRandomPosition();
-            powerUp->setPosition(pos);
-            powerUp->m_baseY = pos.y;
-            m_bonusItems.push_back(std::move(powerUp));
-        }
-    }
-
-    sf::Vector2f PlayState::generateRandomPosition()
-    {
-        return sf::Vector2f(m_positionDist(m_randomEngine),
-            std::uniform_real_distribution<float>(Constants::SAFE_SPAWN_PADDING,
-                Constants::WINDOW_HEIGHT - Constants::SAFE_SPAWN_PADDING)(
-                    m_randomEngine));
-    }
 
     void PlayState::checkCollisions()
     {
