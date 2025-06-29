@@ -26,6 +26,18 @@ namespace FishGame
         SurvivalChallenge // Survive waves of predators
     };
 
+    struct BonusStageConfig
+    {
+        BonusStageType type = BonusStageType::FeedingFrenzy;
+        int playerLevel = 1;
+
+        static BonusStageConfig& getInstance()
+        {
+            static BonusStageConfig instance;
+            return instance;
+        }
+    };
+
     class BonusStageState : public State
     {
     public:

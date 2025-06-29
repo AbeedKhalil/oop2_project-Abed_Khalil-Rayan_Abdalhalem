@@ -6,6 +6,7 @@
 #include "GameOptionsState.h"
 #include "StageIntroState.h"
 #include "StageSummaryState.h"
+#include "BonusStageState.h"
 
 namespace FishGame
 {
@@ -224,8 +225,8 @@ namespace FishGame
         // Register bonus stage
         m_stateFactories[StateID::BonusStage] = [this]() -> std::unique_ptr<State>
             {
-                // Default to feeding frenzy, level 1
-                return std::make_unique<BonusStageState>(*this, BonusStageType::FeedingFrenzy, 1);
+                auto& cfg = BonusStageConfig::getInstance();
+                return std::make_unique<BonusStageState>(*this, cfg.type, cfg.playerLevel);
             };
 
         // TODO: Register additional states as they are implemented
