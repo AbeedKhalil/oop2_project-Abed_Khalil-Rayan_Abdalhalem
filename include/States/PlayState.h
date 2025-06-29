@@ -98,8 +98,12 @@ namespace FishGame
 
         // Update methods
         void updateGameplay(sf::Time deltaTime);
+        void updateRespawn(sf::Time deltaTime);
+        void updateEnvironment(sf::Time deltaTime);
+        void updateEntities(sf::Time deltaTime);
+        void updateSpawning(sf::Time deltaTime);
+        void updateGameState(sf::Time deltaTime);
         void updateSystems(sf::Time deltaTime);
-        void updateAllEntities(sf::Time deltaTime);
         void updateHUD();
         void updatePerformanceMetrics(sf::Time deltaTime);
         void updateCamera();

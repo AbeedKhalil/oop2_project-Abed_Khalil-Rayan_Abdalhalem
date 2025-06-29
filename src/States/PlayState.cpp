@@ -222,129 +222,108 @@ namespace FishGame
         return false;
     }
 
-    void PlayState::updateGameplay(sf::Time deltaTime)
-    {
+void PlayState::updateGameplay(sf::Time deltaTime)
+{
         m_gameState.levelTime += deltaTime;
 
-        if (m_musicResumePending)
-        {
-            m_musicResumeTimer -= deltaTime;
-            if (m_musicResumeTimer <= sf::Time::Zero)
-            {
-                m_musicResumePending = false;
-                getGame().getMusicPlayer().play(musicForLevel(m_gameState.currentLevel), true);
-            }
-        }
-
-        if (m_respawnPending)
-        {
-            m_respawnTimer -= deltaTime;
-            if (m_respawnTimer <= sf::Time::Zero)
-            {
-                m_respawnPending = false;
-                m_player->respawn();
-                m_camera.unfreeze();
-                createParticleEffect(m_player->getPosition(), Constants::RESPAWN_PARTICLE_COLOR);
-            }
-        }
-
-        // Update environment system
-        m_environmentSystem->update(deltaTime);
-
-        // Update all systems
-        updateSystems(deltaTime);
-
-        // Update player effects
-        updateEffectTimers(deltaTime);
-
-        // Apply environmental effects
-        applyEnvironmentalForces(deltaTime);
-
-        // Check bonus stage
-        checkBonusStage();
-
-        // Handle game state
-        if (m_gameState.gameWon)
-        {
-            m_gameState.winTimer += deltaTime;
-
-            bool timerExpired = m_gameState.winTimer >=
-                Constants::WIN_SEQUENCE_DURATION;
-            bool noEnemies = m_gameState.enemiesFleeing && areAllEnemiesGone();
-
-            if (timerExpired || noEnemies)
-            {
-                m_gameState.enemiesFleeing = false;
-                m_gameState.levelComplete = true;
-                advanceLevel();
-            }
-
-            if (m_gameState.levelComplete)
-            {
-                return;
-            }
-        }
-        else if (!m_gameState.levelComplete)
-        {
-            checkWinCondition();
-        }
-
-        // Update all entities
-        updateAllEntities(deltaTime);
-
-        // Handle spawning
-        if (!m_gameState.gameWon)
-        {
-            m_fishSpawner->update(deltaTime, m_gameState.currentLevel);
-            auto& spawnedFish = m_fishSpawner->getSpawnedFish();
-            std::move(spawnedFish.begin(), spawnedFish.end(), std::back_inserter(m_entities));
-            spawnedFish.clear();
-
-            if (m_hazardSpawnTimer.update(deltaTime))
-            {
-                if (auto hazard = m_spawnSystem->spawnRandomHazard())
-                    m_hazards.push_back(std::move(hazard));
-            }
-
-            if (m_extendedPowerUpSpawnTimer.update(deltaTime))
-            {
-                if (auto powerUp = m_spawnSystem->spawnRandomPowerUp())
-                    m_bonusItems.push_back(std::move(powerUp));
-            }
-        }
-
-        // Update bonus items
-        m_bonusItemManager->update(deltaTime);
-        auto newItems = m_bonusItemManager->collectSpawnedItems();
-        std::move(newItems.begin(), newItems.end(), std::back_inserter(m_bonusItems));
-
-        // Update particles
-        m_particleSystem->update(deltaTime);
-
-        // Remove dead entities from all containers
-        EntityUtils::removeDeadEntities(m_entities);
-        EntityUtils::removeDeadEntities(m_hazards);
-
-        // Special handling for bonus items (check expiration too)
-        m_bonusItems.erase(
-            std::remove_if(m_bonusItems.begin(), m_bonusItems.end(),
-                [](const auto& item) {
-                    return !item || !item->isAlive() || item->hasExpired();
-                }),
-            m_bonusItems.end()
-        );
-
-
-        // Check collisions
+        updateRespawn(deltaTime);
+        updateEnvironment(deltaTime);
+        updateGameState(deltaTime);
+        updateEntities(deltaTime);
+        updateSpawning(deltaTime);
+  
         m_collisionSystem->process(*m_player, m_entities, m_bonusItems, m_hazards,
             m_oysterManager, m_gameState.currentLevel);
 
-        // Update HUD
-        updateHUD();
+    updateHUD();
+    updateCamera();
+}
 
-        // Update camera to follow player
-        updateCamera();
+void PlayState::updateRespawn(sf::Time deltaTime)
+{
+    if (m_musicResumePending)
+    {
+        m_musicResumeTimer -= deltaTime;
+        if (m_musicResumeTimer <= sf::Time::Zero)
+        {
+            m_musicResumePending = false;
+            getGame().getMusicPlayer().play(musicForLevel(m_gameState.currentLevel), true);
+        }
     }
+
+    if (m_respawnPending)
+    {
+        m_respawnTimer -= deltaTime;
+        if (m_respawnTimer <= sf::Time::Zero)
+        {
+            m_respawnPending = false;
+            m_player->respawn();
+            m_cameraFrozen = false;
+            createParticleEffect(m_player->getPosition(), Constants::RESPAWN_PARTICLE_COLOR);
+        }
+    }
+}
+
+void PlayState::updateEnvironment(sf::Time deltaTime)
+{
+    m_environmentSystem->update(deltaTime);
+    updateSystems(deltaTime);
+    updateEffectTimers(deltaTime);
+    applyEnvironmentalForces(deltaTime);
+}
+
+void PlayState::updateGameState(sf::Time deltaTime)
+{
+    checkBonusStage();
+
+    if (m_gameState.gameWon)
+    {
+        m_gameState.winTimer += deltaTime;
+        bool timerExpired = m_gameState.winTimer >= Constants::WIN_SEQUENCE_DURATION;
+        bool noEnemies = m_gameState.enemiesFleeing && areAllEnemiesGone();
+
+        if (timerExpired || noEnemies)
+        {
+            m_gameState.enemiesFleeing = false;
+            m_gameState.levelComplete = true;
+            advanceLevel();
+        }
+
+        if (m_gameState.levelComplete)
+            return;
+    }
+    else if (!m_gameState.levelComplete)
+    {
+        checkWinCondition();
+    }
+}
+
+void PlayState::updateSpawning(sf::Time deltaTime)
+{
+    if (m_gameState.gameWon)
+        return;
+
+    m_fishSpawner->update(deltaTime, m_gameState.currentLevel);
+    auto& spawnedFish = m_fishSpawner->getSpawnedFish();
+    std::move(spawnedFish.begin(), spawnedFish.end(), std::back_inserter(m_entities));
+    spawnedFish.clear();
+
+    if (m_hazardSpawnTimer.update(deltaTime))
+    {
+        if (auto hazard = m_spawnSystem->spawnRandomHazard())
+            m_hazards.push_back(std::move(hazard));
+    }
+
+    if (m_extendedPowerUpSpawnTimer.update(deltaTime))
+    {
+        if (auto powerUp = m_spawnSystem->spawnRandomPowerUp())
+            m_bonusItems.push_back(std::move(powerUp));
+    }
+
+    m_bonusItemManager->update(deltaTime);
+    auto newItems = m_bonusItemManager->collectSpawnedItems();
+    std::move(newItems.begin(), newItems.end(), std::back_inserter(m_bonusItems));
+}
 
     void PlayState::updateSystems(sf::Time deltaTime)
     {
@@ -378,23 +357,35 @@ namespace FishGame
         }
     }
 
-    void PlayState::updateAllEntities(sf::Time deltaTime)
+    void PlayState::updateEntities(sf::Time deltaTime)
     {
         StateUtils::updateEntities(m_entities, deltaTime);
         StateUtils::updateEntities(m_bonusItems, deltaTime);
         StateUtils::updateEntities(m_hazards, deltaTime);
 
         // Apply specific AI updates
-        StateUtils::applyToEntities(m_entities, [this, deltaTime](Entity& entity) {
-            if (auto* fish = dynamic_cast<Fish*>(&entity))
+    EntityUtils::forEachAlive(m_entities, [this, deltaTime](Entity& entity) {
+        if (auto* fish = dynamic_cast<Fish*>(&entity))
+        {
+            if (!fish->isStunned())
             {
-                if (!fish->isStunned())
-                {
-                    fish->updateAI(m_entities, m_player.get(), deltaTime);
-                }
+                fish->updateAI(m_entities, m_player.get(), deltaTime);
             }
-            });
-    }
+        }
+    });
+
+    m_particleSystem->update(deltaTime);
+
+    EntityUtils::removeDeadEntities(m_entities);
+    EntityUtils::removeDeadEntities(m_hazards);
+
+    m_bonusItems.erase(
+        std::remove_if(m_bonusItems.begin(), m_bonusItems.end(),
+            [](const auto& item) {
+                return !item || !item->isAlive() || item->hasExpired();
+            }),
+        m_bonusItems.end());
+}
 
     void PlayState::updateEffectTimers(sf::Time deltaTime)
     {
@@ -405,12 +396,12 @@ namespace FishGame
             if (m_freezeTimer <= sf::Time::Zero)
             {
                 m_isPlayerFrozen = false;
-                StateUtils::applyToEntities(m_entities, [](Entity& entity) {
+                EntityUtils::forEachAlive(m_entities, [](Entity& entity) {
                     if (auto* fish = dynamic_cast<Fish*>(&entity))
                     {
                         fish->setFrozen(false);
                     }
-                    });
+                });
             }
         }
 
@@ -446,10 +437,10 @@ namespace FishGame
         }
 
         // Apply currents to all entities
-        StateUtils::applyToEntities(m_entities, [this, deltaTime](Entity& entity) {
+        EntityUtils::forEachAlive(m_entities, [this, deltaTime](Entity& entity) {
             sf::Vector2f current = m_environmentSystem->getOceanCurrentForce(entity.getPosition());
             entity.setVelocity(entity.getVelocity() + current * deltaTime.asSeconds() * 0.1f);
-            });
+        });
     }
 
 
@@ -532,12 +523,12 @@ namespace FishGame
         m_freezeTimer = sf::seconds(5.0f);
         getGame().getSoundPlayer().play(SoundEffectID::FreezePowerup);
 
-        StateUtils::applyToEntities(m_entities, [](Entity& entity) {
+        EntityUtils::forEachAlive(m_entities, [](Entity& entity) {
             if (auto* fish = dynamic_cast<Fish*>(&entity))
             {
                 fish->setFrozen(true);
             }
-            });
+        });
     }
 
     void PlayState::reverseControls()
@@ -571,12 +562,12 @@ namespace FishGame
 
     void PlayState::makeAllEnemiesFlee()
     {
-        StateUtils::applyToEntities(m_entities, [](Entity& entity) {
+        EntityUtils::forEachAlive(m_entities, [](Entity& entity) {
             if (auto* fish = dynamic_cast<Fish*>(&entity))
             {
                 fish->startFleeing();
             }
-            });
+        });
     }
 
     bool PlayState::areAllEnemiesGone() const
