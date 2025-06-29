@@ -81,7 +81,7 @@ namespace FishGame
         m_backgroundSprite.setScale(winSize.x / texSize.x, winSize.y / texSize.y);
 
         sf::View view = window.getDefaultView();
-        view.zoom(0.8f);
+        view.zoom(Constants::CAMERA_ZOOM_FACTOR);
         view.setCenter(winSize * 0.5f);
         m_camera = CameraController(view, winSize);
 

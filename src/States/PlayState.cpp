@@ -9,6 +9,7 @@
 #include "StageIntroState.h"
 #include "StageSummaryState.h"
 #include "MusicPlayer.h"
+#include "GameConstants.h"
 #include <algorithm>
 #include <execution>
 #include <sstream>
@@ -76,7 +77,7 @@ namespace FishGame
         const sf::Vector2f windowSize(window.getSize());
 
         sf::View view = window.getDefaultView();
-        view.zoom(0.8f);
+        view.zoom(Constants::CAMERA_ZOOM_FACTOR);
         view.setCenter(windowSize * 0.5f);
         m_camera = CameraController(view, windowSize);
     }
