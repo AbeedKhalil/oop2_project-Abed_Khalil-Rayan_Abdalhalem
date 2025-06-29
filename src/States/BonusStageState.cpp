@@ -80,10 +80,10 @@ namespace FishGame
         sf::Vector2f texSize(m_backgroundSprite.getTexture()->getSize());
         m_backgroundSprite.setScale(winSize.x / texSize.x, winSize.y / texSize.y);
 
-        m_worldSize = winSize;
-        m_view = window.getDefaultView();
-        m_view.zoom(0.8f);
-        m_view.setCenter(m_worldSize * 0.5f);
+        sf::View view = window.getDefaultView();
+        view.zoom(0.8f);
+        view.setCenter(winSize * 0.5f);
+        m_camera = CameraController(view, winSize);
 
         // Timer bar
         m_timerBackground.setSize(sf::Vector2f(Constants::BONUS_TIMER_BAR_WIDTH,
@@ -320,7 +320,7 @@ namespace FishGame
     {
         auto& window = getGame().getWindow();
         auto defaultView = window.getView();
-        window.setView(m_view);
+        window.setView(m_camera.getView());
 
         window.draw(m_backgroundSprite);
 
@@ -693,29 +693,6 @@ void BonusStageState::spawnBomb()
         if (!m_player)
             return;
 
-        sf::Vector2f target = m_player->getPosition();
-        sf::Vector2f halfSize = m_view.getSize() * 0.5f;
-
-        if (m_worldSize.x > m_view.getSize().x)
-        {
-            target.x = std::clamp(target.x, halfSize.x, m_worldSize.x - halfSize.x);
-        }
-        else
-        {
-            target.x = m_worldSize.x * 0.5f;
-        }
-
-        if (m_worldSize.y > m_view.getSize().y)
-        {
-            target.y = std::clamp(target.y, halfSize.y, m_worldSize.y - halfSize.y);
-        }
-        else
-        {
-            target.y = m_worldSize.y * 0.5f;
-        }
-
-        sf::Vector2f current = m_view.getCenter();
-        sf::Vector2f newCenter = current + (target - current) * m_cameraSmoothing;
-        m_view.setCenter(newCenter);
+        m_camera.update(m_player->getPosition());
     }
 }

@@ -14,6 +14,7 @@
 #include "ParticleSystem.h"
 #include "SpawnSystem.h"
 #include "InputHandler.h"
+#include "CameraController.h"
 #include "PowerUp.h"
 #include "ExtendedPowerUps.h"
 #include "Hazard.h"
@@ -179,8 +180,7 @@ namespace FishGame
 
         // Camera and background
         sf::Sprite m_backgroundSprite;
-        sf::View m_view;
-        sf::Vector2f m_worldSize;
+        CameraController m_camera;
 
         // Random number generation
         std::mt19937 m_randomEngine;
@@ -197,13 +197,8 @@ namespace FishGame
         bool m_respawnPending{false};
         sf::Time m_respawnTimer{sf::Time::Zero};
 
-        // Camera freeze when player dies
-        bool m_cameraFrozen{false};
-        sf::Vector2f m_cameraFreezePos;
-
         // Constants
         static constexpr float m_hazardSpawnInterval = 8.0f;
         static constexpr float m_extendedPowerUpInterval = 15.0f;
-        static constexpr float m_cameraSmoothing = 0.1f;
     };
 }
