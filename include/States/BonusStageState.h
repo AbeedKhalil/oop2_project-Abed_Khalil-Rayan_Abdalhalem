@@ -3,6 +3,7 @@
 #include "State.h"
 #include "BonusItem.h"
 #include "EnvironmentSystem.h"
+#include "CameraController.h"
 #include "Player.h"
 #include "Hazard.h"
 #include <SFML/Graphics.hpp>
@@ -138,8 +139,6 @@ namespace FishGame
         static constexpr float m_instructionDuration = 5.0f;
 
         // Camera and world
-        sf::View m_view{};
-        sf::Vector2f m_worldSize{};
-        static constexpr float m_cameraSmoothing = 0.1f;
+        CameraController m_camera;
     };
 }
