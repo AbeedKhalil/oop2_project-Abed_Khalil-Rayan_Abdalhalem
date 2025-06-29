@@ -155,7 +155,6 @@ namespace FishGame
         m_frenzySystem->setPosition(window.getSize().x / 2.0f, Constants::FRENZY_Y_POSITION);
 
         // Initialize HUD system
-        auto& font = getGame().getFonts().get(Fonts::Main);
         m_hudSystem = std::make_unique<HUDSystem>(font, window.getSize());
 
         // Configure initial state

@@ -3,6 +3,8 @@
 #include "MusicPlayer.h"
 #include "State.h"
 #include "Player.h"
+#include <functional>
+#include <unordered_map>
 
 namespace FishGame
 {
