@@ -14,6 +14,8 @@ namespace FishGame
         // Derived window values
         constexpr float WINDOW_CENTER_X = WINDOW_WIDTH / 2.0f;
         constexpr float WINDOW_CENTER_Y = WINDOW_HEIGHT / 2.0f;
+        // Default zoom level used for the game camera
+        constexpr float CAMERA_ZOOM_FACTOR = 0.6f;
 
         // ==================== Mathematical Constants ====================
         constexpr float PI = 3.14159265359f;
