@@ -233,9 +233,12 @@ void GameOptionsState::render() {
   window.draw(m_titleText);
   window.draw(m_gameDescriptionText);
   window.draw(m_controlsText);
-  window.draw(m_musicVolumeText);
-  window.draw(m_soundVolumeText);
-  window.draw(m_instructionText);
+  // Display volume controls only on the first page
+  if (m_currentIndex == 0) {
+    window.draw(m_musicVolumeText);
+    window.draw(m_soundVolumeText);
+    window.draw(m_instructionText);
+  }
   if (!m_infoItems.empty()) {
     window.draw(m_infoItems[m_currentIndex].sprite);
     window.draw(m_infoItems[m_currentIndex].text);
@@ -286,7 +289,8 @@ void GameOptionsState::updateCurrentInfo() {
 
   auto bounds = item.sprite.getLocalBounds();
   item.sprite.setOrigin(bounds.width / 2.f, bounds.height / 2.f);
-  item.sprite.setScale(0.6f, 0.6f);
+  // make the example sprite easier to see in the options menu
+  item.sprite.setScale(0.8f, 0.8f);
   item.sprite.setPosition(static_cast<float>(window.getSize().x) / 2.f,
                           static_cast<float>(window.getSize().y) / 2.f + 60.f);
 
