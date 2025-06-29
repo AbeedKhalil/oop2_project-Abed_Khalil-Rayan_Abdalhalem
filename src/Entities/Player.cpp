@@ -164,6 +164,15 @@ namespace FishGame
         checkStageAdvancement();
         updateVisualEffects(deltaTime);
 
+        if (m_thinkingTimer > sf::Time::Zero)
+        {
+            m_thinkingTimer -= deltaTime;
+            sf::Vector2f cloudPos = m_position;
+            cloudPos.y -= m_radius * 2.f;
+            m_thinkingCloudSprite.setPosition(cloudPos);
+            m_thinkingFishSprite.setPosition(cloudPos);
+        }
+
         if (m_renderMode == RenderMode::Sprite && m_animator)
         {
             m_animator->update(deltaTime);
@@ -467,11 +476,35 @@ void Player::triggerEatEffect()
         m_visual->triggerEatEffect();
 }
 
-void Player::triggerDamageEffect()
-{
-    if (m_visual)
-        m_visual->triggerDamageEffect();
-}
+    void Player::triggerDamageEffect()
+    {
+        if (m_visual)
+            m_visual->triggerDamageEffect();
+    }
+
+    void Player::startThinking(FishSize size)
+    {
+        if (!m_spriteManager)
+            return;
+
+        m_thinkingCloudSprite.setTexture(m_spriteManager->getTexture(TextureID::ThinkingCloud));
+        sf::FloatRect cb = m_thinkingCloudSprite.getLocalBounds();
+        m_thinkingCloudSprite.setOrigin(cb.width / 2.f, cb.height);
+
+        TextureID fishTex = TextureID::SmallFish;
+        switch (size)
+        {
+        case FishSize::Medium: fishTex = TextureID::MediumFish; break;
+        case FishSize::Large: fishTex = TextureID::LargeFish; break;
+        default: fishTex = TextureID::SmallFish; break;
+        }
+        m_thinkingFishSprite.setTexture(m_spriteManager->getTexture(fishTex));
+        sf::FloatRect fb = m_thinkingFishSprite.getLocalBounds();
+        m_thinkingFishSprite.setOrigin(fb.width / 2.f, fb.height / 2.f);
+        m_thinkingFishSprite.setScale(0.5f, 0.5f);
+
+        m_thinkingTimer = sf::seconds(3.f);
+    }
 
 void Player::setWindowBounds(const sf::Vector2u& windowSize)
 {
@@ -482,6 +515,12 @@ void Player::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
     if (m_visual)
         m_visual->draw(target, states);
+
+    if (m_thinkingTimer > sf::Time::Zero)
+    {
+        target.draw(m_thinkingCloudSprite, states);
+        target.draw(m_thinkingFishSprite, states);
+    }
 }
     void Player::constrainToWindow()
     {

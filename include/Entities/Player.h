@@ -90,6 +90,9 @@ namespace FishGame
         void triggerEatEffect();
         void triggerDamageEffect();
 
+        // Display a thinking cloud with fish type for a short duration
+        void startThinking(FishSize size);
+
     private:
         void updateVisualEffects(sf::Time deltaTime);
 
@@ -184,5 +187,10 @@ namespace FishGame
         std::unique_ptr<PlayerGrowth> m_growth;
         std::unique_ptr<PlayerVisual> m_visual;
         bool m_facingRight{ false };
+
+        // Thinking cloud visuals
+        sf::Sprite m_thinkingCloudSprite;
+        sf::Sprite m_thinkingFishSprite;
+        sf::Time m_thinkingTimer{sf::Time::Zero};
     };
 }

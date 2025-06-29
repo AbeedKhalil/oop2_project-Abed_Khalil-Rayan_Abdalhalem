@@ -92,6 +92,11 @@ void PlayerGrowth::updateStage()
         m_player.m_growthMeter->setStage(m_player.m_currentStage);
     }
 
+    if (m_player.m_currentStage == 2)
+        m_player.startThinking(FishSize::Medium);
+    else if (m_player.m_currentStage == 3)
+        m_player.startThinking(FishSize::Large);
+
     if (m_player.m_animator && m_player.m_renderMode == Entity::RenderMode::Sprite && m_player.m_spriteManager)
     {
         float stageScale = 1.f;
