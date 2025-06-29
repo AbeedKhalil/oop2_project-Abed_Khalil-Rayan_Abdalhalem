@@ -3,7 +3,7 @@
 #include "Player.h"
 #include "EnhancedFishSpawner.h"
 #include "SchoolingSystem.h"
-#include "FishCollisionHandler.h"
+#include "CollisionSystem.h"
 #include "SpecialFish.h"
 #include "GrowthMeter.h"
 #include "FrenzySystem.h"
@@ -12,6 +12,7 @@
 #include "ScoreSystem.h"
 #include "HUDSystem.h"
 #include "ParticleSystem.h"
+#include "SpawnSystem.h"
 #include "InputHandler.h"
 #include "PowerUp.h"
 #include "ExtendedPowerUps.h"
@@ -20,10 +21,11 @@
 #include "BonusStageState.h"
 #include "GameConstants.h"
 #include "StateUtils.h"
+#include "SpawnTimer.h"
 #include <vector>
 #include <functional>
 #include <random>
-#include <unordered_map>
+#include "GameSystems.h"
 #include <optional>
 #include <algorithm>
 #include <numeric>
@@ -74,35 +76,11 @@ namespace FishGame
             float currentFPS = 0.0f;
         };
 
-        // ==================== Collision Handler Functors ====================
-
-        struct FishCollisionHandler
-        {
-            PlayState* state;
-
-            void operator()(Entity& fish) const;
-        };
-
-        struct BonusItemCollisionHandler
-        {
-            PlayState* state;
-
-            void operator()(BonusItem& item) const;
-        };
-
-        struct HazardCollisionHandler
-        {
-            PlayState* state;
-
-            void operator()(Hazard& hazard) const;
-        };
+        // ==================== Collision Handling ====================
 
         // ==================== Helper Functions ====================
 
-        // Spawning helpers
-        void spawnRandomHazard();
-        void spawnRandomPowerUp();
-        sf::Vector2f generateRandomPosition();
+        // Spawning is handled by SpawnSystem
 
         // Effect helpers
         void createParticleEffect(const sf::Vector2f& position, const sf::Color& color,
@@ -110,15 +88,12 @@ namespace FishGame
         void applyEnvironmentalForces(sf::Time deltaTime);
 
         // State helpers
-        bool shouldSpawnSpecialEntity(sf::Time& timer, float interval);
         void updateEffectTimers(sf::Time deltaTime);
 
         // ==================== Core Methods ====================
 
         // Initialization
         void initializeSystems();
-        template<typename SystemType>
-        SystemType* createAndStoreSystem(const std::string& name, const sf::Font& font);
 
         // Update methods
         void updateGameplay(sf::Time deltaTime);
@@ -129,7 +104,6 @@ namespace FishGame
         void updateCamera();
 
         // Collision handling
-        void checkCollisions();
         void handlePowerUpCollision(PowerUp& powerUp);
         void handleOysterCollision(PermanentOyster* oyster);
 
@@ -166,15 +140,15 @@ namespace FishGame
         std::unique_ptr<EnvironmentSystem> m_environmentSystem;
 
         // Game systems
-        std::unordered_map<std::string, std::unique_ptr<void, std::function<void(void*)>>> m_systems;
+        GameSystems m_systems;
 
-        // Direct system pointers for performance
-        GrowthMeter* m_growthMeter;
-        FrenzySystem* m_frenzySystem;
-        PowerUpManager* m_powerUpManager;
-        ScoreSystem* m_scoreSystem;
-        BonusItemManager* m_bonusItemManager;
-        FixedOysterManager* m_oysterManager;
+        // Direct system pointers for convenience
+        GrowthMeter* m_growthMeter{nullptr};
+        FrenzySystem* m_frenzySystem{nullptr};
+        PowerUpManager* m_powerUpManager{nullptr};
+        ScoreSystem* m_scoreSystem{nullptr};
+        BonusItemManager* m_bonusItemManager{nullptr};
+        FixedOysterManager* m_oysterManager{nullptr};
 
         // State tracking
         GameStateData m_gameState;
@@ -188,8 +162,8 @@ namespace FishGame
         sf::Time m_controlReverseTimer;
         sf::Time m_freezeTimer;
         sf::Time m_stunTimer;
-        sf::Time m_hazardSpawnTimer;
-        sf::Time m_extendedPowerUpSpawnTimer;
+        SpawnTimer<sf::Time> m_hazardSpawnTimer;
+        SpawnTimer<sf::Time> m_extendedPowerUpSpawnTimer;
         InputHandler m_inputHandler;
 
         // Bonus stage tracking
@@ -201,6 +175,7 @@ namespace FishGame
         PerformanceMetrics m_metrics;
 
         std::unique_ptr<ParticleSystem> m_particleSystem;
+        std::unique_ptr<CollisionSystem> m_collisionSystem;
 
         // Camera and background
         sf::Sprite m_backgroundSprite;
@@ -211,9 +186,7 @@ namespace FishGame
         std::mt19937 m_randomEngine;
         std::uniform_real_distribution<float> m_angleDist;
         std::uniform_real_distribution<float> m_speedDist;
-        std::uniform_real_distribution<float> m_positionDist;
-        std::uniform_int_distribution<int> m_hazardTypeDist;
-        std::uniform_int_distribution<int> m_powerUpTypeDist;
+        std::unique_ptr<SpawnSystem> m_spawnSystem;
 
         bool m_initialized;
 
