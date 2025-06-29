@@ -50,6 +50,7 @@ namespace FishGame
         void addPoints(int points);
         void resetSize();
         void fullReset();
+        void checkStageAdvancement();
 
         // Points tracking
         int getPoints() const { return m_points; }
@@ -88,6 +89,9 @@ namespace FishGame
         // Visual effects
         void triggerEatEffect();
         void triggerDamageEffect();
+
+    private:
+        void updateVisualEffects(sf::Time deltaTime);
 
     protected:
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
