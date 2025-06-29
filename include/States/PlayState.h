@@ -3,7 +3,7 @@
 #include "Player.h"
 #include "EnhancedFishSpawner.h"
 #include "SchoolingSystem.h"
-#include "FishCollisionHandler.h"
+#include "CollisionSystem.h"
 #include "SpecialFish.h"
 #include "GrowthMeter.h"
 #include "FrenzySystem.h"
@@ -76,28 +76,7 @@ namespace FishGame
             float currentFPS = 0.0f;
         };
 
-        // ==================== Collision Handler Functors ====================
-
-        struct FishCollisionHandler
-        {
-            PlayState* state;
-
-            void operator()(Entity& fish) const;
-        };
-
-        struct BonusItemCollisionHandler
-        {
-            PlayState* state;
-
-            void operator()(BonusItem& item) const;
-        };
-
-        struct HazardCollisionHandler
-        {
-            PlayState* state;
-
-            void operator()(Hazard& hazard) const;
-        };
+        // ==================== Collision Handling ====================
 
         // ==================== Helper Functions ====================
 
@@ -125,7 +104,6 @@ namespace FishGame
         void updateCamera();
 
         // Collision handling
-        void checkCollisions();
         void handlePowerUpCollision(PowerUp& powerUp);
         void handleOysterCollision(PermanentOyster* oyster);
 
@@ -197,6 +175,7 @@ namespace FishGame
         PerformanceMetrics m_metrics;
 
         std::unique_ptr<ParticleSystem> m_particleSystem;
+        std::unique_ptr<CollisionSystem> m_collisionSystem;
 
         // Camera and background
         sf::Sprite m_backgroundSprite;
