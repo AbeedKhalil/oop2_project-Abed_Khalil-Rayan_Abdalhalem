@@ -215,7 +215,9 @@ void GameOptionsState::handleEvent(const sf::Event &event) {
     if (m_backButtonSprite.getGlobalBounds().contains(pos)) {
       deferAction([this]() { requestStackPop(); });
     } else if (m_nextButtonSprite.getGlobalBounds().contains(pos)) {
-      m_currentIndex = (m_currentIndex + 1) % m_infoItems.size();
+      // advance to the next info page (first page is volume controls)
+      std::size_t totalPages = m_infoItems.size() + 1;
+      m_currentIndex = (m_currentIndex + 1) % totalPages;
       updateCurrentInfo();
     }
   }
@@ -235,13 +237,14 @@ void GameOptionsState::render() {
   window.draw(m_controlsText);
   // Display volume controls only on the first page
   if (m_currentIndex == 0) {
+    // show volume controls on the first page only
     window.draw(m_musicVolumeText);
     window.draw(m_soundVolumeText);
     window.draw(m_instructionText);
-  }
-  if (!m_infoItems.empty()) {
-    window.draw(m_infoItems[m_currentIndex].sprite);
-    window.draw(m_infoItems[m_currentIndex].text);
+  } else if (!m_infoItems.empty()) {
+    auto &item = m_infoItems[m_currentIndex - 1];
+    window.draw(item.sprite);
+    window.draw(item.text);
   }
   window.draw(m_backButtonSprite);
   window.draw(m_backText);
@@ -277,11 +280,11 @@ void GameOptionsState::setupInfoItems() {
 }
 
 void GameOptionsState::updateCurrentInfo() {
-  if (m_infoItems.empty())
+  if (m_infoItems.empty() || m_currentIndex == 0)
     return;
 
   auto &window = getGame().getWindow();
-  auto &item = m_infoItems[m_currentIndex];
+  auto &item = m_infoItems[m_currentIndex - 1];
 
   sf::IntRect rect = firstFrameRect(item.tex);
   if (rect.width > 0)
