@@ -459,25 +459,28 @@ void Player::applyPoisonEffect(sf::Time duration)
         m_soundPlayer->play(SoundEffectID::PlayerPoison);
 }
 
-    void Player::triggerEatEffect()
-    {
-        if (m_visual)
-            m_visual->triggerEatEffect();
-    }
-    void Player::triggerDamageEffect()
-    {
-        if (m_visual)
-            m_visual->triggerDamageEffect();
-    }
-    {
-        m_windowBounds = windowSize;
-    }
+void Player::triggerEatEffect()
+{
+    if (m_visual)
+        m_visual->triggerEatEffect();
+}
 
-    void Player::draw(sf::RenderTarget& target, sf::RenderStates states) const
-    {
-        if (m_visual)
-            m_visual->draw(target, states);
-    }
+void Player::triggerDamageEffect()
+{
+    if (m_visual)
+        m_visual->triggerDamageEffect();
+}
+
+void Player::setWindowBounds(const sf::Vector2u& windowSize)
+{
+    m_windowBounds = windowSize;
+}
+
+void Player::draw(sf::RenderTarget& target, sf::RenderStates states) const
+{
+    if (m_visual)
+        m_visual->draw(target, states);
+}
     void Player::constrainToWindow()
     {
         m_position.x = std::clamp(m_position.x, m_radius,
