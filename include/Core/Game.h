@@ -2,6 +2,7 @@
 
 #include "MusicPlayer.h"
 #include "State.h"
+#include "StateManager.h"
 #include "Player.h"
 
 namespace FishGame
@@ -42,11 +43,8 @@ namespace FishGame
             static_assert(std::is_base_of_v<State, StateType>,
                 "StateType must be derived from State");
 
-            if (!m_stateStack.empty())
-            {
-                return dynamic_cast<StateType*>(m_stateStack.back().get());
-            }
-            return nullptr;
+            return m_stateManager.getCurrentState<StateType>();
+            
         }
 
     private:
@@ -61,21 +59,12 @@ namespace FishGame
         // State management
         void registerStates();
         void applyPendingStateChanges();
-
-        // Template method for state registration
+        
         template<typename T>
         void registerState(StateID id)
         {
-            static_assert(std::is_base_of_v<State, T>,
-                "T must be derived from State");
-
-            m_stateFactories[id] = [this]() -> std::unique_ptr<State>
-                {
-                    return std::make_unique<T>(*this);
-                };
+            m_stateManager.registerState<T>(id);
         }
-
-        std::unique_ptr<State> createState(StateID id);
 
     private:
         // Window and timing constants from GameConstants.h
@@ -89,13 +78,8 @@ namespace FishGame
         FontHolder m_fonts;
         std::unique_ptr<ResourceHolder<sf::Texture, TextureID>> m_spriteTextures;
 
-        // State management using STL containers
-        using StatePtr = std::unique_ptr<State>;
-        using StateFactory = std::function<StatePtr()>;
-
-        std::vector<StatePtr> m_stateStack;
-        std::vector<std::pair<StateAction, StateID>> m_pendingList;
-        std::unordered_map<StateID, StateFactory> m_stateFactories;
+        // State manager
+        StateManager m_stateManager;
 
         std::unique_ptr<SpriteManager> m_spriteManager;
         std::unique_ptr<MusicPlayer> m_musicPlayer;

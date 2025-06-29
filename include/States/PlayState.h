@@ -10,6 +10,9 @@
 #include "BonusItemManager.h"
 #include "OysterManager.h"
 #include "ScoreSystem.h"
+#include "HUDSystem.h"
+#include "ParticleSystem.h"
+#include "InputHandler.h"
 #include "PowerUp.h"
 #include "ExtendedPowerUps.h"
 #include "Hazard.h"
@@ -18,6 +21,7 @@
 #include "GameConstants.h"
 #include "StateUtils.h"
 #include <vector>
+#include <functional>
 #include <random>
 #include <unordered_map>
 #include <optional>
@@ -47,15 +51,6 @@ namespace FishGame
     private:
         // ==================== Type Definitions ====================
 
-        // Particle effect structure
-        struct ParticleEffect
-        {
-            sf::CircleShape shape;
-            sf::Vector2f velocity;
-            sf::Time lifetime;
-            float alpha = 0.f;
-        };
-
         // Game state tracking
         struct GameStateData
         {
@@ -70,17 +65,6 @@ namespace FishGame
         };
 
         // HUD elements collection
-        struct HUDElements
-        {
-            sf::Text scoreText;
-            sf::Text livesText;
-            sf::Text levelText;
-            sf::Text fpsText;
-            sf::Text messageText;
-            sf::Text chainText;
-            sf::Text powerUpText;
-            sf::Text effectsText;
-        };
 
         // Performance metrics
         struct PerformanceMetrics
@@ -133,7 +117,6 @@ namespace FishGame
 
         // Initialization
         void initializeSystems();
-        void initializeHUD();
         template<typename SystemType>
         SystemType* createAndStoreSystem(const std::string& name, const sf::Font& font);
 
@@ -168,7 +151,6 @@ namespace FishGame
         void applyFreeze();
         void reverseControls();
         void showMessage(const std::string& message);
-        void centerText(sf::Text& text);
         void updateBackground(int level);
 
     private:
@@ -196,7 +178,7 @@ namespace FishGame
 
         // State tracking
         GameStateData m_gameState;
-        HUDElements m_hud;
+        std::unique_ptr<HUDSystem> m_hudSystem;
         std::unordered_map<TextureID, int> m_levelCounts;
 
         // Effect states
@@ -208,6 +190,7 @@ namespace FishGame
         sf::Time m_stunTimer;
         sf::Time m_hazardSpawnTimer;
         sf::Time m_extendedPowerUpSpawnTimer;
+        InputHandler m_inputHandler;
 
         // Bonus stage tracking
         bool m_bonusStageTriggered;
@@ -217,8 +200,7 @@ namespace FishGame
         // Performance tracking
         PerformanceMetrics m_metrics;
 
-        // Visual effects
-        std::vector<ParticleEffect> m_particles;
+        std::unique_ptr<ParticleSystem> m_particleSystem;
 
         // Camera and background
         sf::Sprite m_backgroundSprite;

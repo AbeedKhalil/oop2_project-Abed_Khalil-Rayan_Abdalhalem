@@ -35,7 +35,6 @@ namespace FishGame
         , m_bonusItemManager(nullptr)
         , m_oysterManager(nullptr)
         , m_gameState()
-        , m_hud()
         , m_isPlayerFrozen(false)
         , m_hasControlsReversed(false)
         , m_isPlayerStunned(false)
@@ -48,7 +47,7 @@ namespace FishGame
         , m_returningFromBonusStage(false)
         , m_savedLevel(1)
         , m_metrics()
-        , m_particles()
+        , m_particleSystem(std::make_unique<ParticleSystem>())
         , m_randomEngine(std::random_device{}())
         , m_angleDist(0.0f, 360.0f)
         , m_speedDist(Constants::MIN_PARTICLE_SPEED, Constants::MAX_PARTICLE_SPEED)
@@ -67,7 +66,6 @@ namespace FishGame
         m_entities.reserve(Constants::MAX_ENTITIES);
         m_bonusItems.reserve(Constants::MAX_BONUS_ITEMS);
         m_hazards.reserve(20);
-        m_particles.reserve(Constants::MAX_PARTICLES);
 
         // Setup background and camera
         auto& window = getGame().getWindow();
@@ -156,77 +154,23 @@ namespace FishGame
         m_growthMeter->setPosition(growthMeterX, growthMeterY);
         m_frenzySystem->setPosition(window.getSize().x / 2.0f, Constants::FRENZY_Y_POSITION);
 
-        // Initialize HUD
-        initializeHUD();
+        // Initialize HUD system
+        m_hudSystem = std::make_unique<HUDSystem>(font, window.getSize());
 
         // Configure initial state
         m_fishSpawner->setLevel(m_gameState.currentLevel);
 
-        updateHUD();
     }
 
-    void PlayState::initializeHUD()
-    {
-        auto& font = getGame().getFonts().get(Fonts::Main);
-        auto& window = getGame().getWindow();
-
-        // Lambda for initializing text objects
-        auto initText = [&font](sf::Text& text, unsigned int size, const sf::Vector2f& position,
-            const sf::Color& color = Constants::HUD_TEXT_COLOR) {
-                text.setFont(font);
-                text.setCharacterSize(size);
-                text.setFillColor(color);
-                text.setPosition(position);
-            };
-
-        // Initialize HUD texts
-        initText(m_hud.scoreText, Constants::HUD_FONT_SIZE,
-            sf::Vector2f(Constants::HUD_MARGIN, Constants::HUD_MARGIN));
-        initText(m_hud.livesText, Constants::HUD_FONT_SIZE,
-            sf::Vector2f(Constants::HUD_MARGIN, Constants::HUD_MARGIN + Constants::HUD_LINE_SPACING));
-        initText(m_hud.levelText, Constants::HUD_FONT_SIZE,
-            sf::Vector2f(Constants::HUD_MARGIN, Constants::HUD_MARGIN + Constants::HUD_LINE_SPACING * 2));
-        initText(m_hud.chainText, Constants::HUD_SMALL_FONT_SIZE,
-            sf::Vector2f(Constants::HUD_MARGIN, Constants::HUD_MARGIN + Constants::HUD_LINE_SPACING * 3));
-        initText(m_hud.powerUpText, Constants::HUD_SMALL_FONT_SIZE,
-            sf::Vector2f(window.getSize().x - Constants::POWERUP_TEXT_X_OFFSET, Constants::HUD_MARGIN + Constants::HUD_LINE_SPACING));
-        initText(m_hud.fpsText, Constants::HUD_FONT_SIZE,
-            sf::Vector2f(window.getSize().x - Constants::FPS_TEXT_X_OFFSET, Constants::HUD_MARGIN));
-        initText(m_hud.effectsText, 18,
-            sf::Vector2f(Constants::HUD_EFFECTS_TEXT_X,
-                window.getSize().y - Constants::HUD_EFFECTS_TEXT_Y_OFFSET),
-            sf::Color::Yellow);
-
-        // Special handling for message text
-        m_hud.messageText.setFont(font);
-        m_hud.messageText.setCharacterSize(Constants::MESSAGE_FONT_SIZE);
-        m_hud.messageText.setFillColor(Constants::MESSAGE_COLOR);
-        m_hud.messageText.setOutlineColor(Constants::MESSAGE_OUTLINE_COLOR);
-        m_hud.messageText.setOutlineThickness(Constants::MESSAGE_OUTLINE_THICKNESS);
-    }
 
     void PlayState::handleEvent(const sf::Event& event)
     {
         if (m_isPlayerStunned || getGame().getCurrentState<StageIntroState>())
             return;
 
-        // Handle controls reversal
-        sf::Event processedEvent = event;
-        if (m_hasControlsReversed && event.type == sf::Event::KeyPressed)
+        m_inputHandler.setReversed(m_hasControlsReversed);
+        m_inputHandler.processEvent(event, [this](const sf::Event& processedEvent)
         {
-            static const std::unordered_map<sf::Keyboard::Key, sf::Keyboard::Key> reverseMap = {
-                {sf::Keyboard::W, sf::Keyboard::S}, {sf::Keyboard::S, sf::Keyboard::W},
-                {sf::Keyboard::A, sf::Keyboard::D}, {sf::Keyboard::D, sf::Keyboard::A},
-                {sf::Keyboard::Up, sf::Keyboard::Down}, {sf::Keyboard::Down, sf::Keyboard::Up},
-                {sf::Keyboard::Left, sf::Keyboard::Right}, {sf::Keyboard::Right, sf::Keyboard::Left}
-            };
-
-            if (auto it = reverseMap.find(event.key.code); it != reverseMap.end())
-            {
-                processedEvent.key.code = it->second;
-            }
-        }
-
         switch (processedEvent.type)
         {
         case sf::Event::KeyPressed:
@@ -279,7 +223,8 @@ namespace FishGame
         default:
             break;
         }
-    }
+    });
+}
 
     bool PlayState::update(sf::Time deltaTime)
     {
@@ -383,17 +328,8 @@ namespace FishGame
         auto newItems = m_bonusItemManager->collectSpawnedItems();
         std::move(newItems.begin(), newItems.end(), std::back_inserter(m_bonusItems));
 
-        // Update particles with parallel execution
-        std::for_each(std::execution::par_unseq,
-            m_particles.begin(), m_particles.end(),
-            [deltaTime](ParticleEffect& particle) {
-                particle.lifetime -= deltaTime;
-                particle.shape.move(particle.velocity * deltaTime.asSeconds());
-                particle.alpha = std::max(0.0f, particle.alpha - Constants::PARTICLE_FADE_RATE * deltaTime.asSeconds());
-                sf::Color color = particle.shape.getFillColor();
-                color.a = static_cast<sf::Uint8>(particle.alpha);
-                particle.shape.setFillColor(color);
-            });
+        // Update particles
+        m_particleSystem->update(deltaTime);
 
         // Remove dead entities from all containers
         EntityUtils::removeDeadEntities(m_entities);
@@ -408,14 +344,6 @@ namespace FishGame
             m_bonusItems.end()
         );
 
-        // Remove expired particles
-        m_particles.erase(
-            std::remove_if(m_particles.begin(), m_particles.end(),
-                [](const auto& particle) {
-                    return particle.lifetime <= sf::Time::Zero;
-                }),
-            m_particles.end()
-        );
 
         // Check collisions
         checkCollisions();
@@ -1064,7 +992,7 @@ namespace FishGame
         resetLevel();
         updateLevelDifficulty();
 
-        m_hud.messageText.setString("");
+        m_hudSystem->clearMessage();
         m_bonusStageTriggered = false;
 
         StageIntroState::configure(m_gameState.currentLevel, false);
@@ -1087,7 +1015,7 @@ namespace FishGame
         m_entities.clear();
         m_bonusItems.clear();
         m_hazards.clear();
-        m_particles.clear();
+        m_particleSystem->clear();
 
         m_scoreSystem->reset();
         m_frenzySystem->reset();
@@ -1152,6 +1080,9 @@ namespace FishGame
 
                 deferAction([this, bonusType]() {
                     m_returningFromBonusStage = true;
+                    auto& cfg = BonusStageConfig::getInstance();
+                    cfg.type = bonusType;
+                    cfg.playerLevel = m_savedLevel;
                     StageIntroState::configure(0, true, StateID::BonusStage);
                     requestStackPush(StateID::StageIntro);
                     });
@@ -1161,98 +1092,22 @@ namespace FishGame
 
     void PlayState::createParticleEffect(const sf::Vector2f& position, const sf::Color& color, int count)
     {
-        m_particles.reserve(m_particles.size() + count);
-
-        std::generate_n(std::back_inserter(m_particles), count,
-            [this, &position, &color]() {
-                ParticleEffect particle;
-                particle.shape = sf::CircleShape(Constants::PARTICLE_RADIUS);
-                particle.shape.setFillColor(color);
-                particle.shape.setPosition(position);
-
-                float angle = m_angleDist(m_randomEngine) * Constants::DEG_TO_RAD;
-                float speed = m_speedDist(m_randomEngine);
-                particle.velocity = sf::Vector2f(std::cos(angle) * speed, std::sin(angle) * speed);
-
-                particle.lifetime = sf::seconds(Constants::PARTICLE_LIFETIME);
-                particle.alpha = Constants::PARTICLE_INITIAL_ALPHA;
-
-                return particle;
-            });
+        m_particleSystem->createEffect(position, color, count);
     }
 
     void PlayState::updateHUD()
     {
-        auto formatText = [](sf::Text& text, const auto&... args) {
-            std::ostringstream stream;
-            ((stream << args), ...);
-            text.setString(stream.str());
-            };
-
-        formatText(m_hud.scoreText,
-            "Score: ", m_scoreSystem->getCurrentScore());
-
-        formatText(m_hud.livesText, "Lives: ", m_gameState.playerLives);
-
-        formatText(m_hud.levelText,
-            "Level: ", m_gameState.currentLevel,
-            m_gameState.gameWon ? " | COMPLETE!" : "");
-
-        if (m_scoreSystem->getChainBonus() > 0)
-        {
-            formatText(m_hud.chainText, "Chain Bonus: +", m_scoreSystem->getChainBonus());
-        }
-        else
-        {
-            m_hud.chainText.setString("");
-        }
-
         auto activePowerUps = m_powerUpManager->getActivePowerUps();
-        if (!activePowerUps.empty())
-        {
-            std::ostringstream powerUpStream;
-            powerUpStream << "\nActive Power-Ups:\n";
-
-            std::for_each(activePowerUps.begin(), activePowerUps.end(),
-                [this, &powerUpStream](PowerUpType type) {
-                    // Create local map to avoid static const capture issue
-                    std::unordered_map<PowerUpType, std::string> names = {
-                        {PowerUpType::ScoreDoubler, "2X Score"},
-                        {PowerUpType::SpeedBoost, "Speed Boost"},
-                        {PowerUpType::Freeze, "Freeze"}
-                    };
-
-                    if (auto it = names.find(type); it != names.end())
-                    {
-                        powerUpStream << it->second;
-                        sf::Time remaining = m_powerUpManager->getRemainingTime(type);
-                        if (remaining > sf::Time::Zero)
-                        {
-                            powerUpStream << " - " << std::fixed << std::setprecision(1)
-                                << remaining.asSeconds() << "s";
-                        }
-                        powerUpStream << "\n";
-                    }
-                });
-
-            m_hud.powerUpText.setString(powerUpStream.str());
-        }
-        else
-        {
-            m_hud.powerUpText.setString("");
-        }
-
-        std::ostringstream effectStream;
-        if (m_isPlayerFrozen)
-            effectStream << "FREEZE ACTIVE: " << std::fixed << std::setprecision(1)
-            << m_freezeTimer.asSeconds() << "s\n";
-        if (m_hasControlsReversed)
-            effectStream << "CONTROLS REVERSED: " << std::fixed << std::setprecision(1)
-            << m_controlReverseTimer.asSeconds() << "s\n";
-        if (m_isPlayerStunned)
-            effectStream << "STUNNED: " << std::fixed << std::setprecision(1)
-            << m_stunTimer.asSeconds() << "s\n";
-        m_hud.effectsText.setString(effectStream.str());
+        m_hudSystem->update(
+            m_scoreSystem->getCurrentScore(),
+            m_gameState.playerLives,
+            m_gameState.currentLevel,
+            m_scoreSystem->getChainBonus(),
+            activePowerUps,
+            m_isPlayerFrozen, m_freezeTimer,
+            m_hasControlsReversed, m_controlReverseTimer,
+            m_isPlayerStunned, m_stunTimer,
+            m_metrics.currentFPS);
     }
 
     void PlayState::updatePerformanceMetrics(sf::Time deltaTime)
@@ -1267,9 +1122,7 @@ namespace FishGame
             m_metrics.frameCount = 0;
             m_metrics.fpsUpdateTime = sf::Time::Zero;
 
-            std::ostringstream fpsStream;
-            fpsStream << std::fixed << std::setprecision(1) << "FPS: " << m_metrics.currentFPS;
-            m_hud.fpsText.setString(fpsStream.str());
+            // FPS value stored for HUD system
         }
     }
 
@@ -1314,16 +1167,7 @@ namespace FishGame
 
     void PlayState::showMessage(const std::string& message)
     {
-        m_hud.messageText.setString(message);
-        centerText(m_hud.messageText);
-    }
-
-void PlayState::centerText(sf::Text& text)
-{
-        sf::FloatRect bounds = text.getLocalBounds();
-        text.setOrigin(bounds.width / 2.0f, bounds.height / 2.0f);
-        auto windowSize = getGame().getWindow().getSize();
-        text.setPosition(windowSize.x / 2.0f, windowSize.y / 2.0f);
+        m_hudSystem->showMessage(message);
     }
 
     void PlayState::render()
@@ -1345,10 +1189,7 @@ void PlayState::centerText(sf::Text& text)
 
         window.draw(*m_player);
 
-        std::for_each(m_particles.begin(), m_particles.end(),
-            [&window](const ParticleEffect& particle) {
-                window.draw(particle.shape);
-            });
+        window.draw(*m_particleSystem);
 
         m_scoreSystem->drawFloatingScores(window);
         
@@ -1358,19 +1199,15 @@ void PlayState::centerText(sf::Text& text)
 
 
 
-        // Render HUD texts
-        window.draw(m_hud.scoreText);
-        window.draw(m_hud.livesText);
-        window.draw(m_hud.levelText);
-        window.draw(m_hud.chainText);
-        window.draw(m_hud.powerUpText);
+        // Render HUD
+        window.draw(*m_hudSystem);
 
         if (m_gameState.gameWon || m_gameState.levelComplete)
         {
             sf::RectangleShape overlay(sf::Vector2f(window.getSize()));
             overlay.setFillColor(Constants::OVERLAY_COLOR);
             window.draw(overlay);
-            window.draw(m_hud.messageText);
+            // message rendered via HUD system
         }
     }
 
@@ -1393,7 +1230,7 @@ void PlayState::centerText(sf::Text& text)
 
             // Mouse control disabled
 
-            m_hud.messageText.setString("");
+            m_hudSystem->clearMessage();
             m_initialized = true;
             getGame().getMusicPlayer().play(musicForLevel(m_gameState.currentLevel), true);
         }

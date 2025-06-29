@@ -1,5 +1,8 @@
 #include "Player.h"
 #include "Fish.h"
+#include "PlayerInput.h"
+#include "PlayerGrowth.h"
+#include "PlayerVisual.h"
 #include "BonusItem.h"
 #include "PowerUp.h"
 #include "SpecialFish.h"
@@ -18,6 +21,8 @@ namespace FishGame
     const sf::Time Player::m_damageCooldownDuration = sf::seconds(0.5f);
     const sf::Time Player::m_eatAnimationDuration = sf::seconds(0.3f);
     const sf::Time Player::m_turnAnimationDuration = sf::seconds(0.45f);
+
+    Player::~Player() = default;
 
     Player::Player()
         : Entity()
@@ -49,6 +54,9 @@ namespace FishGame
         , m_animator(nullptr)
         , m_currentAnimation()
         , m_facingRight(false)
+        , m_input(std::make_unique<PlayerInput>(*this))
+        , m_growth(std::make_unique<PlayerGrowth>(*this))
+        , m_visual(std::make_unique<PlayerVisual>(*this))
     {
         m_radius = m_baseRadius;
 
@@ -203,53 +211,8 @@ namespace FishGame
 
     void Player::handleInput()
     {
-        // Check for keyboard input
-        sf::Vector2f inputDirection(0.0f, 0.0f);
-        bool keyboardUsed = false;
-
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
-        {
-            inputDirection.y -= 1.0f;
-            keyboardUsed = true;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) || sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
-        {
-            inputDirection.y += 1.0f;
-            keyboardUsed = true;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
-        {
-            inputDirection.x -= 1.0f;
-            keyboardUsed = true;
-        }
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
-        {
-            inputDirection.x += 1.0f;
-            keyboardUsed = true;
-        }
-
-        if (m_controlsReversed)
-        {
-            inputDirection = -inputDirection;
-        }
-
-        // Apply movement if any keyboard input was detected
-        if (keyboardUsed)
-        {
-            // Normalize diagonal movement
-            float length = std::sqrt(inputDirection.x * inputDirection.x + inputDirection.y * inputDirection.y);
-            if (length > 0.0f)
-            {
-                inputDirection /= length;
-                float speed = m_baseSpeed * (m_speedBoostTimer > sf::Time::Zero ? m_speedMultiplier : 1.0f);
-                m_velocity = inputDirection * speed;
-            }
-        }
-        else
-        {
-            // Apply deceleration when no keyboard input
-            m_velocity *= 0.9f;
-        }
+        if (m_input)
+            m_input->handleInput();
     }
 
     sf::FloatRect Player::getBounds() const
@@ -260,74 +223,30 @@ namespace FishGame
 
     void Player::grow(int scoreValue)
     {
-        // Growth points for visual growth
-        float growthPoints = 0.0f;
-
-        if (scoreValue <= 3)
-            growthPoints = m_tinyFishGrowth;
-        else if (scoreValue <= 6)
-            growthPoints = m_smallFishGrowth;
-        else if (scoreValue <= 9)
-            growthPoints = m_mediumFishGrowth;
-        else
-            growthPoints = static_cast<float>(scoreValue);
-
-        m_growthProgress += growthPoints;
-
-        if (m_growthMeter)
-        {
-            m_growthMeter->setPoints(m_points);
-        }
-
-        triggerEatEffect();
+        if (m_growth)
+            m_growth->grow(scoreValue);
     }
 
     void Player::addPoints(int points)
     {
-        m_points += points;
-
-        if (m_growthMeter)
-        {
-            m_growthMeter->setPoints(m_points);
-        }
+        if (m_growth)
+            m_growth->addPoints(points);
     }
 
     void Player::checkStageAdvancement()
     {
-        if (m_currentStage == 1 && m_points >= Constants::POINTS_FOR_STAGE_2)
-        {
-            m_currentStage = 2;
-            updateStage();
-        }
-        else if (m_currentStage == 2 && m_points >= Constants::POINTS_FOR_STAGE_3)
-        {
-            m_currentStage = 3;
-            updateStage();
-        }
+        if (m_growth)
+            m_growth->checkStageAdvancement();
     }
-
     void Player::resetSize()
     {
-        m_score = 0;
-        m_currentStage = 1;
-        m_growthProgress = 0.0f;
-        m_radius = m_baseRadius;
-
-        if (m_growthMeter)
-        {
-            m_growthMeter->reset();
-            m_growthMeter->setStage(1);
-        }
-
-        updateStage();
+        if (m_growth)
+            m_growth->resetSize();
     }
-
     void Player::fullReset()
     {
-        resetSize();
-        m_points = 0;
-        m_controlsReversed = false;
-        m_poisonColorTimer = sf::Time::Zero;
+        if (m_growth)
+            m_growth->fullReset();
     }
 
 
@@ -542,115 +461,28 @@ void Player::applyPoisonEffect(sf::Time duration)
         m_soundPlayer->play(SoundEffectID::PlayerPoison);
 }
 
-    void Player::triggerEatEffect()
-    {
-        m_eatAnimationScale = 1.3f;
-        m_eatAnimationTimer = m_eatAnimationDuration;
-
-        if (m_animator)
-        {
-            std::string eatAnim = m_facingRight ? "eatRight" : "eatLeft";
-            m_animator->play(eatAnim);
-            m_currentAnimation = eatAnim;
-        }
-
-        m_activeEffects.push_back({
-            1.2f,
-            0.0f,
-            sf::Color::Green,
-            sf::seconds(0.2f)
-            });
-    }
-
-    void Player::triggerDamageEffect()
-    {
-        m_damageFlashIntensity = 1.0f;
-        m_damageFlashColor = sf::Color::Red;
-
-        m_activeEffects.push_back({
-            0.8f,
-            15.0f,
-            sf::Color::Red,
-            sf::seconds(0.3f)
-            });
-    }
-
-    void Player::setWindowBounds(const sf::Vector2u& windowSize)
-    {
-        m_windowBounds = windowSize;
-    }
-
-    void Player::draw(sf::RenderTarget& target, sf::RenderStates states) const
-    {
-        if (!m_isAlive)
-            return;
-
-        for (const auto& effect : m_activeEffects)
-    {
-            if (effect.duration > sf::Time::Zero)
-            {
-                sf::Transform effectTransform;
-                effectTransform.translate(m_position);
-                effectTransform.scale(effect.scale, effect.scale);
-                effectTransform.rotate(effect.rotation);
-                effectTransform.translate(-m_position);
-
-                states.transform *= effectTransform;
-            }
-        }
-
-        if (m_animator)
-        {
-            target.draw(*m_animator, states);
-        }
-    }
-
-void Player::updateStage()
+void Player::triggerEatEffect()
 {
-    if (m_soundPlayer && m_currentStage == 1)
-        m_soundPlayer->play(SoundEffectID::StageIntro);
+    if (m_visual)
+        m_visual->triggerEatEffect();
+}
 
-    else if (m_soundPlayer)
-        m_soundPlayer->play(SoundEffectID::PlayerGrow);
+void Player::triggerDamageEffect()
+{
+    if (m_visual)
+        m_visual->triggerDamageEffect();
+}
 
-        m_radius = static_cast<float>(m_baseRadius *
-            std::pow(m_growthFactor, static_cast<float>(m_currentStage - 1)));
+void Player::setWindowBounds(const sf::Vector2u& windowSize)
+{
+    m_windowBounds = windowSize;
+}
 
-        if (m_growthMeter)
-        {
-            m_growthMeter->setStage(m_currentStage);
-        }
-
-        if (m_animator && m_renderMode == RenderMode::Sprite && m_spriteManager)
-        {
-            float stageScale = 1.0f;
-            const auto& cfg = m_spriteManager->getScaleConfig();
-            switch (getCurrentFishSize())
-            {
-            case FishSize::Small:
-                stageScale = cfg.small;
-                break;
-            case FishSize::Medium:
-                stageScale = (cfg.medium) + 0.18f;
-                break;
-            case FishSize::Large:
-                stageScale = (cfg.large) + 0.4f;
-                break;
-            default:
-                stageScale = 1.0f;
-                break;
-            }
-            m_animator->setScale(sf::Vector2f(stageScale, stageScale));
-        }
-
-        m_activeEffects.push_back({
-            1.5f,
-            0.0f,
-            sf::Color::Cyan,
-            sf::seconds(0.5f)
-            });
-    }
-
+void Player::draw(sf::RenderTarget& target, sf::RenderStates states) const
+{
+    if (m_visual)
+        m_visual->draw(target, states);
+}
     void Player::constrainToWindow()
     {
         m_position.x = std::clamp(m_position.x, m_radius,
@@ -671,78 +503,11 @@ void Player::updateStage()
         }
     }
 
-    void Player::updateVisualEffects(sf::Time deltaTime)
-    {
-        if (m_eatAnimationTimer > sf::Time::Zero)
-        {
-            m_eatAnimationTimer -= deltaTime;
-            if (m_eatAnimationTimer < sf::Time::Zero)
-                m_eatAnimationTimer = sf::Time::Zero;
-        }
 
-        if (m_turnAnimationTimer > sf::Time::Zero)
-        {
-            m_turnAnimationTimer -= deltaTime;
-            if (m_turnAnimationTimer < sf::Time::Zero)
-                m_turnAnimationTimer = sf::Time::Zero;
-        }
-
-        if (m_eatAnimationScale > 1.0f)
-        {
-            m_eatAnimationScale -= m_eatAnimationSpeed * deltaTime.asSeconds();
-            m_eatAnimationScale = std::max(1.0f, m_eatAnimationScale);
-        }
-
-        if (m_damageFlashIntensity > 0.0f)
-        {
-            m_damageFlashIntensity -= 3.0f * deltaTime.asSeconds();
-            m_damageFlashIntensity = std::max(0.0f, m_damageFlashIntensity);
-        }
-
-        if (m_poisonColorTimer > sf::Time::Zero)
-        {
-            m_poisonColorTimer -= deltaTime;
-            if (m_poisonColorTimer <= sf::Time::Zero)
-            {
-                m_poisonColorTimer = sf::Time::Zero;
-                m_controlsReversed = false;
-            }
-        }
-
-        std::for_each(m_activeEffects.begin(), m_activeEffects.end(),
-            [deltaTime](VisualEffect& effect) {
-                effect.duration -= deltaTime;
-            });
-
-        m_activeEffects.erase(
-            std::remove_if(m_activeEffects.begin(), m_activeEffects.end(),
-                [](const VisualEffect& effect) { return effect.duration <= sf::Time::Zero; }),
-            m_activeEffects.end()
-        );
-
-        sf::Color currentColor = sf::Color::White;
-
-        if (m_invulnerabilityTimer > sf::Time::Zero)
-        {
-            float alpha = std::sin(m_invulnerabilityTimer.asSeconds() * 10.0f) * 0.5f + 0.5f;
-            currentColor.a = static_cast<sf::Uint8>(255 * alpha);
-        }
-        else if (m_damageFlashIntensity > 0.0f)
-        {
-            currentColor.r = static_cast<sf::Uint8>(currentColor.r + (m_damageFlashColor.r - currentColor.r) * m_damageFlashIntensity);
-            currentColor.g = static_cast<sf::Uint8>(currentColor.g + (m_damageFlashColor.g - currentColor.g) * m_damageFlashIntensity);
-            currentColor.b = static_cast<sf::Uint8>(currentColor.b + (m_damageFlashColor.b - currentColor.b) * m_damageFlashIntensity);
-        }
-        else if (m_poisonColorTimer > sf::Time::Zero)
-        {
-            currentColor = sf::Color(50, 255, 50);
-        }
-        else
-        {
-            currentColor.a = 255;
-        }
-
-        if (m_animator)
-            m_animator->setColor(currentColor);
-    }
+void Player::updateVisualEffects(sf::Time deltaTime)
+{
+    if (m_visual)
+        m_visual->update(deltaTime);
 }
+}
+

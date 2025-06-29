@@ -1,4 +1,4 @@
-#include "Utils/AnimatedSprite.h"
+#include "AnimatedSprite.h"
 
 AnimatedSprite::AnimatedSprite(const sf::Texture& texture)
     : m_texture(texture)
