@@ -21,6 +21,7 @@
 #include "BonusStageState.h"
 #include "GameConstants.h"
 #include "StateUtils.h"
+#include "SpawnTimer.h"
 #include <vector>
 #include <functional>
 #include <random>
@@ -108,7 +109,6 @@ namespace FishGame
         void applyEnvironmentalForces(sf::Time deltaTime);
 
         // State helpers
-        bool shouldSpawnSpecialEntity(sf::Time& timer, float interval);
         void updateEffectTimers(sf::Time deltaTime);
 
         // ==================== Core Methods ====================
@@ -184,8 +184,8 @@ namespace FishGame
         sf::Time m_controlReverseTimer;
         sf::Time m_freezeTimer;
         sf::Time m_stunTimer;
-        sf::Time m_hazardSpawnTimer;
-        sf::Time m_extendedPowerUpSpawnTimer;
+        SpawnTimer<sf::Time> m_hazardSpawnTimer;
+        SpawnTimer<sf::Time> m_extendedPowerUpSpawnTimer;
         InputHandler m_inputHandler;
 
         // Bonus stage tracking

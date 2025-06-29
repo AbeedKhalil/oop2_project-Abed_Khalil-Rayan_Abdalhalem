@@ -42,8 +42,8 @@ namespace FishGame
         , m_controlReverseTimer(sf::Time::Zero)
         , m_freezeTimer(sf::Time::Zero)
         , m_stunTimer(sf::Time::Zero)
-        , m_hazardSpawnTimer(sf::Time::Zero)
-        , m_extendedPowerUpSpawnTimer(sf::Time::Zero)
+        , m_hazardSpawnTimer(sf::seconds(m_hazardSpawnInterval))
+        , m_extendedPowerUpSpawnTimer(sf::seconds(m_extendedPowerUpInterval))
         , m_bonusStageTriggered(false)
         , m_returningFromBonusStage(false)
         , m_savedLevel(1)
@@ -283,13 +283,13 @@ namespace FishGame
             std::move(spawnedFish.begin(), spawnedFish.end(), std::back_inserter(m_entities));
             spawnedFish.clear();
 
-            if (shouldSpawnSpecialEntity(m_hazardSpawnTimer, m_hazardSpawnInterval))
+            if (m_hazardSpawnTimer.update(deltaTime))
             {
                 if (auto hazard = m_spawnSystem->spawnRandomHazard())
                     m_hazards.push_back(std::move(hazard));
             }
 
-            if (shouldSpawnSpecialEntity(m_extendedPowerUpSpawnTimer, m_extendedPowerUpInterval))
+            if (m_extendedPowerUpSpawnTimer.update(deltaTime))
             {
                 if (auto powerUp = m_spawnSystem->spawnRandomPowerUp())
                     m_bonusItems.push_back(std::move(powerUp));
@@ -434,16 +434,6 @@ namespace FishGame
             });
     }
 
-    bool PlayState::shouldSpawnSpecialEntity(sf::Time& timer, float interval)
-    {
-        timer += sf::seconds(1.0f / 60.0f);
-        if (timer.asSeconds() >= interval)
-        {
-            timer = sf::Time::Zero;
-            return true;
-        }
-        return false;
-    }
 
 
     void PlayState::checkCollisions()
