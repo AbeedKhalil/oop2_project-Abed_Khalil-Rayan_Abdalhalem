@@ -9,6 +9,7 @@ namespace FishGame
     // Forward declarations
     template<typename T> class SpriteComponent;
     enum class TextureID;
+    class SpriteManager;
 
     // Entity types for identification
     enum class EntityType
@@ -67,6 +68,9 @@ namespace FishGame
         void setSpriteComponent(std::unique_ptr<SpriteComponent<Entity>> sprite);
         SpriteComponent<Entity>* getSpriteComponent();
         const SpriteComponent<Entity>* getSpriteComponent() const;
+
+        // Helper to create a default sprite for this entity
+        void setupSprite(SpriteManager& spriteManager, TextureID textureId);
 
         // Visual mode
         enum class RenderMode { Circle, Sprite };

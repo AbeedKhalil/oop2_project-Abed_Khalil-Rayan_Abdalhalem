@@ -90,15 +90,7 @@ namespace FishGame
 
     void Starfish::initializeSprite(SpriteManager& spriteManager)
     {
-        auto sprite = spriteManager.createSpriteComponent(
-            static_cast<Entity*>(this), TextureID::Starfish);
-        if (sprite)
-        {
-            auto config = spriteManager.getSpriteConfig<Entity>(TextureID::Starfish);
-            sprite->configure(config);
-            setSpriteComponent(std::move(sprite));
-            setRenderMode(RenderMode::Sprite);
-        }
+        setupSprite(spriteManager, TextureID::Starfish);
     }
 
     void Starfish::update(sf::Time deltaTime)

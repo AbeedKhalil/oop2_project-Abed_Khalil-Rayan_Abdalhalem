@@ -1,5 +1,6 @@
 #include "Entity.h"
 #include "SpriteComponent.h"
+#include "SpriteManager.h"
 
 namespace FishGame
 {
@@ -25,5 +26,18 @@ namespace FishGame
     void Entity::updatePosition(sf::Time deltaTime) noexcept
     {
         m_position += m_velocity * deltaTime.asSeconds();
+    }
+
+    void Entity::setupSprite(SpriteManager& spriteManager, TextureID textureId)
+    {
+        auto sprite = spriteManager.createSpriteComponent(
+            static_cast<Entity*>(this), textureId);
+        if (sprite)
+        {
+            auto config = spriteManager.getSpriteConfig<Entity>(textureId);
+            sprite->configure(config);
+            setSpriteComponent(std::move(sprite));
+            setRenderMode(RenderMode::Sprite);
+        }
     }
 }
