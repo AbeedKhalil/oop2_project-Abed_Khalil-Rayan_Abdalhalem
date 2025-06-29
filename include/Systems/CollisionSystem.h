@@ -12,7 +12,6 @@
 #include "ScoreSystem.h"
 #include "FrenzySystem.h"
 #include "PowerUp.h"
-#include "PowerUpManager.h"
 #include "OysterManager.h"
 #include "FishCollisionHandler.h"
 

@@ -1,6 +1,5 @@
 #include "CollisionSystem.h"
 #include "GameConstants.h"
-#include "EntityUtils.h"
 #include "StateUtils.h"
 #include <algorithm>
 
