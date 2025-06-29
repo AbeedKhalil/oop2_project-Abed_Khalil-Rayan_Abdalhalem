@@ -1,5 +1,6 @@
 #include "GameOptionsState.h"
 #include "Game.h"
+#include <algorithm>
 
 namespace {
 using FishGame::TextureID;
@@ -85,7 +86,7 @@ void GameOptionsState::onActivate() {
   m_controlsText.setPosition(winWidth / 2.f, 290.f);
 
   m_instructionText.setFont(font);
-  m_instructionText.setString("Use Arrows to change volume");
+  m_instructionText.setString("Use Arrows or drag bars to change volume");
   m_instructionText.setCharacterSize(36);
   m_instructionText.setFillColor(sf::Color::White);
   bounds = m_instructionText.getLocalBounds();
@@ -99,6 +100,24 @@ void GameOptionsState::onActivate() {
   m_soundVolumeText.setFont(font);
   m_soundVolumeText.setCharacterSize(48);
   m_soundVolumeText.setFillColor(sf::Color::White);
+
+  // Setup volume bars
+  constexpr float barWidth = 300.f;
+  constexpr float barHeight = 6.f;
+  constexpr float knobRadius = 10.f;
+  m_musicBar.setSize({barWidth, barHeight});
+  m_musicBar.setFillColor(Constants::PROGRESS_BAR_BACKGROUND);
+  m_musicBar.setOrigin(barWidth / 2.f, barHeight / 2.f);
+  m_musicKnob.setRadius(knobRadius);
+  m_musicKnob.setOrigin(knobRadius, knobRadius);
+  m_musicKnob.setFillColor(sf::Color::White);
+
+  m_soundBar.setSize({barWidth, barHeight});
+  m_soundBar.setFillColor(Constants::PROGRESS_BAR_BACKGROUND);
+  m_soundBar.setOrigin(barWidth / 2.f, barHeight / 2.f);
+  m_soundKnob.setRadius(knobRadius);
+  m_soundKnob.setOrigin(knobRadius, knobRadius);
+  m_soundKnob.setFillColor(sf::Color::White);
 
   m_backButtonSprite.setTexture(manager.getTexture(TextureID::Button));
   auto b = m_backButtonSprite.getLocalBounds();
@@ -152,11 +171,25 @@ void GameOptionsState::updateVolumeTexts() {
                                 static_cast<float>(window.getSize().y) / 2.f -
                                     40.f);
 
+  m_musicBar.setPosition(m_musicVolumeText.getPosition().x,
+                         m_musicVolumeText.getPosition().y + 30.f);
+  float musicOffset = (m_musicVolume / 100.f) * m_musicBar.getSize().x -
+                      m_musicBar.getSize().x / 2.f;
+  m_musicKnob.setPosition(m_musicBar.getPosition().x + musicOffset,
+                          m_musicBar.getPosition().y);
+
   auto sb = m_soundVolumeText.getLocalBounds();
   m_soundVolumeText.setOrigin(sb.width / 2.f, sb.height / 2.f);
   m_soundVolumeText.setPosition(static_cast<float>(window.getSize().x) / 2.f,
                                 static_cast<float>(window.getSize().y) / 2.f +
                                     40.f);
+
+  m_soundBar.setPosition(m_soundVolumeText.getPosition().x,
+                         m_soundVolumeText.getPosition().y + 30.f);
+  float soundOffset = (m_soundVolume / 100.f) * m_soundBar.getSize().x -
+                      m_soundBar.getSize().x / 2.f;
+  m_soundKnob.setPosition(m_soundBar.getPosition().x + soundOffset,
+                          m_soundBar.getPosition().y);
 }
 
 void GameOptionsState::handleEvent(const sf::Event &event) {
@@ -194,32 +227,67 @@ void GameOptionsState::handleEvent(const sf::Event &event) {
   } else if (event.type == sf::Event::MouseMoved) {
     sf::Vector2f pos(static_cast<float>(event.mouseMove.x),
                      static_cast<float>(event.mouseMove.y));
-    bool hoverBack = m_backButtonSprite.getGlobalBounds().contains(pos);
-    if (hoverBack != m_backButtonHovered) {
-      m_backButtonHovered = hoverBack;
-      auto &manager = getGame().getSpriteManager();
-      m_backButtonSprite.setTexture(
-          manager.getTexture(hoverBack ? TextureID::ButtonHover : TextureID::Button));
-    }
-    bool hoverNext = m_nextButtonSprite.getGlobalBounds().contains(pos);
-    if (hoverNext != m_nextButtonHovered) {
-      m_nextButtonHovered = hoverNext;
-      auto &manager = getGame().getSpriteManager();
-      m_nextButtonSprite.setTexture(
-          manager.getTexture(hoverNext ? TextureID::ButtonHover : TextureID::Button));
+    if (m_dragMusic) {
+      float rel = std::clamp(pos.x - (m_musicBar.getPosition().x -
+                                     m_musicBar.getSize().x / 2.f),
+                             0.f, m_musicBar.getSize().x);
+      m_musicVolume = (rel / m_musicBar.getSize().x) * 100.f;
+      music.setVolume(m_musicVolume);
+      updateVolumeTexts();
+    } else if (m_dragSound) {
+      float rel = std::clamp(pos.x - (m_soundBar.getPosition().x -
+                                     m_soundBar.getSize().x / 2.f),
+                             0.f, m_soundBar.getSize().x);
+      m_soundVolume = (rel / m_soundBar.getSize().x) * 100.f;
+      sounds.setVolume(m_soundVolume);
+      updateVolumeTexts();
+    } else {
+      bool hoverBack = m_backButtonSprite.getGlobalBounds().contains(pos);
+      if (hoverBack != m_backButtonHovered) {
+        m_backButtonHovered = hoverBack;
+        auto &manager = getGame().getSpriteManager();
+        m_backButtonSprite.setTexture(
+            manager.getTexture(hoverBack ? TextureID::ButtonHover : TextureID::Button));
+      }
+      bool hoverNext = m_nextButtonSprite.getGlobalBounds().contains(pos);
+      if (hoverNext != m_nextButtonHovered) {
+        m_nextButtonHovered = hoverNext;
+        auto &manager = getGame().getSpriteManager();
+        m_nextButtonSprite.setTexture(
+            manager.getTexture(hoverNext ? TextureID::ButtonHover : TextureID::Button));
+      }
     }
   } else if (event.type == sf::Event::MouseButtonPressed &&
              event.mouseButton.button == sf::Mouse::Left) {
     sf::Vector2f pos(static_cast<float>(event.mouseButton.x),
                      static_cast<float>(event.mouseButton.y));
-    if (m_backButtonSprite.getGlobalBounds().contains(pos)) {
+    if (m_currentIndex == 0 && m_musicBar.getGlobalBounds().contains(pos)) {
+      m_dragMusic = true;
+      float rel = std::clamp(pos.x - (m_musicBar.getPosition().x -
+                                     m_musicBar.getSize().x / 2.f),
+                             0.f, m_musicBar.getSize().x);
+      m_musicVolume = (rel / m_musicBar.getSize().x) * 100.f;
+      music.setVolume(m_musicVolume);
+      updateVolumeTexts();
+    } else if (m_currentIndex == 0 && m_soundBar.getGlobalBounds().contains(pos)) {
+      m_dragSound = true;
+      float rel = std::clamp(pos.x - (m_soundBar.getPosition().x -
+                                     m_soundBar.getSize().x / 2.f),
+                             0.f, m_soundBar.getSize().x);
+      m_soundVolume = (rel / m_soundBar.getSize().x) * 100.f;
+      sounds.setVolume(m_soundVolume);
+      updateVolumeTexts();
+    } else if (m_backButtonSprite.getGlobalBounds().contains(pos)) {
       deferAction([this]() { requestStackPop(); });
     } else if (m_nextButtonSprite.getGlobalBounds().contains(pos)) {
-      // advance to the next info page (first page is volume controls)
       std::size_t totalPages = m_infoItems.size() + 1;
       m_currentIndex = (m_currentIndex + 1) % totalPages;
       updateCurrentInfo();
     }
+  } else if (event.type == sf::Event::MouseButtonReleased &&
+             event.mouseButton.button == sf::Mouse::Left) {
+    m_dragMusic = false;
+    m_dragSound = false;
   }
 }
 
@@ -237,9 +305,12 @@ void GameOptionsState::render() {
   window.draw(m_controlsText);
   // Display volume controls only on the first page
   if (m_currentIndex == 0) {
-    // show volume controls on the first page only
     window.draw(m_musicVolumeText);
+    window.draw(m_musicBar);
+    window.draw(m_musicKnob);
     window.draw(m_soundVolumeText);
+    window.draw(m_soundBar);
+    window.draw(m_soundKnob);
     window.draw(m_instructionText);
   } else if (!m_infoItems.empty()) {
     auto &item = m_infoItems[m_currentIndex - 1];

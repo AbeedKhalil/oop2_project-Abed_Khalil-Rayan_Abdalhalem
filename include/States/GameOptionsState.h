@@ -44,6 +44,12 @@ private:
   sf::RectangleShape m_background;
   bool m_backButtonHovered{false};
   bool m_nextButtonHovered{false};
+  sf::RectangleShape m_musicBar;
+  sf::CircleShape m_musicKnob;
+  sf::RectangleShape m_soundBar;
+  sf::CircleShape m_soundKnob;
+  bool m_dragMusic{false};
+  bool m_dragSound{false};
   float m_musicVolume{100.f};
   float m_soundVolume{100.f};
   std::vector<InfoItem> m_infoItems;
