@@ -21,6 +21,8 @@ public:
 private:
   sf::Text m_titleText;
   sf::Text m_instructionText;
+  sf::Text m_gameDescriptionText;
+  sf::Text m_controlsText;
   sf::Text m_musicVolumeText;
   sf::Text m_soundVolumeText;
   sf::Sprite m_overlaySprite;
