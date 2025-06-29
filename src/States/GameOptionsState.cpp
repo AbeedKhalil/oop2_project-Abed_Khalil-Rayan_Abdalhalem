@@ -1,11 +1,45 @@
 #include "GameOptionsState.h"
 #include "Game.h"
 
+namespace {
+using FishGame::TextureID;
+sf::IntRect firstFrameRect(TextureID id) {
+  using namespace FishGame;
+  switch (id) {
+  case TextureID::SmallFish:
+  case TextureID::PoisonFish:
+  case TextureID::Angelfish:
+    return {1, 1, 66, 44};
+  case TextureID::MediumFish:
+    return {1, 1, 172, 108};
+  case TextureID::LargeFish:
+    return {1, 1, 201, 148};
+  case TextureID::PearlOysterClosed:
+    return {1, 1, 101, 101};
+  case TextureID::PearlOysterOpen:
+    return {1 + 4 * 101, 1, 101, 101};
+  case TextureID::Bomb:
+    return {1, 1, 69, 69};
+  case TextureID::Pufferfish:
+    return {5, 5, 187, 131};
+  case TextureID::PufferfishInflated:
+    return {5, 136, 186, 169};
+  case TextureID::Jellyfish:
+    return {1, 1, 75, 197};
+  case TextureID::Barracuda:
+    return {1, 1, 270, 122};
+  default:
+    return {};
+  }
+}
+} // namespace
+
 namespace FishGame {
 GameOptionsState::GameOptionsState(Game &game)
     : State(game), m_titleText(), m_instructionText(), m_gameDescriptionText(),
       m_controlsText(), m_musicVolumeText(), m_soundVolumeText(),
-      m_overlaySprite(), m_backButtonSprite(), m_backText(), m_background() {}
+      m_overlaySprite(), m_backButtonSprite(), m_nextButtonSprite(), m_backText(),
+      m_nextText(), m_background() {}
 
 void GameOptionsState::onActivate() {
   auto &window = getGame().getWindow();
@@ -71,7 +105,7 @@ void GameOptionsState::onActivate() {
   m_backButtonSprite.setOrigin(b.width / 2.f, b.height / 2.f);
   m_backButtonSprite.setScale(Constants::MENU_BUTTON_SCALE,
                               Constants::MENU_BUTTON_SCALE);
-  m_backButtonSprite.setPosition(winWidth / 2.f, winHeight - 150.f);
+  m_backButtonSprite.setPosition(winWidth / 2.f - 200.f, winHeight - 150.f);
 
   m_backText.setFont(font);
   m_backText.setString("BACK");
@@ -81,7 +115,26 @@ void GameOptionsState::onActivate() {
   m_backText.setPosition(m_backButtonSprite.getPosition());
   m_backText.setFillColor(sf::Color(0, 16, 112));
 
-  m_buttonHovered = false;
+  m_nextButtonSprite.setTexture(manager.getTexture(TextureID::Button));
+  auto nbounds = m_nextButtonSprite.getLocalBounds();
+  m_nextButtonSprite.setOrigin(nbounds.width / 2.f, nbounds.height / 2.f);
+  m_nextButtonSprite.setScale(Constants::MENU_BUTTON_SCALE,
+                              Constants::MENU_BUTTON_SCALE);
+  m_nextButtonSprite.setPosition(winWidth / 2.f + 200.f, winHeight - 150.f);
+
+  m_nextText.setFont(font);
+  m_nextText.setString("NEXT");
+  m_nextText.setCharacterSize(36);
+  auto nt = m_nextText.getLocalBounds();
+  m_nextText.setOrigin(nt.width / 2.f, nt.height / 2.f + 10.f);
+  m_nextText.setPosition(m_nextButtonSprite.getPosition());
+  m_nextText.setFillColor(sf::Color(0, 16, 112));
+
+  m_backButtonHovered = false;
+  m_nextButtonHovered = false;
+
+  setupInfoItems();
+  updateCurrentInfo();
 
   updateVolumeTexts();
 }
@@ -141,12 +194,19 @@ void GameOptionsState::handleEvent(const sf::Event &event) {
   } else if (event.type == sf::Event::MouseMoved) {
     sf::Vector2f pos(static_cast<float>(event.mouseMove.x),
                      static_cast<float>(event.mouseMove.y));
-    bool hover = m_backButtonSprite.getGlobalBounds().contains(pos);
-    if (hover != m_buttonHovered) {
-      m_buttonHovered = hover;
+    bool hoverBack = m_backButtonSprite.getGlobalBounds().contains(pos);
+    if (hoverBack != m_backButtonHovered) {
+      m_backButtonHovered = hoverBack;
       auto &manager = getGame().getSpriteManager();
-      m_backButtonSprite.setTexture(manager.getTexture(
-          hover ? TextureID::ButtonHover : TextureID::Button));
+      m_backButtonSprite.setTexture(
+          manager.getTexture(hoverBack ? TextureID::ButtonHover : TextureID::Button));
+    }
+    bool hoverNext = m_nextButtonSprite.getGlobalBounds().contains(pos);
+    if (hoverNext != m_nextButtonHovered) {
+      m_nextButtonHovered = hoverNext;
+      auto &manager = getGame().getSpriteManager();
+      m_nextButtonSprite.setTexture(
+          manager.getTexture(hoverNext ? TextureID::ButtonHover : TextureID::Button));
     }
   } else if (event.type == sf::Event::MouseButtonPressed &&
              event.mouseButton.button == sf::Mouse::Left) {
@@ -154,6 +214,9 @@ void GameOptionsState::handleEvent(const sf::Event &event) {
                      static_cast<float>(event.mouseButton.y));
     if (m_backButtonSprite.getGlobalBounds().contains(pos)) {
       deferAction([this]() { requestStackPop(); });
+    } else if (m_nextButtonSprite.getGlobalBounds().contains(pos)) {
+      m_currentIndex = (m_currentIndex + 1) % m_infoItems.size();
+      updateCurrentInfo();
     }
   }
 }
@@ -173,7 +236,63 @@ void GameOptionsState::render() {
   window.draw(m_musicVolumeText);
   window.draw(m_soundVolumeText);
   window.draw(m_instructionText);
+  if (!m_infoItems.empty()) {
+    window.draw(m_infoItems[m_currentIndex].sprite);
+    window.draw(m_infoItems[m_currentIndex].text);
+  }
   window.draw(m_backButtonSprite);
   window.draw(m_backText);
+  window.draw(m_nextButtonSprite);
+  window.draw(m_nextText);
+}
+
+void GameOptionsState::setupInfoItems() {
+  m_infoItems.clear();
+  auto &manager = getGame().getSpriteManager();
+  auto &font = getGame().getFonts().get(Fonts::Main);
+
+  auto add = [&](TextureID tex, const std::string &str) {
+    InfoItem item;
+    item.tex = tex;
+    item.sprite.setTexture(manager.getTexture(tex));
+    item.text.setFont(font);
+    item.text.setCharacterSize(32);
+    item.text.setFillColor(sf::Color::White);
+    item.text.setString(str);
+    m_infoItems.push_back(std::move(item));
+  };
+
+  add(TextureID::SmallFish, "Small fish - easy prey");
+  add(TextureID::MediumFish, "Medium fish - worth more points");
+  add(TextureID::LargeFish, "Large fish - avoid until bigger");
+  add(TextureID::Angelfish, "Angelfish - bonus points");
+  add(TextureID::PoisonFish, "Poison fish - reverses controls");
+  add(TextureID::Pufferfish, "Pufferfish - inflates when threatened");
+  add(TextureID::Barracuda, "Barracuda - fast predator");
+  add(TextureID::Bomb, "Bomb - explodes on contact");
+  add(TextureID::Jellyfish, "Jellyfish - stuns on touch");
+}
+
+void GameOptionsState::updateCurrentInfo() {
+  if (m_infoItems.empty())
+    return;
+
+  auto &window = getGame().getWindow();
+  auto &item = m_infoItems[m_currentIndex];
+
+  sf::IntRect rect = firstFrameRect(item.tex);
+  if (rect.width > 0)
+    item.sprite.setTextureRect(rect);
+
+  auto bounds = item.sprite.getLocalBounds();
+  item.sprite.setOrigin(bounds.width / 2.f, bounds.height / 2.f);
+  item.sprite.setScale(0.6f, 0.6f);
+  item.sprite.setPosition(static_cast<float>(window.getSize().x) / 2.f,
+                          static_cast<float>(window.getSize().y) / 2.f + 60.f);
+
+  auto tb = item.text.getLocalBounds();
+  item.text.setOrigin(tb.width / 2.f, tb.height / 2.f);
+  item.text.setPosition(item.sprite.getPosition().x,
+                        item.sprite.getPosition().y + bounds.height / 2.f + 40.f);
 }
 } // namespace FishGame
