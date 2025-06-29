@@ -351,7 +351,16 @@ void GameOptionsState::setupInfoItems() {
   add(TextureID::LargeFish, "Large fish - avoid until bigger");
   add(TextureID::Angelfish, "Angelfish - bonus points");
   add(TextureID::PoisonFish, "Poison fish - reverses controls");
-  add(TextureID::Pufferfish, "Pufferfish - inflates when threatened");
+  add(TextureID::Pufferfish, "Pufferfish - normal state");
+  add(TextureID::PufferfishInflated,
+      "Pufferfish puffed - avoid contact");
+  add(TextureID::PearlOysterClosed, "Oyster closed - stay away");
+  add(TextureID::PearlOysterOpen, "Oyster open - collect pearls");
+  add(TextureID::WhitePearl, "White pearl - 100 points");
+  add(TextureID::BlackPearl, "Black pearl - 500 points");
+  add(TextureID::PowerUpSpeedBoost, "Speed boost power-up");
+  add(TextureID::PowerUpAddTime, "Extra time power-up");
+  add(TextureID::PowerUpExtraLife, "Extra life power-up");
   add(TextureID::Barracuda, "Barracuda - fast predator");
   add(TextureID::Bomb, "Bomb - explodes on contact");
   add(TextureID::Jellyfish, "Jellyfish - stuns on touch");
