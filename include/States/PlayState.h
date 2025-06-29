@@ -12,6 +12,7 @@
 #include "ScoreSystem.h"
 #include "HUDSystem.h"
 #include "ParticleSystem.h"
+#include "SpawnSystem.h"
 #include "InputHandler.h"
 #include "PowerUp.h"
 #include "ExtendedPowerUps.h"
@@ -99,10 +100,7 @@ namespace FishGame
 
         // ==================== Helper Functions ====================
 
-        // Spawning helpers
-        void spawnRandomHazard();
-        void spawnRandomPowerUp();
-        sf::Vector2f generateRandomPosition();
+        // Spawning is handled by SpawnSystem
 
         // Effect helpers
         void createParticleEffect(const sf::Vector2f& position, const sf::Color& color,
@@ -209,9 +207,7 @@ namespace FishGame
         std::mt19937 m_randomEngine;
         std::uniform_real_distribution<float> m_angleDist;
         std::uniform_real_distribution<float> m_speedDist;
-        std::uniform_real_distribution<float> m_positionDist;
-        std::uniform_int_distribution<int> m_hazardTypeDist;
-        std::uniform_int_distribution<int> m_powerUpTypeDist;
+        std::unique_ptr<SpawnSystem> m_spawnSystem;
 
         bool m_initialized;
 
