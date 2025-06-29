@@ -80,51 +80,22 @@ namespace FishGame
         m_view.setCenter(m_worldSize * 0.5f);
     }
 
-    template<typename SystemType>
-    SystemType* PlayState::createAndStoreSystem(const std::string& name, const sf::Font& font)
-    {
-        auto system = std::make_unique<SystemType>(font);
-        SystemType* ptr = system.get();
-        m_systems[name] = std::unique_ptr<void, std::function<void(void*)>>(
-            system.release(),
-            [](void* p) { delete static_cast<SystemType*>(p); }
-        );
-        return ptr;
-    }
 
     void PlayState::initializeSystems()
     {
         auto& window = getGame().getWindow();
         auto& font = getGame().getFonts().get(Fonts::Main);
 
-        // Create game systems
-        m_growthMeter = createAndStoreSystem<GrowthMeter>("growth", font);
-        m_frenzySystem = createAndStoreSystem<FrenzySystem>("frenzy", font);
-        m_scoreSystem = createAndStoreSystem<ScoreSystem>("score", font);
+        // Create game systems through helper
+        m_systems.initialize(font, window.getSize(), getGame().getSpriteManager());
 
-        // Special initialization for other systems
-        auto powerUpManager = std::make_unique<PowerUpManager>();
-        m_powerUpManager = powerUpManager.get();
-        m_systems["powerup"] = std::unique_ptr<void, std::function<void(void*)>>(
-            powerUpManager.release(),
-            [](void* p) { delete static_cast<PowerUpManager*>(p); }
-        );
-
-        auto bonusManager = std::make_unique<BonusItemManager>(window.getSize(), font,
-            getGame().getSpriteManager());
-        m_bonusItemManager = bonusManager.get();
-        m_systems["bonus"] = std::unique_ptr<void, std::function<void(void*)>>(
-            bonusManager.release(),
-            [](void* p) { delete static_cast<BonusItemManager*>(p); }
-        );
-
-        auto oysterManager = std::make_unique<FixedOysterManager>(window.getSize(),
-            getGame().getSpriteManager());
-        m_oysterManager = oysterManager.get();
-        m_systems["oyster"] = std::unique_ptr<void, std::function<void(void*)>>(
-            oysterManager.release(),
-            [](void* p) { delete static_cast<FixedOysterManager*>(p); }
-        );
+        // Cache raw pointers for convenience
+        m_growthMeter = &m_systems.getGrowthMeter();
+        m_frenzySystem = &m_systems.getFrenzySystem();
+        m_powerUpManager = &m_systems.getPowerUpManager();
+        m_scoreSystem = &m_systems.getScoreSystem();
+        m_bonusItemManager = &m_systems.getBonusItemManager();
+        m_oysterManager = &m_systems.getOysterManager();
 
         // Initialize environment system
         m_environmentSystem->setEnvironment(EnvironmentType::OpenOcean);

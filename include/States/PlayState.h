@@ -23,7 +23,7 @@
 #include <vector>
 #include <functional>
 #include <random>
-#include <unordered_map>
+#include "GameSystems.h"
 #include <optional>
 #include <algorithm>
 #include <numeric>
@@ -117,8 +117,6 @@ namespace FishGame
 
         // Initialization
         void initializeSystems();
-        template<typename SystemType>
-        SystemType* createAndStoreSystem(const std::string& name, const sf::Font& font);
 
         // Update methods
         void updateGameplay(sf::Time deltaTime);
@@ -166,15 +164,15 @@ namespace FishGame
         std::unique_ptr<EnvironmentSystem> m_environmentSystem;
 
         // Game systems
-        std::unordered_map<std::string, std::unique_ptr<void, std::function<void(void*)>>> m_systems;
+        GameSystems m_systems;
 
-        // Direct system pointers for performance
-        GrowthMeter* m_growthMeter;
-        FrenzySystem* m_frenzySystem;
-        PowerUpManager* m_powerUpManager;
-        ScoreSystem* m_scoreSystem;
-        BonusItemManager* m_bonusItemManager;
-        FixedOysterManager* m_oysterManager;
+        // Direct system pointers for convenience
+        GrowthMeter* m_growthMeter{nullptr};
+        FrenzySystem* m_frenzySystem{nullptr};
+        PowerUpManager* m_powerUpManager{nullptr};
+        ScoreSystem* m_scoreSystem{nullptr};
+        BonusItemManager* m_bonusItemManager{nullptr};
+        FixedOysterManager* m_oysterManager{nullptr};
 
         // State tracking
         GameStateData m_gameState;
