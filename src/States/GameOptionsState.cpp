@@ -177,8 +177,9 @@ void GameOptionsState::updateVolumeTexts() {
                                 static_cast<float>(window.getSize().y) / 2.f -
                                     40.f);
 
+  // Add extra spacing between the volume text and its bar for clarity
   m_musicBar.setPosition(m_musicVolumeText.getPosition().x,
-                         m_musicVolumeText.getPosition().y + 30.f);
+                         m_musicVolumeText.getPosition().y + 60.f);
   float musicOffset = (m_musicVolume / 100.f) * m_musicBar.getSize().x -
                       m_musicBar.getSize().x / 2.f;
   m_musicKnob.setPosition(m_musicBar.getPosition().x + musicOffset,
@@ -191,7 +192,7 @@ void GameOptionsState::updateVolumeTexts() {
                                     40.f);
 
   m_soundBar.setPosition(m_soundVolumeText.getPosition().x,
-                         m_soundVolumeText.getPosition().y + 30.f);
+                         m_soundVolumeText.getPosition().y + 60.f);
   float soundOffset = (m_soundVolume / 100.f) * m_soundBar.getSize().x -
                       m_soundBar.getSize().x / 2.f;
   m_soundKnob.setPosition(m_soundBar.getPosition().x + soundOffset,
@@ -369,14 +370,17 @@ void GameOptionsState::updateCurrentInfo() {
 
   auto bounds = item.sprite.getLocalBounds();
   item.sprite.setOrigin(bounds.width / 2.f, bounds.height / 2.f);
-  // make the example sprite easier to see in the options menu
-  item.sprite.setScale(0.8f, 0.8f);
+  // make the example sprite easier to see in the options menu by using
+  // a larger scale
+  constexpr float spriteScale = 1.2f;
+  item.sprite.setScale(spriteScale, spriteScale);
   item.sprite.setPosition(static_cast<float>(window.getSize().x) / 2.f,
                           static_cast<float>(window.getSize().y) / 2.f + 60.f);
 
   auto tb = item.text.getLocalBounds();
   item.text.setOrigin(tb.width / 2.f, tb.height / 2.f);
-  item.text.setPosition(item.sprite.getPosition().x,
-                        item.sprite.getPosition().y + bounds.height / 2.f + 40.f);
+  item.text.setPosition(
+      item.sprite.getPosition().x,
+      item.sprite.getPosition().y + bounds.height * spriteScale / 2.f + 40.f);
 }
 } // namespace FishGame
