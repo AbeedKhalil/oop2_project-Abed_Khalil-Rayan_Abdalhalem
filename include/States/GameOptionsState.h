@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GameConstants.h"
+#include "SpriteManager.h"
 #include "State.h"
 #include <vector>
 
