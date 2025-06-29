@@ -103,17 +103,23 @@ void GameOptionsState::onActivate() {
 
   // Setup volume bars
   constexpr float barWidth = 300.f;
-  constexpr float barHeight = 6.f;
+  // Slightly thicker bar for better visibility
+  constexpr float barHeight = 8.f;
   constexpr float knobRadius = 10.f;
   m_musicBar.setSize({barWidth, barHeight});
-  m_musicBar.setFillColor(Constants::PROGRESS_BAR_BACKGROUND);
+  // Use bright fill color and outline for clarity
+  m_musicBar.setFillColor(Constants::PROGRESS_BAR_FILL);
+  m_musicBar.setOutlineColor(Constants::PROGRESS_BAR_OUTLINE_COLOR);
+  m_musicBar.setOutlineThickness(2.f);
   m_musicBar.setOrigin(barWidth / 2.f, barHeight / 2.f);
   m_musicKnob.setRadius(knobRadius);
   m_musicKnob.setOrigin(knobRadius, knobRadius);
   m_musicKnob.setFillColor(sf::Color::White);
 
   m_soundBar.setSize({barWidth, barHeight});
-  m_soundBar.setFillColor(Constants::PROGRESS_BAR_BACKGROUND);
+  m_soundBar.setFillColor(Constants::PROGRESS_BAR_FILL);
+  m_soundBar.setOutlineColor(Constants::PROGRESS_BAR_OUTLINE_COLOR);
+  m_soundBar.setOutlineThickness(2.f);
   m_soundBar.setOrigin(barWidth / 2.f, barHeight / 2.f);
   m_soundKnob.setRadius(knobRadius);
   m_soundKnob.setOrigin(knobRadius, knobRadius);
