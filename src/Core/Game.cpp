@@ -19,9 +19,7 @@ namespace FishGame
             sf::Style::Close)
         , m_fonts()
         , m_spriteTextures(nullptr)
-        , m_stateStack()
-        , m_pendingList()
-        , m_stateFactories()
+        , m_stateManager(*this)
         , m_spriteManager(nullptr)
         , m_musicPlayer(std::make_unique<MusicPlayer>())
         , m_soundPlayer(std::make_unique<SoundPlayer>())
@@ -30,9 +28,6 @@ namespace FishGame
         m_window.setFramerateLimit(m_frameRateLimit);
 
         // Reserve capacity for better performance
-        m_pendingList.reserve(10);
-        m_stateStack.reserve(10);
-        m_stateFactories.reserve(10);
 
         // Load resources
         m_fonts.load(Fonts::Main, "Regular.ttf");
@@ -74,7 +69,7 @@ namespace FishGame
                 update(m_timePerFrame);
 
                 // Check if we need to close
-                if (m_stateStack.empty())
+                if (m_stateManager.empty())
                 {
                     m_window.close();
                 }
@@ -107,9 +102,10 @@ namespace FishGame
         while (m_window.pollEvent(event))
         {
             // Process events through active states using STL algorithms
-            std::for_each(m_stateStack.rbegin(),
-                m_stateStack.rend(),
-                [&event](const StatePtr& state)
+            const auto& stack = m_stateManager.getStateStack();
+            std::for_each(stack.rbegin(),
+                stack.rend(),
+                [&event](const StateManager::StatePtr& state)
                 {
                     state->handleEvent(event);
                 });
@@ -124,20 +120,21 @@ namespace FishGame
     void Game::update(sf::Time deltaTime)
     {
         // Update active states from top to bottom using STL
-        auto updateState = [deltaTime](const StatePtr& state) -> bool
+        const auto& stack = m_stateManager.getStateStack();
+        auto updateState = [deltaTime](const StateManager::StatePtr& state) -> bool
             {
                 return state->update(deltaTime);
             };
 
         // Update states until one returns false (blocks updates below)
-        std::find_if(m_stateStack.rbegin(), m_stateStack.rend(),
-            [&updateState](const StatePtr& state)
+        std::find_if(stack.rbegin(), stack.rend(),
+            [&updateState](const StateManager::StatePtr& state)
             {
                 return !updateState(state);
             });
 
         // Apply any pending state changes
-        applyPendingStateChanges();
+        m_stateManager.applyPendingChanges();
     }
 
     void Game::render()
@@ -145,8 +142,9 @@ namespace FishGame
         m_window.clear(Constants::OCEAN_BLUE);
 
         // Render all states from bottom to top using STL
-        std::for_each(m_stateStack.begin(), m_stateStack.end(),
-            [this](const StatePtr& state)
+        const auto& stack = m_stateManager.getStateStack();
+        std::for_each(stack.begin(), stack.end(),
+            [this](const StateManager::StatePtr& state)
             {
                 state->render();
             });
@@ -156,62 +154,22 @@ namespace FishGame
 
     void Game::pushState(StateID id)
     {
-        m_pendingList.emplace_back(StateAction::Push, id);
+        m_stateManager.pushState(id);
     }
 
     void Game::popState()
     {
-        m_pendingList.emplace_back(StateAction::Pop, StateID::None);
+        m_stateManager.popState();
     }
 
     void Game::clearStates()
     {
-        m_pendingList.emplace_back(StateAction::Clear, StateID::None);
+        m_stateManager.clearStates();
     }
 
     void Game::applyPendingStateChanges()
     {
-        // Process all pending state changes using STL
-        std::for_each(m_pendingList.begin(), m_pendingList.end(),
-            [this](const auto& pending)
-            {
-                const auto& [action, stateID] = pending;
-
-                switch (action)
-                {
-                case StateAction::Push:
-                {
-                    auto newState = createState(stateID);
-                    newState->onActivate();
-                    m_stateStack.push_back(std::move(newState));
-                }
-                break;
-
-                case StateAction::Pop:
-                    if (!m_stateStack.empty())
-                    {
-                        m_stateStack.back()->onDeactivate();
-                        m_stateStack.pop_back();
-
-                        if (!m_stateStack.empty())
-                        {
-                            m_stateStack.back()->onActivate();
-                        }
-                    }
-                    break;
-
-                case StateAction::Clear:
-                    // Clear stack using STL container operations
-                    while (!m_stateStack.empty())
-                    {
-                        m_stateStack.back()->onDeactivate();
-                        m_stateStack.pop_back();
-                    }
-                    break;
-                }
-            });
-
-        m_pendingList.clear();
+        m_stateManager.applyPendingChanges();
     }
 
     void Game::registerStates()
@@ -223,11 +181,11 @@ namespace FishGame
         registerState<StageSummaryState>(StateID::StageSummary);
         registerState<PlayState>(StateID::Play);
         // Register bonus stage
-        m_stateFactories[StateID::BonusStage] = [this]() -> std::unique_ptr<State>
+        m_stateManager.registerState(StateID::BonusStage, [this]() -> std::unique_ptr<State>
             {
                 auto& cfg = BonusStageConfig::getInstance();
                 return std::make_unique<BonusStageState>(*this, cfg.type, cfg.playerLevel);
-            };
+            });
 
         // TODO: Register additional states as they are implemented
         registerState<GameOptionsState>(StateID::GameOptions);
@@ -235,16 +193,4 @@ namespace FishGame
         // registerState<CreditsState>(StateID::Credits);
     }
 
-    std::unique_ptr<State> Game::createState(StateID id)
-    {
-        auto found = m_stateFactories.find(id);
-        if (found == m_stateFactories.end())
-        {
-            throw StateNotFoundException(
-                "State factory not found for StateID: " +
-                std::to_string(static_cast<int>(id)));
-        }
-
-        return found->second();
-    }
 }
