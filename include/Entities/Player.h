@@ -14,8 +14,15 @@
 
 namespace FishGame
 {
+    class PlayerInput;
+    class PlayerGrowth;
+    class PlayerVisual;
+
     class Player : public Entity
     {
+        friend class PlayerInput;
+        friend class PlayerGrowth;
+        friend class PlayerVisual;
     public:
         Player();
         ~Player() override = default;
@@ -86,11 +93,8 @@ namespace FishGame
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
     private:
-        void updateStage();
         void constrainToWindow();
         void updateInvulnerability(sf::Time deltaTime);
-        void updateVisualEffects(sf::Time deltaTime);
-        void checkStageAdvancement();
 
     private:
         int m_score;
@@ -172,6 +176,9 @@ namespace FishGame
         // Animation
         std::unique_ptr<Animator> m_animator;
         std::string m_currentAnimation;
+        std::unique_ptr<PlayerInput> m_input;
+        std::unique_ptr<PlayerGrowth> m_growth;
+        std::unique_ptr<PlayerVisual> m_visual;
         bool m_facingRight{ false };
     };
 }
