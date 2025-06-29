@@ -3,9 +3,9 @@
 
 namespace FishGame {
 GameOptionsState::GameOptionsState(Game &game)
-    : State(game), m_titleText(), m_instructionText(), m_musicVolumeText(),
-      m_soundVolumeText(), m_overlaySprite(), m_backButtonSprite(),
-      m_backText(), m_background() {}
+    : State(game), m_titleText(), m_instructionText(), m_gameDescriptionText(),
+      m_controlsText(), m_musicVolumeText(), m_soundVolumeText(),
+      m_overlaySprite(), m_backButtonSprite(), m_backText(), m_background() {}
 
 void GameOptionsState::onActivate() {
   auto &window = getGame().getWindow();
@@ -32,6 +32,23 @@ void GameOptionsState::onActivate() {
   float winWidth = static_cast<float>(window.getSize().x);
   float winHeight = static_cast<float>(window.getSize().y);
   m_titleText.setPosition(winWidth / 2.f, 180.f);
+
+  m_gameDescriptionText.setFont(font);
+  m_gameDescriptionText.setString(
+      "Eat smaller fish to grow and avoid larger predators.");
+  m_gameDescriptionText.setCharacterSize(30);
+  m_gameDescriptionText.setFillColor(sf::Color::White);
+  bounds = m_gameDescriptionText.getLocalBounds();
+  m_gameDescriptionText.setOrigin(bounds.width / 2.f, bounds.height / 2.f);
+  m_gameDescriptionText.setPosition(winWidth / 2.f, 250.f);
+
+  m_controlsText.setFont(font);
+  m_controlsText.setString("Move with Arrow Keys, Space to dash");
+  m_controlsText.setCharacterSize(30);
+  m_controlsText.setFillColor(sf::Color::White);
+  bounds = m_controlsText.getLocalBounds();
+  m_controlsText.setOrigin(bounds.width / 2.f, bounds.height / 2.f);
+  m_controlsText.setPosition(winWidth / 2.f, 290.f);
 
   m_instructionText.setFont(font);
   m_instructionText.setString("Use Arrows to change volume");
@@ -151,6 +168,8 @@ void GameOptionsState::render() {
   window.draw(m_background);
   window.draw(m_overlaySprite);
   window.draw(m_titleText);
+  window.draw(m_gameDescriptionText);
+  window.draw(m_controlsText);
   window.draw(m_musicVolumeText);
   window.draw(m_soundVolumeText);
   window.draw(m_instructionText);
