@@ -760,8 +760,6 @@ void PlayState::updateSpawning(sf::Time deltaTime)
                 m_metrics.fpsUpdateTime.asSeconds();
             m_metrics.frameCount = 0;
             m_metrics.fpsUpdateTime = sf::Time::Zero;
-
-            // FPS value stored for HUD system
         }
     }
 
