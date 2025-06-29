@@ -25,7 +25,7 @@ namespace FishGame
         friend class PlayerVisual;
     public:
         Player();
-        ~Player() override = default;
+        ~Player() override;
 
         // Entity interface implementation
         void update(sf::Time deltaTime) override;

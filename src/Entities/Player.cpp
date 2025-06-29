@@ -22,6 +22,8 @@ namespace FishGame
     const sf::Time Player::m_eatAnimationDuration = sf::seconds(0.3f);
     const sf::Time Player::m_turnAnimationDuration = sf::seconds(0.45f);
 
+    Player::~Player() = default;
+
     Player::Player()
         : Entity()
         , m_score(0)
