@@ -75,11 +75,10 @@ namespace FishGame
 
         const sf::Vector2f windowSize(window.getSize());
 
-        m_worldSize = windowSize;
-
-        m_view = window.getDefaultView();
-        m_view.zoom(0.8f);
-        m_view.setCenter(m_worldSize * 0.5f);
+        sf::View view = window.getDefaultView();
+        view.zoom(0.8f);
+        view.setCenter(windowSize * 0.5f);
+        m_camera = CameraController(view, windowSize);
     }
 
 
@@ -232,7 +231,7 @@ void PlayState::updateGameplay(sf::Time deltaTime)
         updateGameState(deltaTime);
         updateEntities(deltaTime);
         updateSpawning(deltaTime);
-
+  
         m_collisionSystem->process(*m_player, m_entities, m_bonusItems, m_hazards,
             m_oysterManager, m_gameState.currentLevel);
 
@@ -585,11 +584,7 @@ void PlayState::updateSpawning(sf::Time deltaTime)
             return;
 
         // Freeze camera at death position
-        m_cameraFrozen = true;
-        m_cameraFreezePos = m_player->getPosition();
-        sf::Vector2f halfSize = m_view.getSize() * 0.5f;
-        m_cameraFreezePos.x = std::clamp(m_cameraFreezePos.x, halfSize.x, m_worldSize.x - halfSize.x);
-        m_cameraFreezePos.y = std::clamp(m_cameraFreezePos.y, halfSize.y, m_worldSize.y - halfSize.y);
+        m_camera.freeze(m_player->getPosition());
 
         m_gameState.playerLives--;
         getGame().getMusicPlayer().play(MusicID::PlayerDies, false);
@@ -647,8 +642,8 @@ void PlayState::updateSpawning(sf::Time deltaTime)
         m_player->fullReset();
 
         // Start player in the middle of the world
-        m_player->setPosition(m_worldSize * 0.5f);
-        m_view.setCenter(m_player->getPosition());
+        m_player->setPosition(m_camera.getWorldSize() * 0.5f);
+        m_camera.getView().setCenter(m_player->getPosition());
 
         m_gameState.levelComplete = false;
         m_gameState.gameWon = false;
@@ -774,38 +769,7 @@ void PlayState::updateSpawning(sf::Time deltaTime)
         if (!m_player)
             return;
 
-        if (m_cameraFrozen)
-        {
-            m_view.setCenter(m_cameraFreezePos);
-            return;
-        }
-
-        sf::Vector2f target = m_player->getPosition();
-        sf::Vector2f halfSize = m_view.getSize() * 0.5f;
-
-        // Clamp horizontally
-        if (m_worldSize.x > m_view.getSize().x)
-        {
-            target.x = std::clamp(target.x, halfSize.x, m_worldSize.x - halfSize.x);
-        }
-        else
-        {
-            target.x = m_worldSize.x * 0.5f;
-        }
-
-        // Clamp vertically
-        if (m_worldSize.y > m_view.getSize().y)
-        {
-            target.y = std::clamp(target.y, halfSize.y, m_worldSize.y - halfSize.y);
-        }
-        else
-        {
-            target.y = m_worldSize.y * 0.5f;
-        }
-
-        sf::Vector2f current = m_view.getCenter();
-        sf::Vector2f newCenter = current + (target - current) * m_cameraSmoothing;
-        m_view.setCenter(newCenter);
+        m_camera.update(m_player->getPosition());
     }
 
     void PlayState::showMessage(const std::string& message)
@@ -817,7 +781,7 @@ void PlayState::updateSpawning(sf::Time deltaTime)
     {
         auto& window = getGame().getWindow();
         auto defaultView = window.getView();
-        window.setView(m_view);
+        window.setView(m_camera.getView());
 
         window.draw(m_backgroundSprite);
         window.draw(*m_environmentSystem);
