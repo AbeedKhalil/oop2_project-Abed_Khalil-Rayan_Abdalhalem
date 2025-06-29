@@ -69,6 +69,7 @@ namespace FishGame
         , StageIntro
         , Button
         , ButtonHover
+        , ThinkingCloud
         , Background = Background1
     };
 
