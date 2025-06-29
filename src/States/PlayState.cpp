@@ -259,7 +259,7 @@ void PlayState::updateRespawn(sf::Time deltaTime)
         {
             m_respawnPending = false;
             m_player->respawn();
-            m_cameraFrozen = false;
+            m_camera.unfreeze();
             createParticleEffect(m_player->getPosition(), Constants::RESPAWN_PARTICLE_COLOR);
         }
     }
