@@ -1152,6 +1152,9 @@ namespace FishGame
 
                 deferAction([this, bonusType]() {
                     m_returningFromBonusStage = true;
+                    auto& cfg = BonusStageConfig::getInstance();
+                    cfg.type = bonusType;
+                    cfg.playerLevel = m_savedLevel;
                     StageIntroState::configure(0, true, StateID::BonusStage);
                     requestStackPush(StateID::StageIntro);
                     });
