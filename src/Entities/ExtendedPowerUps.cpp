@@ -155,15 +155,7 @@ namespace FishGame
 
     void ExtraLifePowerUp::initializeSprite(SpriteManager& spriteManager)
     {
-        auto sprite = spriteManager.createSpriteComponent(
-            static_cast<Entity*>(this), TextureID::PowerUpExtraLife);
-        if (sprite)
-        {
-            auto config = spriteManager.getSpriteConfig<Entity>(TextureID::PowerUpExtraLife);
-            sprite->configure(config);
-            setSpriteComponent(std::move(sprite));
-            setRenderMode(RenderMode::Sprite);
-        }
+        setupSprite(spriteManager, TextureID::PowerUpExtraLife);
     }
 
     // SpeedBoostPowerUp implementation
@@ -254,15 +246,7 @@ namespace FishGame
 
     void SpeedBoostPowerUp::initializeSprite(SpriteManager& spriteManager)
     {
-        auto sprite = spriteManager.createSpriteComponent(
-            static_cast<Entity*>(this), TextureID::PowerUpSpeedBoost);
-        if (sprite)
-        {
-            auto config = spriteManager.getSpriteConfig<Entity>(TextureID::PowerUpSpeedBoost);
-            sprite->configure(config);
-            setSpriteComponent(std::move(sprite));
-            setRenderMode(RenderMode::Sprite);
-        }
+        setupSprite(spriteManager, TextureID::PowerUpSpeedBoost);
     }
 
     // AddTimePowerUp implementation
@@ -299,14 +283,6 @@ namespace FishGame
 
     void AddTimePowerUp::initializeSprite(SpriteManager& spriteManager)
     {
-        auto sprite = spriteManager.createSpriteComponent(
-            static_cast<Entity*>(this), TextureID::PowerUpAddTime);
-        if (sprite)
-        {
-            auto config = spriteManager.getSpriteConfig<Entity>(TextureID::PowerUpAddTime);
-            sprite->configure(config);
-            setSpriteComponent(std::move(sprite));
-            setRenderMode(RenderMode::Sprite);
-        }
+        setupSprite(spriteManager, TextureID::PowerUpAddTime);
     }
 }

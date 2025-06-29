@@ -101,6 +101,11 @@ namespace FishGame
         sf::Event event;
         while (m_window.pollEvent(event))
         {
+            if (event.type == sf::Event::KeyPressed ||
+                event.type == sf::Event::MouseButtonPressed)
+            {
+                m_window.requestFocus();
+            }
             // Process events through active states using STL algorithms
             const auto& stack = m_stateManager.getStateStack();
             std::for_each(stack.rbegin(),
