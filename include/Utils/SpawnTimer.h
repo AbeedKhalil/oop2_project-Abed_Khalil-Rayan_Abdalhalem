@@ -12,7 +12,7 @@ namespace FishGame
         explicit SpawnTimer(TimeType interval = TimeType{})
             : m_interval(interval), m_elapsed(TimeType{}) {}
 
-        // Update elapsed time and return true if the interval has elapsed
+        // Update elapsed time and return true if the interval has elapsed 
         bool update(TimeType delta)
         {
             m_elapsed += delta;
