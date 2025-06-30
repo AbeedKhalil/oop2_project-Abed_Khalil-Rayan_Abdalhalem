@@ -384,29 +384,36 @@ void Pufferfish::pushEntity(Entity& entity)
     if (!isInflated() || !canPushEntity(entity))
         return;
 
-        // Calculate push direction
-        sf::Vector2f pushDirection = entity.getPosition() - m_position;
-        float distance = std::sqrt(pushDirection.x * pushDirection.x + pushDirection.y * pushDirection.y);
+    // Push in the opposite direction of the entity's movement
+    sf::Vector2f pushDirection = -entity.getVelocity();
+    float distance = std::sqrt(pushDirection.x * pushDirection.x + pushDirection.y * pushDirection.y);
 
-        if (distance > 0.0f)
+    // Fallback to radial push if the entity has no velocity
+    if (distance == 0.0f)
+    {
+        pushDirection = entity.getPosition() - m_position;
+        distance = std::sqrt(pushDirection.x * pushDirection.x + pushDirection.y * pushDirection.y);
+    }
+
+    if (distance > 0.0f)
+    {
+        // Normalize and apply push
+        pushDirection /= distance;
+        sf::Vector2f pushVelocity = pushDirection * m_pushForce;
+
+        // Set entity velocity to push velocity
+        entity.setVelocity(pushVelocity);
+
+        // Move entity immediately by push distance
+        sf::Vector2f newPosition = entity.getPosition() + pushDirection * m_pushDistance;
+        entity.setPosition(newPosition);
+
+        // Apply brief stun to fish entities
+        if (auto* fish = dynamic_cast<Fish*>(&entity))
         {
-            // Normalize and apply push
-            pushDirection /= distance;
-            sf::Vector2f pushVelocity = pushDirection * m_pushForce;
-
-            // Set entity velocity to push velocity
-            entity.setVelocity(pushVelocity);
-
-            // Move entity immediately by push distance
-            sf::Vector2f newPosition = entity.getPosition() + pushDirection * m_pushDistance;
-            entity.setPosition(newPosition);
-
-            // Apply brief stun to fish entities
-            if (auto* fish = dynamic_cast<Fish*>(&entity))
-            {
-                fish->setStunned(Constants::PUFFERFISH_STUN_DURATION);
-            }
+            fish->setStunned(Constants::PUFFERFISH_STUN_DURATION);
         }
+    }
 }
 
     bool Pufferfish::canPushEntity(const Entity& entity) const
