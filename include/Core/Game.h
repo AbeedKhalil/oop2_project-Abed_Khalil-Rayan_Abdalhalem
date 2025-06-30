@@ -43,8 +43,7 @@ namespace FishGame
             static_assert(std::is_base_of_v<State, StateType>,
                 "StateType must be derived from State");
 
-            return m_stateManager.getCurrentState<StateType>();
-            
+            return m_stateManager.getCurrentState<StateType>();  
         }
 
     private:
