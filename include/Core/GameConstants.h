@@ -106,6 +106,7 @@ namespace FishGame
         const sf::Time SCHOOL_EXTRACT_INTERVAL = sf::seconds(0.1f);
         const sf::Time WIN_SEQUENCE_DURATION = sf::seconds(5.0f);
         const sf::Time RESPAWN_DELAY = sf::seconds(1.5f);
+        const sf::Time PUFFERFISH_STUN_DURATION = sf::seconds(0.1f);
 
         // ==================== Particle Effects ====================
         constexpr int DEFAULT_PARTICLE_COUNT = 8;

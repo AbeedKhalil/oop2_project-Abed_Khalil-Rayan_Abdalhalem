@@ -52,6 +52,9 @@ namespace FishGame
                     if (!player->hasRecentlyTakenDamage())
                     {
                         puffer->pushEntity(*player);
+                        system->m_playerStunned = true;
+                        system->m_stunTimer = Constants::PUFFERFISH_STUN_DURATION;
+                        player->setVelocity(0.0f, 0.0f);
                         system->m_sounds.play(SoundEffectID::PufferBounce);
                         int penalty = Constants::PUFFERFISH_SCORE_PENALTY;
                         system->m_scoreSystem.setCurrentScore(

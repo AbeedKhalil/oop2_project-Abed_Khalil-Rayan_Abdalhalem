@@ -5,6 +5,7 @@
 #include "Hazard.h"
 #include "SoundPlayer.h"
 #include "CollisionDetector.h"
+#include "GameConstants.h"
 #include <type_traits>
 #include <functional>
 #include <algorithm>
@@ -79,6 +80,7 @@ namespace FishGame
                 if (puffer1->isInflated() && puffer1->canPushEntity(fish2))
                 {
                     puffer1->pushEntity(fish2);
+                    fish2.setStunned(Constants::PUFFERFISH_STUN_DURATION);
                     return;
                 }
             }
@@ -87,6 +89,7 @@ namespace FishGame
                 if (puffer2->isInflated() && puffer2->canPushEntity(fish1))
                 {
                     puffer2->pushEntity(fish1);
+                    fish1.setStunned(Constants::PUFFERFISH_STUN_DURATION);
                     return;
                 }
             }
