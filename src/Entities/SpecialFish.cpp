@@ -379,10 +379,10 @@ namespace FishGame
         return Fish::canEat(other);
     }
 
-    void Pufferfish::pushEntity(Entity& entity)
-    {
-        if (!isInflated() || !canPushEntity(entity))
-            return;
+void Pufferfish::pushEntity(Entity& entity)
+{
+    if (!isInflated() || !canPushEntity(entity))
+        return;
 
         // Calculate push direction
         sf::Vector2f pushDirection = entity.getPosition() - m_position;
@@ -400,8 +400,14 @@ namespace FishGame
             // Move entity immediately by push distance
             sf::Vector2f newPosition = entity.getPosition() + pushDirection * m_pushDistance;
             entity.setPosition(newPosition);
+
+            // Apply brief stun to fish entities
+            if (auto* fish = dynamic_cast<Fish*>(&entity))
+            {
+                fish->setStunned(Constants::PUFFERFISH_STUN_DURATION);
+            }
         }
-    }
+}
 
     bool Pufferfish::canPushEntity(const Entity& entity) const
     {
