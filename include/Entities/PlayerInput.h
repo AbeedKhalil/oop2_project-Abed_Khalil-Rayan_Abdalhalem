@@ -13,7 +13,7 @@ namespace FishGame
     {
     public:
         explicit PlayerInput(Player& player);
-        void handleInput();
+        void handleInput(sf::Time deltaTime);
     private:
         Player& m_player;
     };

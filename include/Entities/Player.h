@@ -37,7 +37,7 @@ namespace FishGame
             PowerUpManager* powerUpManager, ScoreSystem* scoreSystem);
 
         // Player-specific methods
-        void handleInput();
+        void handleInput(sf::Time deltaTime);
         sf::Vector2f getTargetPosition() const { return m_targetPosition; }
 
         // Sprite initialization

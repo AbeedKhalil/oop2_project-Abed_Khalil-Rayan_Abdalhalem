@@ -126,7 +126,7 @@ namespace FishGame
         }
 
         // Handle input
-        handleInput();
+        handleInput(deltaTime);
 
 
         // Limit maximum speed
@@ -209,10 +209,10 @@ namespace FishGame
         }
     }
 
-    void Player::handleInput()
+    void Player::handleInput(sf::Time deltaTime)
     {
         if (m_input)
-            m_input->handleInput();
+            m_input->handleInput(deltaTime);
     }
 
     sf::FloatRect Player::getBounds() const
