@@ -390,9 +390,6 @@ void PlayState::updateSpawning(sf::Time deltaTime)
         });
     }
 
-
-
-
     void PlayState::handlePowerUpCollision(PowerUp& powerUp)
     {
         switch (powerUp.getPowerUpType())
@@ -425,10 +422,6 @@ void PlayState::updateSpawning(sf::Time deltaTime)
             m_gameState.playerLives++;
             getGame().getSoundPlayer().play(SoundEffectID::LifePowerup);
             createParticleEffect(powerUp.getPosition(), sf::Color::Green, 15);
-            break;
-
-        case PowerUpType::AddTime:
-            // Currently handled only in bonus stages
             break;
         }
     }
