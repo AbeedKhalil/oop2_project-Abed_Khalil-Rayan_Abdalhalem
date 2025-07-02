@@ -5,7 +5,6 @@
 #include "BonusItem.h"
 #include "PowerUp.h"
 #include "Animator.h"
-#include "SoundPlayer.h"
 #include "CollisionDetector.h"
 #include "GenericFish.h"
 #include <SFML/Window.hpp>
