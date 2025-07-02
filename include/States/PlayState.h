@@ -19,6 +19,7 @@
 #include "ExtendedPowerUps.h"
 #include "Hazard.h"
 #include "EnvironmentSystem.h"
+#include "PlayLogic.h"
 #include "BonusStageState.h"
 #include "GameConstants.h"
 #include "StateUtils.h"
@@ -36,6 +37,7 @@ namespace FishGame
 {
     enum class TextureID;
     // Template trait specialization
+    class PlayLogic;
     class PlayState;
     template<> struct is_state<PlayState> : std::true_type {};
 
@@ -52,6 +54,7 @@ namespace FishGame
         void onDeactivate() override;
 
     private:
+        friend class PlayLogic;
         // ==================== Type Definitions ====================
 
         // Game state tracking
@@ -193,6 +196,8 @@ namespace FishGame
         std::unique_ptr<SpawnSystem> m_spawnSystem;
 
         bool m_initialized;
+
+        std::unique_ptr<PlayLogic> m_logic;
 
         // Track resuming of background music after death
         bool m_musicResumePending{false};
