@@ -192,10 +192,9 @@ namespace FishGame
                 return std::make_unique<BonusStageState>(*this, cfg.type, cfg.playerLevel);
             });
 
-        // TODO: Register additional states as they are implemented
+        // Register optional states
         registerState<GameOptionsState>(StateID::GameOptions);
         registerState<GameOverState>(StateID::GameOver);
-        // registerState<CreditsState>(StateID::Credits);
     }
 
 }
