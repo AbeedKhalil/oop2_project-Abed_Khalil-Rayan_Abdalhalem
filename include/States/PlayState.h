@@ -85,53 +85,7 @@ namespace FishGame
 
         // Spawning is handled by SpawnSystem
 
-        // Effect helpers
-        void createParticleEffect(const sf::Vector2f& position, const sf::Color& color,
-            int count = Constants::DEFAULT_PARTICLE_COUNT);
-        void applyEnvironmentalForces(sf::Time deltaTime);
-
-        // State helpers
-        void updateEffectTimers(sf::Time deltaTime);
-
-        // ==================== Core Methods ====================
-
-        // Initialization
-        void initializeSystems();
-
-        // Update methods
-        void updateGameplay(sf::Time deltaTime);
-        void updateRespawn(sf::Time deltaTime);
-        void updateEnvironment(sf::Time deltaTime);
-        void updateEntities(sf::Time deltaTime);
-        void updateSpawning(sf::Time deltaTime);
-        void updateGameState(sf::Time deltaTime);
-        void updateSystems(sf::Time deltaTime);
-        void updateHUD();
-        void updatePerformanceMetrics(sf::Time deltaTime);
-        void updateCamera();
-
-        // Collision handling
-        void handlePowerUpCollision(PowerUp& powerUp);
-        void handleOysterCollision(PermanentOyster* oyster);
-
-        // Game flow
-        void handlePlayerDeath();
-        void advanceLevel();
-        void gameOver();
-        void checkWinCondition();
-        void triggerWinSequence();
-        void checkBonusStage();
-
-        // Level management
-        void updateLevelDifficulty();
-        void resetLevel();
-
-        // Helper methods
-        bool areAllEnemiesGone() const;
-        void makeAllEnemiesFlee();
-        void applyFreeze();
-        void reverseControls();
-        void showMessage(const std::string& message);
+        // Rendering related helper
         void updateBackground(int level);
 
     private:
