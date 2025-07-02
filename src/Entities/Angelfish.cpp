@@ -4,6 +4,7 @@
 #include "Player.h"
 #include "SpriteManager.h"
 #include "Animator.h"
+#include "Pufferfish.h"
 #include <random>
 #include <algorithm>
 #include <cmath>
@@ -306,6 +307,5 @@ namespace FishGame
             m_velocity = newVelocity;
         }
     }
-}
 }
 
