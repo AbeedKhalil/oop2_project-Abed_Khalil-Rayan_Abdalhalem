@@ -5,7 +5,6 @@
 #include "PlayerVisual.h"
 #include "BonusItem.h"
 #include "PowerUp.h"
-#include "SpecialFish.h"
 #include "Animator.h"
 #include "SoundPlayer.h"
 #include "CollisionDetector.h"

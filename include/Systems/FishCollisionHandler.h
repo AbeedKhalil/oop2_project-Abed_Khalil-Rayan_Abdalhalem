@@ -1,7 +1,8 @@
 #pragma once
 
 #include "Fish.h"
-#include "SpecialFish.h"
+#include "Pufferfish.h"
+#include "PoisonFish.h"
 #include "Hazard.h"
 #include "SoundPlayer.h"
 #include "CollisionDetector.h"

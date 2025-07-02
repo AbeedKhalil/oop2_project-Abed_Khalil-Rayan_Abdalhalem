@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SpecialFish.h"
+#include "SchoolMember.h"
 #include "GenericFish.h"
 #include "CollisionDetector.h"
 #include <unordered_map>
