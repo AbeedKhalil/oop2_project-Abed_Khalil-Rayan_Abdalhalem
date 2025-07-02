@@ -3,7 +3,6 @@
 #include "AdvancedFish.h"
 #include "SpriteManager.h"
 #include <vector>
-#include <SFML/Graphics/CircleShape.hpp>
 
 namespace FishGame {
 
@@ -44,7 +43,6 @@ private:
     sf::Time m_stateTimer;
     float m_inflationLevel;
     float m_normalRadius;
-    std::vector<sf::CircleShape> m_spikes;
 
     static constexpr float m_pushDistance = 10.0f;
     static constexpr float m_pushForce = 500.0f;
@@ -53,7 +51,6 @@ private:
     static constexpr float m_inflationSpeed = 3.0f;
     static constexpr float m_deflationSpeed = 3.0f;
     static constexpr float m_inflatedRadiusMultiplier = 2.0f;
-    static constexpr int m_spikeCount = 8;
 
     bool m_isPuffing{ false };
     sf::Time m_puffTimer{ sf::Time::Zero };

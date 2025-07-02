@@ -8,8 +8,6 @@
 #include <random>
 #include <algorithm>
 #include <cmath>
-#include <iterator>
-#include <ranges>
 #include <execution>
 
 namespace FishGame
@@ -24,14 +22,6 @@ namespace FishGame
         , m_isEvading(false)
         , m_evasionTimer(sf::Time::Zero)
     {
-        // Create decorative fins
-        m_fins.reserve(3);
-        std::generate_n(std::back_inserter(m_fins), 3, [] {
-            sf::CircleShape fin(10.0f, 3);
-            fin.setFillColor(sf::Color(255, 200, 100, 150));
-            fin.setOrigin(10.0f, 10.0f);
-            return fin;
-            });
     }
 
     void Angelfish::update(sf::Time deltaTime)
@@ -66,28 +56,7 @@ namespace FishGame
         // Update visual effects (continue even when frozen)
         m_colorShift += deltaTime.asSeconds() * (m_isFrozen ? 0.5f : 2.0f);
 
-        // Update fin positions with more dynamic movement
-        auto finIdx = std::views::iota(size_t{ 0 }, m_fins.size());
-        std::for_each(std::execution::unseq, finIdx.begin(), finIdx.end(),
-            [this](size_t i)
-            {
-                float finAngle = (m_colorShift + i * 120.0f) * 3.14159f / 180.0f;
-                float finRadius = 20.0f + (m_isEvading ? 10.0f * std::sin(m_colorShift * 5.0f) : 0.0f);
-
-                sf::Vector2f finPos(
-                    m_position.x + std::cos(finAngle) * finRadius,
-                    m_position.y + std::sin(finAngle) * finRadius);
-
-                m_fins[i].setPosition(finPos);
-                m_fins[i].setRotation(finAngle * Constants::RAD_TO_DEG);
-
-                // Pulse fins when evading (unless frozen)
-                if (m_isEvading && !m_isFrozen)
-                {
-                    float scale = 1.0f + 0.3f * std::sin(m_colorShift * 10.0f);
-                    m_fins[i].setScale(scale, scale);
-                }
-            });
+        // Fin animation removed
     }
 
     void Angelfish::updateAI(const std::vector<std::unique_ptr<Entity>>& entities,
@@ -271,13 +240,6 @@ namespace FishGame
 
     void Angelfish::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
-        // Draw fins first
-        std::for_each(m_fins.begin(), m_fins.end(),
-            [&target, &states](const sf::CircleShape& fin)
-            {
-                target.draw(fin, states);
-            });
-
         Fish::draw(target, states);
     }
 

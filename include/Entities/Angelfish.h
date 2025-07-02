@@ -3,7 +3,6 @@
 #include "AdvancedFish.h"
 #include "SpriteManager.h"
 #include <vector>
-#include <SFML/Graphics/CircleShape.hpp>
 
 namespace FishGame {
 
@@ -35,7 +34,6 @@ private:
 private:
     int m_bonusPoints;
     float m_colorShift;
-    std::vector<sf::CircleShape> m_fins;
     sf::Time m_directionChangeTimer;
 
     const Entity* m_currentThreat;

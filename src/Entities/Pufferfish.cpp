@@ -4,12 +4,8 @@
 #include "Player.h"
 #include "SpriteManager.h"
 #include "Animator.h"
-#include <random>
 #include <algorithm>
 #include <cmath>
-#include <iterator>
-#include <ranges>
-#include <execution>
 
 namespace FishGame
 {
@@ -25,14 +21,6 @@ namespace FishGame
     {
         m_radius = m_normalRadius;
 
-        // Create spikes
-        m_spikes.reserve(m_spikeCount);
-        std::generate_n(std::back_inserter(m_spikes), m_spikeCount, [] {
-            sf::CircleShape spike(3.0f, 3);  // Triangle
-            spike.setFillColor(sf::Color(150, 100, 50));
-            spike.setOrigin(3.0f, 3.0f);
-            return spike;
-            });
     }
 
     void Pufferfish::initializeSprite(SpriteManager& spriteManager)
@@ -60,20 +48,7 @@ namespace FishGame
             updateMovement(deltaTime);
 
             // Still update visual elements but not state transitions
-            auto spikeIdx = std::views::iota(size_t{ 0 }, m_spikes.size());
-            std::for_each(std::execution::unseq, spikeIdx.begin(), spikeIdx.end(),
-                [this](size_t i)
-                {
-                    float angle = (360.0f / m_spikeCount) * i * Constants::DEG_TO_RAD;
-                    float spikeRadius = m_radius + (m_inflationLevel * 10.0f);
-
-                    sf::Vector2f spikePos(
-                        m_position.x + std::cos(angle) * spikeRadius,
-                        m_position.y + std::sin(angle) * spikeRadius);
-
-                    m_spikes[i].setPosition(spikePos);
-                    m_spikes[i].setRotation(angle * Constants::RAD_TO_DEG);
-                });
+            // Old spike animation removed
             return;
         }
 
@@ -106,21 +81,7 @@ namespace FishGame
             }
         }
 
-        // Update spike positions
-        auto spikeIdx2 = std::views::iota(size_t{ 0 }, m_spikes.size());
-        std::for_each(std::execution::unseq, spikeIdx2.begin(), spikeIdx2.end(),
-            [this](size_t i)
-            {
-                float angle = (360.0f / m_spikeCount) * i * Constants::DEG_TO_RAD;
-                float spikeRadius = m_radius + (m_inflationLevel * 10.0f);
-
-                sf::Vector2f spikePos(
-                    m_position.x + std::cos(angle) * spikeRadius,
-                    m_position.y + std::sin(angle) * spikeRadius);
-
-                m_spikes[i].setPosition(spikePos);
-                m_spikes[i].setRotation(angle * Constants::RAD_TO_DEG);
-            });
+        // Spike visuals removed
     }
 
     bool Pufferfish::canEat(const Entity& other) const
@@ -171,15 +132,7 @@ namespace FishGame
     {
         Fish::draw(target, states);
 
-        // Draw spikes when inflating
-        if (m_inflationLevel > 0.2f)
-        {
-            std::for_each(m_spikes.begin(), m_spikes.end(),
-                [&target, &states](const sf::CircleShape& spike)
-                {
-                    target.draw(spike, states);
-                });
-        }
+        // Spike drawing removed
     }
 
 

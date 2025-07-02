@@ -41,12 +41,10 @@ namespace FishGame
     void Game::run()
     {
         sf::Clock clock;
-        sf::Time timeSinceLastUpdate = sf::Time::Zero;
 
         while (m_window.isOpen())
         {
             const sf::Time deltaTime = clock.restart();
-            timeSinceLastUpdate += deltaTime;
 
             // Update performance metrics
             m_metrics.accumulatedTime += deltaTime;
@@ -60,20 +58,11 @@ namespace FishGame
                 m_metrics.accumulatedTime = sf::Time::Zero;
             }
 
-            // Fixed timestep with interpolation
-            while (timeSinceLastUpdate > m_timePerFrame)
-            {
-                timeSinceLastUpdate -= m_timePerFrame;
+            processInput();
+            update(deltaTime);
 
-                processInput();
-                update(m_timePerFrame);
-
-                // Check if we need to close
-                if (m_stateManager.empty())
-                {
-                    m_window.close();
-                }
-            }
+            if (m_stateManager.empty())
+                m_window.close();
 
             render();
         }

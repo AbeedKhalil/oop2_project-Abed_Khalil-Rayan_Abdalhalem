@@ -3,7 +3,6 @@
 #include "AdvancedFish.h"
 #include "SpriteManager.h"
 #include <vector>
-#include <SFML/Graphics/CircleShape.hpp>
 
 namespace FishGame {
 
@@ -26,17 +25,12 @@ protected:
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
 private:
-    void updatePoisonBubbles(sf::Time /*deltaTime*/);
-
-private:
-    std::vector<sf::CircleShape> m_poisonBubbles;
     float m_wobbleAnimation;
     sf::Time m_poisonDuration;
     int m_poisonPoints;
 
     static constexpr float m_poisonEffectDuration = 5.0f;
     static constexpr int m_basePoisonPoints = -10;
-    static constexpr int m_bubbleCount = 6;
 };
 
 } // namespace FishGame
