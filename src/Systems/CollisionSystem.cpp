@@ -1,6 +1,9 @@
 #include "CollisionSystem.h"
 #include "GameConstants.h"
 #include "StateUtils.h"
+#include "Pufferfish.h"
+#include "Angelfish.h"
+#include "PoisonFish.h"
 #include <algorithm>
 
 namespace FishGame

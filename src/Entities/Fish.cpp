@@ -4,7 +4,7 @@
 #include "CollisionDetector.h"
 #include "GameConstants.h"
 #include "Player.h"
-#include "SpecialFish.h"
+#include "Pufferfish.h"
 #include <cmath>
 #include <algorithm>
 

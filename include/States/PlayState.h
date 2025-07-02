@@ -4,7 +4,6 @@
 #include "EnhancedFishSpawner.h"
 #include "SchoolingSystem.h"
 #include "CollisionSystem.h"
-#include "SpecialFish.h"
 #include "GrowthMeter.h"
 #include "FrenzySystem.h"
 #include "BonusItemManager.h"

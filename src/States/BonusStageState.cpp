@@ -1,7 +1,7 @@
 #include "BonusStageState.h"
 #include "Game.h"
 #include "GenericFish.h"
-#include "SpecialFish.h"
+#include "Barracuda.h"
 #include "CollisionDetector.h"
 #include "GameConstants.h"
 #include "ExtendedPowerUps.h"
