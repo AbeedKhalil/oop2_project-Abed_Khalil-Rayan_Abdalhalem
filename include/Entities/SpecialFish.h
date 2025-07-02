@@ -7,8 +7,6 @@
 #include "GameConstants.h"
 #include <cmath>
 #include <algorithm>
-#include <vector>
-#include <memory>
 
 namespace FishGame
 {
