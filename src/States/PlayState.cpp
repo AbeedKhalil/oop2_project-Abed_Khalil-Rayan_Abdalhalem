@@ -1,7 +1,8 @@
-﻿#include "PlayState.h"
+#include "PlayState.h"
 #include "Game.h"
 #include "CollisionDetector.h"
 #include "CollisionSystem.h"
+#include "PlayLogic.h"
 #include "Fish.h"
 #include "ExtendedPowerUps.h"
 #include "SpawnSystem.h"
@@ -59,6 +60,7 @@ namespace FishGame
             getGame().getSpriteManager(), m_randomEngine,
             m_gameState.currentLevel, getGame().getFonts().get(Fonts::Main)))
         , m_initialized(false)
+        , m_logic(nullptr)
     {
         initializeSystems();
         m_player->setSoundPlayer(&getGame().getSoundPlayer());
@@ -80,6 +82,8 @@ namespace FishGame
         view.zoom(Constants::CAMERA_ZOOM_FACTOR);
         view.setCenter(windowSize * 0.5f);
         m_camera = CameraController(view, windowSize);
+
+        m_logic = std::make_unique<PlayLogic>(*this);
     }
 
 
@@ -154,74 +158,16 @@ namespace FishGame
 
     void PlayState::handleEvent(const sf::Event& event)
     {
-        if (m_isPlayerStunned || getGame().getCurrentState<StageIntroState>())
-            return;
-
-        m_inputHandler.setReversed(m_hasControlsReversed);
-        m_inputHandler.processEvent(event, [this](const sf::Event& processedEvent)
-        {
-        switch (processedEvent.type)
-        {
-        case sf::Event::KeyPressed:
-            switch (processedEvent.key.code)
-            {
-            case sf::Keyboard::Escape:
-                deferAction([this]() {
-                    requestStackPop();
-                    requestStackPush(StateID::Menu);
-                    });
-                break;
-
-            /*case sf::Keyboard::Enter:
-                if (m_gameState.levelComplete)
-                {
-                    advanceLevel();
-                }
-                break;*/
-
-            case sf::Keyboard::P:
-                deferAction([this]() {
-                    StageIntroState::configure(m_gameState.currentLevel, false);
-                    requestStackPush(StateID::StageIntro);
-                    });
-                break;
-
-                // Movement keys will be handled in Player::handleInput()
-            case sf::Keyboard::W:
-            case sf::Keyboard::S:
-            case sf::Keyboard::A:
-            case sf::Keyboard::D:
-            case sf::Keyboard::Up:
-            case sf::Keyboard::Down:
-            case sf::Keyboard::Left:
-            case sf::Keyboard::Right:
-                break;
-
-            default:
-                break;
-            }
-            break;
-
-        case sf::Event::MouseMoved:
-            // Mouse input disabled
-            break;
-
-        case sf::Event::MouseButtonPressed:
-            break;
-
-        default:
-            break;
-        }
-    });
-}
-
-    bool PlayState::update(sf::Time deltaTime)
-    {
-        updatePerformanceMetrics(deltaTime);
-        updateGameplay(deltaTime);
-        processDeferredActions();
-        return false;
+        if (m_logic)
+            m_logic->handleEvent(event);
     }
+
+bool PlayState::update(sf::Time deltaTime)
+{
+    if (m_logic)
+        return m_logic->update(deltaTime);
+    return false;
+}
 
 void PlayState::updateGameplay(sf::Time deltaTime)
 {
@@ -444,9 +390,6 @@ void PlayState::updateSpawning(sf::Time deltaTime)
         });
     }
 
-
-
-
     void PlayState::handlePowerUpCollision(PowerUp& powerUp)
     {
         switch (powerUp.getPowerUpType())
@@ -479,10 +422,6 @@ void PlayState::updateSpawning(sf::Time deltaTime)
             m_gameState.playerLives++;
             getGame().getSoundPlayer().play(SoundEffectID::LifePowerup);
             createParticleEffect(powerUp.getPosition(), sf::Color::Green, 15);
-            break;
-
-        case PowerUpType::AddTime:
-            // Currently handled only in bonus stages
             break;
         }
     }
