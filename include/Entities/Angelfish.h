@@ -1,6 +1,7 @@
 #pragma once
 
 #include "AdvancedFish.h"
+#include "SpriteManager.h"
 #include <vector>
 #include <SFML/Graphics/CircleShape.hpp>
 
