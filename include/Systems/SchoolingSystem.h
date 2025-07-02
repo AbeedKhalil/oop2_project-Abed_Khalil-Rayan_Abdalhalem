@@ -174,26 +174,30 @@ namespace FishGame
         bool tryAddToSchool(std::unique_ptr<FishType> fish)
         {
             // Find a school that can accept this fish type
-            for (auto& [id, wrapper] : m_schools)
-            {
-                if (auto* typedWrapper = dynamic_cast<SchoolWrapper<FishType>*>(wrapper.get()))
+            auto it = std::find_if(
+                m_schools.begin(), m_schools.end(),
+                [](auto& pair)
                 {
-                    if (!typedWrapper->school->isFull())
-                    {
-                        // Extract current level from fish if possible
-                        int level = 1; // Default level
-                        if constexpr (std::is_base_of_v<Fish, FishType>)
-                        {
-                            level = static_cast<const Fish*>(fish.get())->getCurrentLevel();
-                        }
+                    auto* typed = dynamic_cast<SchoolWrapper<FishType>*>(pair.second.get());
+                    return typed && !typed->school->isFull();
+                });
 
-                        // Create SchoolMember with proper constructor
-                        auto member = SchoolingFishFactory<FishType>::createFromFish(*fish, level);
+            if (it != m_schools.end())
+            {
+                auto* typedWrapper = static_cast<SchoolWrapper<FishType>*>(it->second.get());
 
-                        typedWrapper->school->addMember(std::move(member));
-                        return true;
-                    }
+                // Extract current level from fish if possible
+                int level = 1; // Default level
+                if constexpr (std::is_base_of_v<Fish, FishType>)
+                {
+                    level = static_cast<const Fish*>(fish.get())->getCurrentLevel();
                 }
+
+                // Create SchoolMember with proper constructor
+                auto member = SchoolingFishFactory<FishType>::createFromFish(*fish, level);
+
+                typedWrapper->school->addMember(std::move(member));
+                return true;
             }
 
             return false;
@@ -204,16 +208,19 @@ namespace FishGame
         bool tryAddToSchool(std::unique_ptr<SchoolMember<FishType>> member)
         {
             // Find a school that can accept this fish type
-            for (auto& [id, wrapper] : m_schools)
-            {
-                if (auto* typedWrapper = dynamic_cast<SchoolWrapper<FishType>*>(wrapper.get()))
+            auto it = std::find_if(
+                m_schools.begin(), m_schools.end(),
+                [](auto& pair)
                 {
-                    if (!typedWrapper->school->isFull())
-                    {
-                        typedWrapper->school->addMember(std::move(member));
-                        return true;
-                    }
-                }
+                    auto* typed = dynamic_cast<SchoolWrapper<FishType>*>(pair.second.get());
+                    return typed && !typed->school->isFull();
+                });
+
+            if (it != m_schools.end())
+            {
+                auto* typedWrapper = static_cast<SchoolWrapper<FishType>*>(it->second.get());
+                typedWrapper->school->addMember(std::move(member));
+                return true;
             }
 
             return false;
