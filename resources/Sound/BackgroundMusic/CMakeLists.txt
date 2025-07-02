@@ -1,4 +1,4 @@
-﻿configure_file ("BonusStage.ogg" ${CMAKE_BINARY_DIR} COPYONLY)
+configure_file ("BonusStage.ogg" ${CMAKE_BINARY_DIR} COPYONLY)
 configure_file ("InGame1.ogg" ${CMAKE_BINARY_DIR} COPYONLY)
 configure_file ("InGame2.ogg" ${CMAKE_BINARY_DIR} COPYONLY)
 configure_file ("InGame3.ogg" ${CMAKE_BINARY_DIR} COPYONLY)

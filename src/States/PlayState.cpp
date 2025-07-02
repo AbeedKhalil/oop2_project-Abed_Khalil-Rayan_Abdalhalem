@@ -1,4 +1,4 @@
-﻿#include "PlayState.h"
+#include "PlayState.h"
 #include "Game.h"
 #include "CollisionDetector.h"
 #include "CollisionSystem.h"

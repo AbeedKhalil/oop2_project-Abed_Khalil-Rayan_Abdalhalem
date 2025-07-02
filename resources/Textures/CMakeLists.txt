@@ -1,4 +1,4 @@
-﻿configure_file ("Angelfish.png" ${CMAKE_BINARY_DIR} COPYONLY)
+configure_file ("Angelfish.png" ${CMAKE_BINARY_DIR} COPYONLY)
 configure_file ("Barracuda.png" ${CMAKE_BINARY_DIR} COPYONLY)
 configure_file ("Bomb.png" ${CMAKE_BINARY_DIR} COPYONLY)
 configure_file ("Jellyfish.png" ${CMAKE_BINARY_DIR} COPYONLY)

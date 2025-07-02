@@ -1,4 +1,4 @@
-﻿configure_file ("Bite1.wav" ${CMAKE_BINARY_DIR} COPYONLY)
+configure_file ("Bite1.wav" ${CMAKE_BINARY_DIR} COPYONLY)
 configure_file ("Bite2.wav" ${CMAKE_BINARY_DIR} COPYONLY)
 configure_file ("Bite3.wav" ${CMAKE_BINARY_DIR} COPYONLY)
 configure_file ("Bite4.wav" ${CMAKE_BINARY_DIR} COPYONLY)
