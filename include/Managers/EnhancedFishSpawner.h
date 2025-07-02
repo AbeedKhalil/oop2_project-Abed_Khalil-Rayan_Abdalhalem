@@ -1,7 +1,12 @@
 #pragma once
 
 #include "FishSpawner.h"
-#include "SpecialFish.h"
+#include "AdvancedFish.h"
+#include "Barracuda.h"
+#include "Pufferfish.h"
+#include "Angelfish.h"
+#include "PoisonFish.h"
+#include "SchoolMember.h"
 #include "SchoolingSystem.h"
 #include <type_traits>
 #include <unordered_map>

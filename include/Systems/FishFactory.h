@@ -2,7 +2,10 @@
 
 #include "Fish.h"
 #include "GenericFish.h"
-#include "SpecialFish.h"
+#include "Barracuda.h"
+#include "Pufferfish.h"
+#include "Angelfish.h"
+#include "PoisonFish.h"
 #include <memory>
 #include <type_traits>
 

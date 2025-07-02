@@ -1,7 +1,10 @@
 #include "EnhancedFishSpawner.h"
 #include "SpriteManager.h"
 #include "FishFactory.h"
-#include "SpecialFish.h"
+#include "Barracuda.h"
+#include "Pufferfish.h"
+#include "Angelfish.h"
+#include "PoisonFish.h"
 #include <algorithm>
 
 namespace FishGame
