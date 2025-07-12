@@ -10,6 +10,7 @@
 #include "StageIntroState.h"
 #include "StageSummaryState.h"
 #include "MusicPlayer.h"
+#include "Utils/HighScoreIO.h"
 #include "GameConstants.h"
 #include <algorithm>
 #include <execution>
@@ -620,6 +621,8 @@ void PlayState::updateSpawning(sf::Time deltaTime)
         stats.newHighScore = stats.finalScore > stats.highScore;
         if (stats.newHighScore)
             stats.highScore = stats.finalScore;
+
+        addHighScore("highscores.txt", {stats.playerName, stats.finalScore});
 
         requestStackClear();
         requestStackPush(StateID::GameOver);

@@ -56,6 +56,11 @@ namespace FishGame
                     requestStackPush(StateID::GameOptions);
                 });
             }},
+            {TextureID::HighScores, TextureID::HighScoresHover, [this]() {
+                deferAction([this]() {
+                    requestStackPush(StateID::HighScores);
+                });
+            }},
             {TextureID::Exit, TextureID::ExitHover, [this]() {
                 deferAction([this]() {
                     requestStackClear();

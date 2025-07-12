@@ -1,6 +1,8 @@
 #include "Game.h"
 #include "IntroState.h"
+#include "PlayerNameState.h"
 #include "MenuState.h"
+#include "HighScoresState.h"
 #include "PlayState.h"
 #include "GameOverState.h"
 #include "GameOptionsState.h"
@@ -181,6 +183,7 @@ namespace FishGame
     {
         // Register all game states using template method
         registerState<IntroState>(StateID::Intro);
+        registerState<PlayerNameState>(StateID::PlayerName);
         registerState<MenuState>(StateID::Menu);
         registerState<StageIntroState>(StateID::StageIntro);
         registerState<StageSummaryState>(StateID::StageSummary);
@@ -195,6 +198,7 @@ namespace FishGame
         // Register optional states
         registerState<GameOptionsState>(StateID::GameOptions);
         registerState<GameOverState>(StateID::GameOver);
+        registerState<HighScoresState>(StateID::HighScores);
     }
 
 }
