@@ -4,12 +4,24 @@
 
 namespace FishGame {
 
-PlayerNameState::PlayerNameState(Game& game) : State(game) {}
+PlayerNameState::PlayerNameState(Game& game)
+    : State(game), m_backgroundSprite(), m_overlaySprite() {}
 
 void PlayerNameState::onActivate(){
     auto& font = getGame().getFonts().get(Fonts::Main);
     auto& window = getGame().getWindow();
+    auto& manager = getGame().getSpriteManager();
     m_input.clear();
+
+    m_backgroundSprite.setTexture(manager.getTexture(TextureID::Background1));
+    auto size = m_backgroundSprite.getTexture()->getSize();
+    m_backgroundSprite.setScale(static_cast<float>(window.getSize().x)/size.x,
+                               static_cast<float>(window.getSize().y)/size.y);
+
+    m_overlaySprite.setTexture(manager.getTexture(TextureID::StageIntro));
+    size = m_overlaySprite.getTexture()->getSize();
+    m_overlaySprite.setScale(static_cast<float>(window.getSize().x)/size.x,
+                             static_cast<float>(window.getSize().y)/size.y);
     m_prompt.setFont(font);
     m_prompt.setString("Enter Name:");
     m_prompt.setCharacterSize(36);
@@ -43,6 +55,8 @@ bool PlayerNameState::update(sf::Time){ processDeferredActions(); return false; 
 
 void PlayerNameState::render(){
     auto& window=getGame().getWindow();
+    window.draw(m_backgroundSprite);
+    window.draw(m_overlaySprite);
     window.draw(m_prompt);
     window.draw(m_inputText);
 }

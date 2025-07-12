@@ -25,5 +25,7 @@ private:
     std::vector<sf::Text> m_scoreTexts;
     sf::Sprite m_backButton;
     bool m_hover{false};
+    sf::Sprite m_backgroundSprite;
+    sf::Sprite m_overlaySprite;
 };
 }
