@@ -36,6 +36,14 @@ void HighScoresState::onActivate() {
     m_backButton.setScale(Constants::MENU_BUTTON_SCALE, Constants::MENU_BUTTON_SCALE);
     m_backButton.setPosition(window.getSize().x/2.f, window.getSize().y - 120.f);
 
+    m_backText.setFont(fonts.get(Fonts::Main));
+    m_backText.setString("BACK");
+    m_backText.setCharacterSize(36);
+    auto btb = m_backText.getLocalBounds();
+    m_backText.setOrigin(btb.width/2.f, btb.height/2.f + 10.f);
+    m_backText.setPosition(m_backButton.getPosition());
+    m_backText.setFillColor(sf::Color(0, 16, 112));
+
     loadScores();
 }
 
@@ -105,6 +113,7 @@ void HighScoresState::render() {
     window.draw(m_titleText);
     for(const auto& t : m_scoreTexts) window.draw(t);
     window.draw(m_backButton);
+    window.draw(m_backText);
 }
 
 } // namespace FishGame
