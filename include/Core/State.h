@@ -15,12 +15,14 @@ namespace FishGame
     {
         None,
         Intro,
+        PlayerName,
         StageIntro,
         StageSummary,
         Menu,
         Play,
         GameOver,
-		GameOptions,
+        GameOptions,
+        HighScores,
         BonusStage
     };
 

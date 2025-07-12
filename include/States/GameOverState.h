@@ -8,6 +8,7 @@
 #include <functional>
 #include <vector>
 #include <array>
+#include <string>
 #include <algorithm>
 #include <numeric>
 #include <random>
@@ -22,6 +23,7 @@ namespace FishGame
     // Global game statistics (simple solution for passing data between states)
     struct GameStats
     {
+        std::string playerName;
         int finalScore = 0;
         int highScore = 0;
         int fishEaten = 0;

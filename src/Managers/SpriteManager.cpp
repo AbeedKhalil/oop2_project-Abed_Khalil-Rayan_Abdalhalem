@@ -58,6 +58,8 @@ namespace FishGame
         {TextureID::NewGameHover, "NewGameHover.png"},
         {TextureID::GameOptions, "GameOptions.png"},
         {TextureID::GameOptionsHover, "GameOptionsHover.png"},
+        {TextureID::HighScores, "HighScores.png"},
+        {TextureID::HighScoresHover, "HighScoresHover.png"},
         {TextureID::Exit, "Exit.png"},
         {TextureID::ExitHover, "ExitHover.png"},
         { TextureID::Intro1, "Intro1.png" },

@@ -34,6 +34,7 @@ namespace FishGame
         {
             NewGame = 0,
             GameOptions,
+            HighScores,
             Exit,
             Count
         };
