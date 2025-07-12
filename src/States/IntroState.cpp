@@ -46,7 +46,7 @@ namespace FishGame
         {
             deferAction([this]() {
                 requestStackPop();
-                requestStackPush(StateID::Menu);
+                requestStackPush(StateID::PlayerName);
                 });
         }
     }
@@ -69,7 +69,7 @@ namespace FishGame
             {
                 deferAction([this]() {
                     requestStackPop();
-                    requestStackPush(StateID::Menu);
+                    requestStackPush(StateID::PlayerName);
                     });
             }
         }

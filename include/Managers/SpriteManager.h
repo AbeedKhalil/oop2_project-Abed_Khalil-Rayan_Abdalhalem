@@ -62,6 +62,8 @@ namespace FishGame
         , NewGameHover
         , GameOptions
         , GameOptionsHover
+        , HighScores
+        , HighScoresHover
         , Exit
         , ExitHover
         , Intro1
