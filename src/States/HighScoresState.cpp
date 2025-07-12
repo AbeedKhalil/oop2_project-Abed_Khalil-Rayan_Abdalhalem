@@ -5,12 +5,22 @@
 namespace FishGame {
 
 HighScoresState::HighScoresState(Game& game)
-    : State(game) {}
+    : State(game), m_hover(false), m_backgroundSprite(), m_overlaySprite() {}
 
 void HighScoresState::onActivate() {
     auto& fonts = getGame().getFonts();
     auto& manager = getGame().getSpriteManager();
     auto& window = getGame().getWindow();
+
+    m_backgroundSprite.setTexture(manager.getTexture(TextureID::Background1));
+    auto size = m_backgroundSprite.getTexture()->getSize();
+    m_backgroundSprite.setScale(static_cast<float>(window.getSize().x)/size.x,
+                               static_cast<float>(window.getSize().y)/size.y);
+
+    m_overlaySprite.setTexture(manager.getTexture(TextureID::StageIntro));
+    size = m_overlaySprite.getTexture()->getSize();
+    m_overlaySprite.setScale(static_cast<float>(window.getSize().x)/size.x,
+                             static_cast<float>(window.getSize().y)/size.y);
 
     m_titleText.setFont(fonts.get(Fonts::Main));
     m_titleText.setString("HIGH SCORES");
@@ -71,6 +81,8 @@ bool HighScoresState::update(sf::Time) {
 
 void HighScoresState::render() {
     auto& window = getGame().getWindow();
+    window.draw(m_backgroundSprite);
+    window.draw(m_overlaySprite);
     window.draw(m_titleText);
     for(const auto& t : m_scoreTexts) window.draw(t);
     window.draw(m_backButton);

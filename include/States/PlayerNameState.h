@@ -20,5 +20,7 @@ private:
     std::string m_input;
     sf::Text m_prompt;
     sf::Text m_inputText;
+    sf::Sprite m_backgroundSprite;
+    sf::Sprite m_overlaySprite;
 };
 }
