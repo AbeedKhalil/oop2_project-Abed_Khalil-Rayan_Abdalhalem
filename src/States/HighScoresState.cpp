@@ -1,6 +1,7 @@
 #include "HighScoresState.h"
 #include "Game.h"
 #include <sstream>
+#include <fstream>
 
 namespace FishGame {
 
@@ -39,7 +40,25 @@ void HighScoresState::onActivate() {
 }
 
 void HighScoresState::loadScores() {
-    m_scores = loadHighScores("highscores.txt");
+    m_scoreSet.clear();
+    std::ifstream in("highscores.txt");
+    std::string name; int score;
+    while(in >> name >> score) {
+        HighScoreEntry entry{name, score};
+        auto it = m_scoreSet.find(entry);
+        if(it == m_scoreSet.end()) {
+            m_scoreSet.insert(entry);
+        } else if(score > it->score) {
+            m_scoreSet.erase(it);
+            m_scoreSet.insert(entry);
+        }
+    }
+
+    m_scores.assign(m_scoreSet.begin(), m_scoreSet.end());
+    std::sort(m_scores.begin(), m_scores.end(), [](const auto& a, const auto& b){
+        return a.score > b.score;
+    });
+
     auto& font = getGame().getFonts().get(Fonts::Main);
     m_scoreTexts.clear();
     float startY = 250.f;
