@@ -12,7 +12,6 @@
 #include "MusicPlayer.h"
 #include "Utils/HighScoreIO.h"
 #include "GameConstants.h"
-#include <algorithm>
 #include <execution>
 #include <sstream>
 #include <iomanip>
