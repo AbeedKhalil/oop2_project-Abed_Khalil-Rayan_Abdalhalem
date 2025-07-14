@@ -2,7 +2,7 @@
 
 #include "GrowthMeter.h"
 #include "FrenzySystem.h"
-#include "PowerUp.h" // For PowerUpManager definition
+#include "PowerUp.h"
 #include "IPowerUpManager.h"
 #include "IScoreSystem.h"
 #include "ScoreSystem.h"
