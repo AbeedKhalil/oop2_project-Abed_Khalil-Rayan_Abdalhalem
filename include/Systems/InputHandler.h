@@ -2,15 +2,20 @@
 
 #include <SFML/Window/Event.hpp>
 #include <functional>
+#include <memory>
+#include "InputStrategy.h"
 
 namespace FishGame
 {
     class InputHandler
     {
     public:
-        void setReversed(bool reversed) { m_reversed = reversed; }
+        InputHandler();
+
+        void setReversed(bool reversed);
         void processEvent(sf::Event event, std::function<void(const sf::Event&)> callback);
+
     private:
-        bool m_reversed{false};
+        std::unique_ptr<IInputStrategy> m_strategy;
     };
 }
