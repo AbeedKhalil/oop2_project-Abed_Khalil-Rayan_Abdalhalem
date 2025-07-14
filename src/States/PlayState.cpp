@@ -6,6 +6,9 @@
 #include "Fish.h"
 #include "ExtendedPowerUps.h"
 #include "SpawnSystem.h"
+#include "EnvironmentController.h"
+#include "SpawnController.h"
+#include "HUDController.h"
 #include "GameOverState.h"
 #include "StageIntroState.h"
 #include "StageSummaryState.h"
@@ -29,7 +32,6 @@ namespace FishGame
         , m_entities()
         , m_bonusItems()
         , m_hazards()
-        , m_environmentSystem(std::make_unique<EnvironmentSystem>())
         , m_systems()
         , m_growthMeter(nullptr)
         , m_frenzySystem(nullptr)
@@ -38,23 +40,15 @@ namespace FishGame
         , m_bonusItemManager(nullptr)
         , m_oysterManager(nullptr)
         , m_gameState()
-        , m_isPlayerFrozen(false)
-        , m_hasControlsReversed(false)
-        , m_isPlayerStunned(false)
-        , m_controlReverseTimer(sf::Time::Zero)
-        , m_freezeTimer(sf::Time::Zero)
-        , m_stunTimer(sf::Time::Zero)
-        , m_hazardSpawnTimer(sf::seconds(m_hazardSpawnInterval))
-        , m_extendedPowerUpSpawnTimer(sf::seconds(m_extendedPowerUpInterval))
         , m_bonusStageTriggered(false)
         , m_returningFromBonusStage(false)
         , m_savedLevel(1)
-        , m_metrics()
         , m_particleSystem(std::make_unique<ParticleSystem>())
         , m_collisionSystem(nullptr)
         , m_randomEngine(std::random_device{}())
         , m_angleDist(0.0f, 360.0f)
         , m_speedDist(Constants::MIN_PARTICLE_SPEED, Constants::MAX_PARTICLE_SPEED)
+        , m_environmentSystem(std::make_unique<EnvironmentSystem>())
         , m_spawnSystem(std::make_unique<SpawnSystem>(
             getGame().getSpriteManager(), m_randomEngine,
             m_gameState.currentLevel, getGame().getFonts().get(Fonts::Main)))
@@ -130,8 +124,13 @@ namespace FishGame
         m_growthMeter->setPosition(growthMeterX, growthMeterY);
         m_frenzySystem->setPosition(window.getSize().x / 2.0f, Constants::FRENZY_Y_POSITION);
 
-        // Initialize HUD system
-        m_hudSystem = std::make_unique<HUDSystem>(font, window.getSize());
+        // Initialize controllers
+        m_hudController = std::make_unique<HUDController>(font, window.getSize());
+        m_environmentController = std::make_unique<EnvironmentController>(
+            *m_environmentSystem, *m_player, m_entities, getGame().getSoundPlayer());
+        m_spawnController = std::make_unique<SpawnController>(
+            *m_fishSpawner, *m_spawnSystem, *m_bonusItemManager,
+            m_entities, m_bonusItems, m_hazards);
 
         // Configure initial state
         m_fishSpawner->setLevel(m_gameState.currentLevel);
@@ -143,13 +142,13 @@ namespace FishGame
             *m_powerUpManager,
             m_levelCounts,
             getGame().getSoundPlayer(),
-            m_isPlayerStunned,
-            m_stunTimer,
-            m_controlReverseTimer,
+            m_environmentController->stunnedRef(),
+            m_environmentController->stunTimerRef(),
+            m_environmentController->controlReverseTimerRef(),
             m_gameState.playerLives,
             [this]() { handlePlayerDeath(); },
-            [this]() { applyFreeze(); },
-            [this]() { reverseControls(); }
+            [this]() { if (m_environmentController) m_environmentController->applyFreeze(); },
+            [this]() { if (m_environmentController) m_environmentController->reverseControls(); }
         );
 
     }
@@ -173,15 +172,28 @@ void PlayState::updateGameplay(sf::Time deltaTime)
         m_gameState.levelTime += deltaTime;
 
         updateRespawn(deltaTime);
-        updateEnvironment(deltaTime);
+        if (m_environmentController)
+            m_environmentController->update(deltaTime);
+        updateSystems(deltaTime);
         updateGameState(deltaTime);
         updateEntities(deltaTime);
-        updateSpawning(deltaTime);
-  
+        if (m_spawnController)
+            m_spawnController->update(deltaTime, m_gameState.currentLevel);
+
         m_collisionSystem->process(*m_player, m_entities, m_bonusItems, m_hazards,
             m_oysterManager, m_gameState.currentLevel);
 
-    updateHUD();
+        auto active = m_powerUpManager->getActivePowerUps();
+        if (m_environmentController && m_hudController)
+            m_hudController->update(deltaTime,
+                m_scoreSystem->getCurrentScore(),
+                m_gameState.playerLives,
+                m_gameState.currentLevel,
+                m_scoreSystem->getChainBonus(),
+                active,
+                m_environmentController->isPlayerFrozen(), m_environmentController->getFreezeTimer(),
+                m_environmentController->hasControlsReversed(), m_environmentController->getControlReverseTimer(),
+                m_environmentController->isPlayerStunned(), m_environmentController->getStunTimer());
     updateCamera();
 }
 
@@ -210,13 +222,6 @@ void PlayState::updateRespawn(sf::Time deltaTime)
     }
 }
 
-void PlayState::updateEnvironment(sf::Time deltaTime)
-{
-    m_environmentSystem->update(deltaTime);
-    updateSystems(deltaTime);
-    updateEffectTimers(deltaTime);
-    applyEnvironmentalForces(deltaTime);
-}
 
 void PlayState::updateGameState(sf::Time deltaTime)
 {
@@ -244,32 +249,6 @@ void PlayState::updateGameState(sf::Time deltaTime)
     }
 }
 
-void PlayState::updateSpawning(sf::Time deltaTime)
-{
-    if (m_gameState.gameWon)
-        return;
-
-    m_fishSpawner->update(deltaTime, m_gameState.currentLevel);
-    auto& spawnedFish = m_fishSpawner->getSpawnedFish();
-    std::move(spawnedFish.begin(), spawnedFish.end(), std::back_inserter(m_entities));
-    spawnedFish.clear();
-
-    if (m_hazardSpawnTimer.update(deltaTime))
-    {
-        if (auto hazard = m_spawnSystem->spawnRandomHazard())
-            m_hazards.push_back(std::move(hazard));
-    }
-
-    if (m_extendedPowerUpSpawnTimer.update(deltaTime))
-    {
-        if (auto powerUp = m_spawnSystem->spawnRandomPowerUp())
-            m_bonusItems.push_back(std::move(powerUp));
-    }
-
-    m_bonusItemManager->update(deltaTime);
-    auto newItems = m_bonusItemManager->collectSpawnedItems();
-    std::move(newItems.begin(), newItems.end(), std::back_inserter(m_bonusItems));
-}
 
     void PlayState::updateSystems(sf::Time deltaTime)
     {
@@ -297,7 +276,7 @@ void PlayState::updateSpawning(sf::Time deltaTime)
         }
 
         // Update player
-        if (!m_isPlayerStunned)
+        if (!m_environmentController || !m_environmentController->isPlayerStunned())
         {
             m_player->update(deltaTime);
         }
@@ -333,61 +312,6 @@ void PlayState::updateSpawning(sf::Time deltaTime)
         m_bonusItems.end());
 }
 
-    void PlayState::updateEffectTimers(sf::Time deltaTime)
-    {
-        // Update freeze timer
-        if (m_isPlayerFrozen)
-        {
-            m_freezeTimer -= deltaTime;
-            if (m_freezeTimer <= sf::Time::Zero)
-            {
-                m_isPlayerFrozen = false;
-                EntityUtils::forEachAlive(m_entities, [](Entity& entity) {
-                    if (auto* fish = dynamic_cast<Fish*>(&entity))
-                    {
-                        fish->setFrozen(false);
-                    }
-                });
-            }
-        }
-
-        // Update control reversal timer
-        if (m_hasControlsReversed)
-        {
-            m_controlReverseTimer -= deltaTime;
-            if (m_controlReverseTimer <= sf::Time::Zero)
-            {
-                m_hasControlsReversed = false;
-                m_player->setControlsReversed(false);
-            }
-        }
-
-        // Update stun timer
-        if (m_isPlayerStunned)
-        {
-            m_stunTimer -= deltaTime;
-            if (m_stunTimer <= sf::Time::Zero)
-            {
-                m_isPlayerStunned = false;
-            }
-        }
-    }
-
-    void PlayState::applyEnvironmentalForces(sf::Time deltaTime)
-    {
-        // Apply ocean currents to player
-        if (!m_isPlayerStunned)
-        {
-            sf::Vector2f playerCurrent = m_environmentSystem->getOceanCurrentForce(m_player->getPosition());
-            m_player->setVelocity(m_player->getVelocity() + playerCurrent * deltaTime.asSeconds() * 0.3f);
-        }
-
-        // Apply currents to all entities
-        EntityUtils::forEachAlive(m_entities, [this, deltaTime](Entity& entity) {
-            sf::Vector2f current = m_environmentSystem->getOceanCurrentForce(entity.getPosition());
-            entity.setVelocity(entity.getVelocity() + current * deltaTime.asSeconds() * 0.1f);
-        });
-    }
 
     void PlayState::handlePowerUpCollision(PowerUp& powerUp)
     {
@@ -412,8 +336,8 @@ void PlayState::updateSpawning(sf::Time deltaTime)
 
         case PowerUpType::Freeze:
             m_powerUpManager->activatePowerUp(powerUp.getPowerUpType(), powerUp.getDuration());
-            applyFreeze();
-            // sound handled in applyFreeze
+            if (m_environmentController)
+                m_environmentController->applyFreeze();
             createParticleEffect(powerUp.getPosition(), sf::Color::Cyan, 20);
             break;
 
@@ -456,25 +380,6 @@ void PlayState::updateSpawning(sf::Time deltaTime)
         }
     }
 
-    void PlayState::applyFreeze()
-    {
-        m_isPlayerFrozen = true;
-        m_freezeTimer = sf::seconds(5.0f);
-        getGame().getSoundPlayer().play(SoundEffectID::FreezePowerup);
-
-        EntityUtils::forEachAlive(m_entities, [](Entity& entity) {
-            if (auto* fish = dynamic_cast<Fish*>(&entity))
-            {
-                fish->setFrozen(true);
-            }
-        });
-    }
-
-    void PlayState::reverseControls()
-    {
-        m_hasControlsReversed = true;
-        m_player->setControlsReversed(true);
-    }
 
     void PlayState::checkWinCondition()
     {
@@ -569,7 +474,8 @@ void PlayState::updateSpawning(sf::Time deltaTime)
         resetLevel();
         updateLevelDifficulty();
 
-        m_hudSystem->clearMessage();
+        if (m_hudController)
+            m_hudController->getSystem().clearMessage();
         m_bonusStageTriggered = false;
 
         StageIntroState::configure(m_gameState.currentLevel, false);
@@ -600,12 +506,8 @@ void PlayState::updateSpawning(sf::Time deltaTime)
         m_growthMeter->reset();
         m_oysterManager->resetAll();
 
-        m_isPlayerFrozen = false;
-        m_hasControlsReversed = false;
-        m_isPlayerStunned = false;
-        m_controlReverseTimer = sf::Time::Zero;
-        m_freezeTimer = sf::Time::Zero;
-        m_stunTimer = sf::Time::Zero;
+        if (m_environmentController)
+            m_environmentController->reset();
 
         m_bonusItemManager->setStarfishEnabled(true);
         m_bonusItemManager->setPowerUpsEnabled(true);
@@ -674,34 +576,9 @@ void PlayState::updateSpawning(sf::Time deltaTime)
         m_particleSystem->createEffect(position, color, count);
     }
 
-    void PlayState::updateHUD()
-    {
-        auto activePowerUps = m_powerUpManager->getActivePowerUps();
-        m_hudSystem->update(
-            m_scoreSystem->getCurrentScore(),
-            m_gameState.playerLives,
-            m_gameState.currentLevel,
-            m_scoreSystem->getChainBonus(),
-            activePowerUps,
-            m_isPlayerFrozen, m_freezeTimer,
-            m_hasControlsReversed, m_controlReverseTimer,
-            m_isPlayerStunned, m_stunTimer,
-            m_metrics.currentFPS);
-    }
 
-    void PlayState::updatePerformanceMetrics(sf::Time deltaTime)
-    {
-        m_metrics.frameCount++;
-        m_metrics.fpsUpdateTime += deltaTime;
 
-        if (m_metrics.fpsUpdateTime >= Constants::FPS_UPDATE_INTERVAL)
-        {
-            m_metrics.currentFPS = static_cast<float>(m_metrics.frameCount) /
-                m_metrics.fpsUpdateTime.asSeconds();
-            m_metrics.frameCount = 0;
-            m_metrics.fpsUpdateTime = sf::Time::Zero;
-        }
-    }
+
 
     void PlayState::updateCamera()
     {
@@ -713,7 +590,8 @@ void PlayState::updateSpawning(sf::Time deltaTime)
 
     void PlayState::showMessage(const std::string& message)
     {
-        m_hudSystem->showMessage(message);
+        if (m_hudController)
+            m_hudController->showMessage(message);
     }
 
     void PlayState::render()
@@ -746,7 +624,8 @@ void PlayState::updateSpawning(sf::Time deltaTime)
 
 
         // Render HUD
-        window.draw(*m_hudSystem);
+        if (m_hudController)
+            window.draw(m_hudController->getSystem());
 
         if (m_gameState.gameWon || m_gameState.levelComplete)
         {
@@ -776,7 +655,8 @@ void PlayState::updateSpawning(sf::Time deltaTime)
 
             // Mouse control disabled
 
-            m_hudSystem->clearMessage();
+            if (m_hudController)
+                m_hudController->getSystem().clearMessage();
             m_initialized = true;
             getGame().getMusicPlayer().play(musicForLevel(m_gameState.currentLevel), true);
         }

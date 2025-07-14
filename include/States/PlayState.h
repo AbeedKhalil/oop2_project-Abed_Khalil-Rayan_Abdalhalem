@@ -10,6 +10,9 @@
 #include "OysterManager.h"
 #include "ScoreSystem.h"
 #include "HUDSystem.h"
+#include "EnvironmentController.h"
+#include "SpawnController.h"
+#include "HUDController.h"
 #include "ParticleSystem.h"
 #include "SpawnSystem.h"
 #include "InputHandler.h"
@@ -22,7 +25,6 @@
 #include "BonusStageState.h"
 #include "GameConstants.h"
 #include "StateUtils.h"
-#include "SpawnTimer.h"
 #include <vector>
 #include <functional>
 #include <random>
@@ -71,14 +73,6 @@ namespace FishGame
 
         // HUD elements collection
 
-        // Performance metrics
-        struct PerformanceMetrics
-        {
-            sf::Time fpsUpdateTime = sf::Time::Zero;
-            int frameCount = 0;
-            float currentFPS = 0.0f;
-        };
-
         // ==================== Collision Handling ====================
 
         // ==================== Helper Functions ====================
@@ -88,10 +82,6 @@ namespace FishGame
         // Effect helpers
         void createParticleEffect(const sf::Vector2f& position, const sf::Color& color,
             int count = Constants::DEFAULT_PARTICLE_COUNT);
-        void applyEnvironmentalForces(sf::Time deltaTime);
-
-        // State helpers
-        void updateEffectTimers(sf::Time deltaTime);
 
         // ==================== Core Methods ====================
 
@@ -101,13 +91,9 @@ namespace FishGame
         // Update methods
         void updateGameplay(sf::Time deltaTime);
         void updateRespawn(sf::Time deltaTime);
-        void updateEnvironment(sf::Time deltaTime);
         void updateEntities(sf::Time deltaTime);
-        void updateSpawning(sf::Time deltaTime);
         void updateGameState(sf::Time deltaTime);
         void updateSystems(sf::Time deltaTime);
-        void updateHUD();
-        void updatePerformanceMetrics(sf::Time deltaTime);
         void updateCamera();
 
         // Collision handling
@@ -129,8 +115,6 @@ namespace FishGame
         // Helper methods
         bool areAllEnemiesGone() const;
         void makeAllEnemiesFlee();
-        void applyFreeze();
-        void reverseControls();
         void showMessage(const std::string& message);
         void updateBackground(int level);
 
@@ -142,9 +126,6 @@ namespace FishGame
         std::vector<std::unique_ptr<Entity>> m_entities;
         std::vector<std::unique_ptr<BonusItem>> m_bonusItems;
         std::vector<std::unique_ptr<Hazard>> m_hazards;
-
-        // Environmental system
-        std::unique_ptr<EnvironmentSystem> m_environmentSystem;
 
         // Game systems
         GameSystems m_systems;
@@ -159,18 +140,14 @@ namespace FishGame
 
         // State tracking
         GameStateData m_gameState;
-        std::unique_ptr<HUDSystem> m_hudSystem;
         std::unordered_map<TextureID, int> m_levelCounts;
 
-        // Effect states
-        bool m_isPlayerFrozen;
-        bool m_hasControlsReversed;
-        bool m_isPlayerStunned;
-        sf::Time m_controlReverseTimer;
-        sf::Time m_freezeTimer;
-        sf::Time m_stunTimer;
-        SpawnTimer<sf::Time> m_hazardSpawnTimer;
-        SpawnTimer<sf::Time> m_extendedPowerUpSpawnTimer;
+        // Controllers
+        std::unique_ptr<EnvironmentController> m_environmentController;
+        std::unique_ptr<SpawnController> m_spawnController;
+        std::unique_ptr<HUDController> m_hudController;
+        std::unique_ptr<EnvironmentSystem> m_environmentSystem;
+        std::unique_ptr<SpawnSystem> m_spawnSystem;
         InputHandler m_inputHandler;
 
         // Bonus stage tracking
@@ -179,7 +156,6 @@ namespace FishGame
         int m_savedLevel;
 
         // Performance tracking
-        PerformanceMetrics m_metrics;
 
         std::unique_ptr<ParticleSystem> m_particleSystem;
         std::unique_ptr<CollisionSystem> m_collisionSystem;
@@ -192,7 +168,6 @@ namespace FishGame
         std::mt19937 m_randomEngine;
         std::uniform_real_distribution<float> m_angleDist;
         std::uniform_real_distribution<float> m_speedDist;
-        std::unique_ptr<SpawnSystem> m_spawnSystem;
 
         bool m_initialized;
 

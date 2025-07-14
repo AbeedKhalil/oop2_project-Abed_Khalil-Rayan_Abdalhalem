@@ -57,7 +57,6 @@ void PlayLogic::handleEvent(const sf::Event& event)
 
 bool PlayLogic::update(sf::Time deltaTime)
 {
-    m_state.updatePerformanceMetrics(deltaTime);
     m_state.updateGameplay(deltaTime);
     m_state.processDeferredActions();
     return false;
