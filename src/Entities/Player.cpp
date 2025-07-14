@@ -3,7 +3,9 @@
 #include "PlayerGrowth.h"
 #include "PlayerVisual.h"
 #include "BonusItem.h"
-#include "PowerUp.h"
+#include "IPowerUpManager.h"
+#include "IScoreSystem.h"
+#include "ScoreSystem.h"
 #include "Animator.h"
 #include "CollisionDetector.h"
 #include "GenericFish.h"
@@ -65,7 +67,7 @@ namespace FishGame
     }
 
     void Player::initializeSystems(GrowthMeter* growthMeter, FrenzySystem* frenzySystem,
-        PowerUpManager* powerUpManager, ScoreSystem* scoreSystem)
+        IPowerUpManager* powerUpManager, IScoreSystem* scoreSystem)
     {
         m_growthMeter = growthMeter;
         m_frenzySystem = frenzySystem;

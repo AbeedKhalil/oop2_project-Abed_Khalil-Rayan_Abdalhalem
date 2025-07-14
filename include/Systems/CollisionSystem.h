@@ -9,9 +9,11 @@
 #include "BonusItem.h"
 #include "Hazard.h"
 #include "ParticleSystem.h"
+#include "IScoreSystem.h"
 #include "ScoreSystem.h"
 #include "FrenzySystem.h"
 #include "PowerUp.h"
+#include "IPowerUpManager.h"
 #include "OysterManager.h"
 #include "FishCollisionHandler.h"
 
@@ -20,8 +22,8 @@ namespace FishGame
     class CollisionSystem
     {
     public:
-        CollisionSystem(ParticleSystem& particles, ScoreSystem& score,
-                        FrenzySystem& frenzy, PowerUpManager& powerUps,
+        CollisionSystem(ParticleSystem& particles, IScoreSystem& score,
+                        FrenzySystem& frenzy, IPowerUpManager& powerUps,
                         std::unordered_map<TextureID,int>& levelCounts,
                         SoundPlayer& sounds,
                         bool& playerStunned, sf::Time& stunTimer,
@@ -44,9 +46,9 @@ namespace FishGame
 
 
         ParticleSystem& m_particles;
-        ScoreSystem& m_scoreSystem;
+        IScoreSystem& m_scoreSystem;
         FrenzySystem& m_frenzySystem;
-        PowerUpManager& m_powerUps;
+        IPowerUpManager& m_powerUps;
         std::unordered_map<TextureID,int>& m_levelCounts;
         SoundPlayer& m_sounds;
         bool& m_playerStunned;

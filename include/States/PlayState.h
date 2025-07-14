@@ -8,6 +8,7 @@
 #include "FrenzySystem.h"
 #include "BonusItemManager.h"
 #include "OysterManager.h"
+#include "IScoreSystem.h"
 #include "ScoreSystem.h"
 #include "HUDSystem.h"
 #include "EnvironmentController.h"
@@ -18,6 +19,7 @@
 #include "InputHandler.h"
 #include "CameraController.h"
 #include "PowerUp.h"
+#include "IPowerUpManager.h"
 #include "ExtendedPowerUps.h"
 #include "Hazard.h"
 #include "EnvironmentSystem.h"
@@ -133,8 +135,8 @@ namespace FishGame
         // Direct system pointers for convenience
         GrowthMeter* m_growthMeter{nullptr};
         FrenzySystem* m_frenzySystem{nullptr};
-        PowerUpManager* m_powerUpManager{nullptr};
-        ScoreSystem* m_scoreSystem{nullptr};
+        IPowerUpManager* m_powerUpManager{nullptr};
+        IScoreSystem* m_scoreSystem{nullptr};
         BonusItemManager* m_bonusItemManager{nullptr};
         FixedOysterManager* m_oysterManager{nullptr};
 

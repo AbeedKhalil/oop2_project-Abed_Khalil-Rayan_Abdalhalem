@@ -2,8 +2,11 @@
 
 #include "GrowthMeter.h"
 #include "FrenzySystem.h"
-#include "PowerUp.h" // For PowerUpManager definition
+#include "PowerUp.h"
+#include "IPowerUpManager.h"
+#include "IScoreSystem.h"
 #include "ScoreSystem.h"
+#include <memory>
 #include "BonusItemManager.h"
 #include "OysterManager.h"
 
@@ -32,8 +35,8 @@ namespace FishGame
 
         GrowthMeter& getGrowthMeter() { return *growthMeter; }
         FrenzySystem& getFrenzySystem() { return *frenzySystem; }
-        PowerUpManager& getPowerUpManager() { return *powerUpManager; }
-        ScoreSystem& getScoreSystem() { return *scoreSystem; }
+        IPowerUpManager& getPowerUpManager() { return *powerUpManager; }
+        IScoreSystem& getScoreSystem() { return *scoreSystem; }
         BonusItemManager& getBonusItemManager() { return *bonusItemManager; }
         FixedOysterManager& getOysterManager() { return *oysterManager; }
     };
