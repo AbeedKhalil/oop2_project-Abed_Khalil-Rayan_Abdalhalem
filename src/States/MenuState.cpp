@@ -70,9 +70,10 @@ namespace FishGame
 
         // Setup menu items using STL algorithms
         float yPosition = Constants::MENU_START_Y;
+        std::size_t index = 0;
 
         std::transform(menuData.begin(), menuData.end(), m_menuItems.begin(),
-            [this, &window, &yPosition](const auto& data) -> MenuItemType {
+            [this, &window, &yPosition, &index](const auto& data) -> MenuItemType {
                 MenuItemType item;
                 item.normalTexture = std::get<0>(data);
                 item.hoverTexture = std::get<1>(data);
@@ -81,10 +82,12 @@ namespace FishGame
                 item.sprite.setTexture(getGame().getSpriteManager().getTexture(item.normalTexture));
                 sf::FloatRect bounds = item.sprite.getLocalBounds();
                 item.sprite.setOrigin(bounds.width / 2.0f, bounds.height / 2.0f);
-                item.sprite.setPosition(window.getSize().x / 2.0f, yPosition);
+                float xOffset = (index % 2 == 0 ? -Constants::MENU_HORIZONTAL_OFFSET : Constants::MENU_HORIZONTAL_OFFSET);
+                item.sprite.setPosition(window.getSize().x / 2.0f + xOffset, yPosition);
                 item.sprite.setScale(Constants::MENU_BUTTON_SCALE, Constants::MENU_BUTTON_SCALE);
 
                 yPosition += Constants::MENU_ITEM_SPACING;
+                ++index;
 
                 return item;
             });
