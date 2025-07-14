@@ -8,8 +8,8 @@
 #include <string>
 #include "GrowthMeter.h"
 #include "FrenzySystem.h"
-#include "PowerUp.h"
-#include "ScoreSystem.h"
+#include "IPowerUpManager.h"
+#include "IScoreSystem.h"
 #include "SoundPlayer.h"
 
 namespace FishGame
@@ -38,7 +38,7 @@ namespace FishGame
 
         // Initialize with game systems
         void initializeSystems(GrowthMeter* growthMeter, FrenzySystem* frenzySystem,
-            PowerUpManager* powerUpManager, ScoreSystem* scoreSystem);
+            IPowerUpManager* powerUpManager, IScoreSystem* scoreSystem);
 
         // Player-specific methods
         void handleInput();
@@ -177,8 +177,8 @@ namespace FishGame
         // System references
         GrowthMeter* m_growthMeter;
         FrenzySystem* m_frenzySystem;
-        PowerUpManager* m_powerUpManager;
-        ScoreSystem* m_scoreSystem;
+        IPowerUpManager* m_powerUpManager;
+        IScoreSystem* m_scoreSystem;
         SpriteManager* m_spriteManager;
         SoundPlayer* m_soundPlayer{ nullptr };
 

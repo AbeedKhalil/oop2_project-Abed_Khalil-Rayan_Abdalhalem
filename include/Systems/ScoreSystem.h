@@ -6,6 +6,7 @@
 #include <cmath>
 #include <unordered_map>
 #include "SpriteManager.h"
+#include "IScoreSystem.h"
 
 namespace FishGame
 {
@@ -40,7 +41,7 @@ namespace FishGame
         static constexpr float m_fadeSpeed = 170.0f;
     };
 
-    class ScoreSystem
+    class ScoreSystem : public IScoreSystem
     {
     public:
         ScoreSystem(const sf::Font& font);
@@ -56,26 +57,26 @@ namespace FishGame
 
         // Score calculation
         int calculateScore(ScoreEventType type, int basePoints, int frenzyMultiplier, float powerUpMultiplier);
-        void addScore(ScoreEventType type, int basePoints, sf::Vector2f position, int frenzyMultiplier, float powerUpMultiplier);
+        void addScore(ScoreEventType type, int basePoints, sf::Vector2f position, int frenzyMultiplier, float powerUpMultiplier) override;
 
         // Chain system
-        void registerHit(); // Successful fish eaten
-        void registerMiss(); // Missed attempt or damage taken
-        int getChainBonus() const { return m_currentChain; }
+        void registerHit() override; // Successful fish eaten
+        void registerMiss() override; // Missed attempt or damage taken
+        int getChainBonus() const override { return m_currentChain; }
 
         // Tail-bite mechanic
-        void registerTailBite(sf::Vector2f position, int frenzyMultiplier, float powerUpMultiplier);
+        void registerTailBite(sf::Vector2f position, int frenzyMultiplier, float powerUpMultiplier) override;
 
         // Update and rendering
-        void update(sf::Time deltaTime);
-        void drawFloatingScores(sf::RenderTarget& target) const;
+        void update(sf::Time deltaTime) override;
+        void drawFloatingScores(sf::RenderTarget& target) const override;
 
         // Score tracking
-        int getCurrentScore() const { return m_currentScore; }
-        void setCurrentScore(int score) { m_currentScore = score; }
-        void recordFish(TextureID id);
-        const std::unordered_map<TextureID,int>& getFishCounts() const { return m_fishCounts; }
-        void reset();
+        int getCurrentScore() const override { return m_currentScore; }
+        void setCurrentScore(int score) override { m_currentScore = score; }
+        void recordFish(TextureID id) override;
+        const std::unordered_map<TextureID,int>& getFishCounts() const override { return m_fishCounts; }
+        void reset() override;
 
     private:
         void createFloatingScore(int points, int multiplier, sf::Vector2f position);

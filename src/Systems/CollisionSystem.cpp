@@ -8,8 +8,8 @@
 
 namespace FishGame
 {
-    CollisionSystem::CollisionSystem(ParticleSystem& particles, ScoreSystem& score,
-                                     FrenzySystem& frenzy, PowerUpManager& powerUps,
+    CollisionSystem::CollisionSystem(ParticleSystem& particles, IScoreSystem& score,
+                                     FrenzySystem& frenzy, IPowerUpManager& powerUps,
                                      std::unordered_map<TextureID,int>& levelCounts,
                                      SoundPlayer& sounds,
                                      bool& playerStunned, sf::Time& stunTimer,

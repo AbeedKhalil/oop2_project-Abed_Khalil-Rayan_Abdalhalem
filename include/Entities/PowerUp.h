@@ -3,6 +3,7 @@
 #include "BonusItem.h"
 #include <vector>
 #include <algorithm>
+#include "IPowerUpManager.h"
 
 namespace FishGame
 {
@@ -83,7 +84,7 @@ namespace FishGame
     };
 
     // Power-up manager to handle active effects
-    class PowerUpManager
+    class PowerUpManager : public IPowerUpManager
     {
     public:
         PowerUpManager();
@@ -98,24 +99,24 @@ namespace FishGame
         PowerUpManager& operator=(PowerUpManager&&) = default;
 
         // Power-up management
-        void activatePowerUp(PowerUpType type, sf::Time duration);
-        void update(sf::Time deltaTime);
-        void reset();
+        void activatePowerUp(PowerUpType type, sf::Time duration) override;
+        void update(sf::Time deltaTime) override;
+        void reset() override;
 
         // Query active effects
-        bool isActive(PowerUpType type) const;
-        sf::Time getRemainingTime(PowerUpType type) const;
-        float getScoreMultiplier() const;
+        bool isActive(PowerUpType type) const override;
+        sf::Time getRemainingTime(PowerUpType type) const override;
+        float getScoreMultiplier() const override;
 
         // Get all active power-ups
-        std::vector<PowerUpType> getActivePowerUps() const;
+        std::vector<PowerUpType> getActivePowerUps() const override;
 
         // Specific power-up queries
         bool isFreezeActive() const { return isActive(PowerUpType::Freeze); }
         bool hasSpeedBoost() const { return isActive(PowerUpType::SpeedBoost); }
 
         // Get effect values
-        float getSpeedMultiplier() const;
+        float getSpeedMultiplier() const override;
 
     private:
         struct ActivePowerUp
