@@ -119,14 +119,14 @@ namespace FishGame
         });
 
         EntityUtils::forEachAlive(bonusItems, [this,&player](auto& e){
-            if (EntityUtils::areColliding(player, *e)) {
-                e->onCollide(player, *this);
+            if (EntityUtils::areColliding(player, e)) {
+                e.onCollide(player, *this);
             }
         });
 
         EntityUtils::forEachAlive(hazards, [this,&player](auto& h){
-            if (EntityUtils::areColliding(player, *h)) {
-                h->onCollide(player, *this);
+            if (EntityUtils::areColliding(player, h)) {
+                h.onCollide(player, *this);
             }
         });
 
