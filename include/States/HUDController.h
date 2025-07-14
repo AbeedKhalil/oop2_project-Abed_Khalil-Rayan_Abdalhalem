@@ -2,6 +2,7 @@
 
 #include "HUDSystem.h"
 #include <memory>
+#include <vector>
 
 namespace FishGame {
 
@@ -14,7 +15,7 @@ public:
                 int lives,
                 int level,
                 int chainBonus,
-                const std::vector<PowerUpInfo>& active,
+                const std::vector<PowerUpType>& active,
                 bool frozen, sf::Time freeze,
                 bool reversed, sf::Time reverse,
                 bool stunned, sf::Time stun);

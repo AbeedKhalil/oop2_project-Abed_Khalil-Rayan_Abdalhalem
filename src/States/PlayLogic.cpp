@@ -9,10 +9,12 @@ PlayLogic::PlayLogic(PlayState& state) : m_state(state) {}
 
 void PlayLogic::handleEvent(const sf::Event& event)
 {
-    if (m_state.m_isPlayerStunned || m_state.getGame().getCurrentState<StageIntroState>())
+    if ((m_state.m_environmentController && m_state.m_environmentController->isPlayerStunned()) ||
+        m_state.getGame().getCurrentState<StageIntroState>())
         return;
 
-    m_state.m_inputHandler.setReversed(m_state.m_hasControlsReversed);
+    if (m_state.m_environmentController)
+        m_state.m_inputHandler.setReversed(m_state.m_environmentController->hasControlsReversed());
     m_state.m_inputHandler.processEvent(event, [this](const sf::Event& processedEvent)
     {
         switch (processedEvent.type)
