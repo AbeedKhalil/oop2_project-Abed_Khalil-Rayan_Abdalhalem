@@ -20,10 +20,14 @@ namespace FishGame
 
     class Player : public Entity
     {
-        friend class PlayerInput;
-        friend class PlayerGrowth;
-        friend class PlayerVisual;
     public:
+        struct VisualEffect
+        {
+            float scale = 1.f;
+            float rotation = 0.f;
+            sf::Color color = sf::Color::White;
+            sf::Time duration = sf::Time::Zero;
+        };
         Player();
         ~Player() override;
 
@@ -83,6 +87,59 @@ namespace FishGame
         // Size information
         bool isAtMaxSize() const { return m_currentStage >= Constants::MAX_STAGES; }
         void setWindowBounds(const sf::Vector2u& windowSize);
+
+        // Accessors used by helper classes
+        bool areControlsReversed() const { return m_controlsReversed; }
+        sf::Time getPoisonColorTimer() const { return m_poisonColorTimer; }
+        void setPoisonColorTimer(sf::Time t) { m_poisonColorTimer = t; }
+
+        sf::Time getSpeedBoostTimer() const { return m_speedBoostTimer; }
+        float getSpeedMultiplier() const { return m_speedMultiplier; }
+
+        int getCurrentStage() const { return m_currentStage; }
+        void setCurrentStage(int stage) { m_currentStage = stage; }
+
+        float getGrowthProgress() const { return m_growthProgress; }
+        void setGrowthProgress(float value) { m_growthProgress = value; }
+        void addGrowthProgress(float delta) { m_growthProgress += delta; }
+
+        int getScore() const { return m_score; }
+        void setScore(int score) { m_score = score; }
+
+        void setPoints(int points) { m_points = points; }
+        void incrementPoints(int amount) { m_points += amount; }
+
+        SoundPlayer* getSoundPlayer() const { return m_soundPlayer; }
+        GrowthMeter* getGrowthMeter() const { return m_growthMeter; }
+        SpriteManager* getSpriteManager() const { return m_spriteManager; }
+        Animator* getAnimator() const { return m_animator.get(); }
+        std::vector<VisualEffect>& getActiveEffects() { return m_activeEffects; }
+        const std::vector<VisualEffect>& getActiveEffects() const { return m_activeEffects; }
+
+        sf::Time getEatAnimationTimer() const { return m_eatAnimationTimer; }
+        void setEatAnimationTimer(sf::Time t) { m_eatAnimationTimer = t; }
+        float getEatAnimationScale() const { return m_eatAnimationScale; }
+        void setEatAnimationScale(float s) { m_eatAnimationScale = s; }
+        sf::Time getTurnAnimationTimer() const { return m_turnAnimationTimer; }
+        void setTurnAnimationTimer(sf::Time t) { m_turnAnimationTimer = t; }
+        float getDamageFlashIntensity() const { return m_damageFlashIntensity; }
+        void setDamageFlashIntensity(float f) { m_damageFlashIntensity = f; }
+        sf::Color getDamageFlashColor() const { return m_damageFlashColor; }
+        void setDamageFlashColor(sf::Color c) { m_damageFlashColor = c; }
+        const std::string& getCurrentAnimation() const { return m_currentAnimation; }
+        void setCurrentAnimation(const std::string& anim) { m_currentAnimation = anim; }
+        bool isFacingRight() const { return m_facingRight; }
+        sf::Time getInvulnerabilityTimer() const { return m_invulnerabilityTimer; }
+
+        static constexpr float baseSpeed() { return m_baseSpeed; }
+        static constexpr float baseRadius() { return m_baseRadius; }
+        static constexpr float growthFactor() { return m_growthFactor; }
+        static constexpr float tinyFishGrowth() { return m_tinyFishGrowth; }
+        static constexpr float smallFishGrowth() { return m_smallFishGrowth; }
+        static constexpr float mediumFishGrowth() { return m_mediumFishGrowth; }
+        static constexpr float eatAnimationSpeed() { return m_eatAnimationSpeed; }
+        static sf::Time eatAnimationDuration() { return m_eatAnimationDuration; }
+        static sf::Time turnAnimationDuration() { return m_turnAnimationDuration; }
 
         // Statistics tracking
 
@@ -154,13 +211,6 @@ namespace FishGame
         sf::Vector2u m_windowBounds;
 
         // Visual effects
-        struct VisualEffect
-        {
-            float scale = 1.f;
-            float rotation = 0.f;
-            sf::Color color = sf::Color::White;
-            sf::Time duration = sf::Time::Zero;
-        };
         std::vector<VisualEffect> m_activeEffects;
 
         // Eat animation

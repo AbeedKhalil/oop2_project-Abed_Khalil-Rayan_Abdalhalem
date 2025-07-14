@@ -33,7 +33,7 @@ void PlayerInput::handleInput()
         keyboardUsed = true;
     }
 
-    if (m_player.m_controlsReversed)
+    if (m_player.areControlsReversed())
     {
         inputDirection = -inputDirection;
     }
@@ -44,13 +44,14 @@ void PlayerInput::handleInput()
         if (length > 0.f)
         {
             inputDirection /= length;
-            float speed = Player::m_baseSpeed * (m_player.m_speedBoostTimer > sf::Time::Zero ? m_player.m_speedMultiplier : 1.f);
-            m_player.m_velocity = inputDirection * speed;
+            float speed = Player::baseSpeed() *
+                (m_player.getSpeedBoostTimer() > sf::Time::Zero ? m_player.getSpeedMultiplier() : 1.f);
+            m_player.setVelocity(inputDirection * speed);
         }
     }
     else
     {
-        m_player.m_velocity *= 0.9f;
+        m_player.setVelocity(m_player.getVelocity() * 0.9f);
     }
 }
 
