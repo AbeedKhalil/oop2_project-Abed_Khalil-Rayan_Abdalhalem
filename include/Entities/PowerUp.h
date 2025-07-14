@@ -31,6 +31,8 @@ namespace FishGame
         // Visual indicator
         virtual sf::Color getAuraColor() const = 0;
 
+        void onCollide(Player& player, CollisionSystem& system) override;
+
     protected:
         PowerUpType m_powerUpType;
         sf::Time m_duration;

@@ -17,6 +17,7 @@ namespace FishGame
     // Base class for all bonus items
     class BonusItem : public Entity
     {
+        friend class CollisionSystem;
     public:
         BonusItem(BonusType type, int points);
         virtual ~BonusItem() = default;
@@ -51,6 +52,7 @@ namespace FishGame
     public:
         // Made public for spawner access
         float m_baseY;
+        void onCollide(Player& player, CollisionSystem& system) override;
     };
 
     // Starfish bonus item - fixed points

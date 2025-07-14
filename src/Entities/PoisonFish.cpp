@@ -4,6 +4,7 @@
 #include "Player.h"
 #include "SpriteManager.h"
 #include "Animator.h"
+#include "Systems/CollisionSystem.h"
 #include <random>
 #include <algorithm>
 #include <cmath>
@@ -93,6 +94,24 @@ namespace FishGame
 
         // Draw the fish
         Fish::draw(target, states);
+    }
+
+    void PoisonFish::onCollide(Player& player, CollisionSystem& system)
+    {
+        if (player.isInvulnerable() || system.m_playerStunned)
+            return;
+
+        if (player.canEat(*this) && player.attemptEat(*this))
+        {
+            system.m_reverseControls();
+            system.m_controlReverseTimer = getPoisonDuration();
+            player.applyPoisonEffect(getPoisonDuration());
+            system.m_sounds.play(SoundEffectID::PlayerPoison);
+            system.createParticle(getPosition(), sf::Color::Magenta, 15);
+            system.createParticle(player.getPosition(), sf::Color::Magenta, 10);
+            system.m_levelCounts[getTextureID()]++;
+            destroy();
+        }
     }
 
 }

@@ -39,168 +39,6 @@ namespace FishGame
     }
 
     // --- Collision Handlers ------------------------------------------------
-    struct CollisionSystem::FishCollisionHandler
-    {
-        CollisionSystem* system;
-        Player* player;
-        void operator()(Entity& entity) const
-        {
-            if (player->isInvulnerable() || system->m_playerStunned)
-                return;
-
-            if (auto* puffer = dynamic_cast<Pufferfish*>(&entity))
-            {
-                if (puffer->isInflated())
-                {
-                    if (!player->hasRecentlyTakenDamage())
-                    {
-                        puffer->pushEntity(*player);
-                        system->m_sounds.play(SoundEffectID::PufferBounce);
-                        int penalty = Constants::PUFFERFISH_SCORE_PENALTY;
-                        system->m_scoreSystem.setCurrentScore(
-                            std::max(0, system->m_scoreSystem.getCurrentScore() - penalty));
-                        system->createParticle(player->getPosition(), Constants::PUFFERFISH_IMPACT_COLOR);
-                    }
-                }
-                else if (player->canEat(entity))
-                {
-                    if (player->attemptEat(entity))
-                    {
-                        system->m_levelCounts[puffer->getTextureID()]++;
-                        system->m_sounds.play(SoundEffectID::Bite2);
-                        entity.destroy();
-                        system->createParticle(entity.getPosition(), Constants::EAT_PARTICLE_COLOR);
-                    }
-                }
-                else if (puffer->canEat(*player) && !player->hasRecentlyTakenDamage())
-                {
-                    player->takeDamage();
-                    system->createParticle(player->getPosition(), Constants::DAMAGE_PARTICLE_COLOR);
-                    system->m_onPlayerDeath();
-                }
-            }
-            else if (auto* angelfish = dynamic_cast<Angelfish*>(&entity))
-            {
-                if (player->canEat(entity) && player->attemptEat(entity))
-                {
-                    system->m_levelCounts[angelfish->getTextureID()]++;
-                    system->m_sounds.play(SoundEffectID::Bite1);
-                    system->createParticle(entity.getPosition(),
-                        Constants::ANGELFISH_PARTICLE_COLOR, Constants::ANGELFISH_PARTICLE_COUNT);
-                    entity.destroy();
-                }
-            }
-            else if (auto* poison = dynamic_cast<PoisonFish*>(&entity))
-            {
-                if (player->canEat(entity) && player->attemptEat(entity))
-                {
-                    system->m_reverseControls();
-                    system->m_controlReverseTimer = poison->getPoisonDuration();
-                    player->applyPoisonEffect(poison->getPoisonDuration());
-                    system->m_sounds.play(SoundEffectID::PlayerPoison);
-                    system->createParticle(entity.getPosition(), sf::Color::Magenta, 15);
-                    system->createParticle(player->getPosition(), sf::Color::Magenta, 10);
-                    system->m_levelCounts[poison->getTextureID()]++;
-                    entity.destroy();
-                }
-            }
-            else if (auto* regularFish = dynamic_cast<Fish*>(&entity))
-            {
-                bool playerCanEat = player->canEat(entity);
-                bool fishCanEatPlayer = regularFish->canEat(*player);
-
-                if (playerCanEat && player->attemptEat(entity))
-                {
-                    system->m_levelCounts[regularFish->getTextureID()]++;
-                    SoundEffectID effect = SoundEffectID::Bite1;
-                    switch (regularFish->getSize())
-                    {
-                    case FishSize::Small: effect = SoundEffectID::Bite1; break;
-                    case FishSize::Medium: effect = SoundEffectID::Bite2; break;
-                    case FishSize::Large: effect = SoundEffectID::Bite3; break;
-                    }
-                    system->m_sounds.play(effect);
-                    entity.destroy();
-                    system->createParticle(entity.getPosition(), Constants::EAT_PARTICLE_COLOR);
-                }
-                else if (fishCanEatPlayer && !player->hasRecentlyTakenDamage())
-                {
-                    regularFish->playEatAnimation();
-                    player->takeDamage();
-                    system->createParticle(player->getPosition(), Constants::DAMAGE_PARTICLE_COLOR);
-                    system->m_onPlayerDeath();
-                }
-            }
-        }
-    };
-
-    struct CollisionSystem::BonusItemCollisionHandler
-    {
-        CollisionSystem* system;
-        Player* player;
-        void operator()(BonusItem& item) const
-        {
-            item.onCollect();
-
-            if (auto* powerUp = dynamic_cast<PowerUp*>(&item))
-            {
-                system->handlePowerUpCollision(*player, *powerUp);
-            }
-            else
-            {
-                if (item.getBonusType() == BonusType::Starfish)
-                {
-                    system->m_levelCounts[TextureID::Starfish]++;
-                    system->m_scoreSystem.recordFish(TextureID::Starfish);
-                    system->m_sounds.play(SoundEffectID::StarPickup);
-                }
-                int frenzyMultiplier = system->m_frenzySystem.getMultiplier();
-                float powerUpMultiplier = system->m_powerUps.getScoreMultiplier();
-
-                system->m_scoreSystem.addScore(ScoreEventType::BonusCollected, item.getPoints(),
-                                               item.getPosition(), frenzyMultiplier, powerUpMultiplier);
-
-                system->createParticle(item.getPosition(), Constants::BONUS_PARTICLE_COLOR);
-            }
-        }
-    };
-
-    struct CollisionSystem::HazardCollisionHandler
-    {
-        CollisionSystem* system;
-        Player* player;
-        void operator()(Hazard& hazard) const
-        {
-            if (player->isInvulnerable())
-                return;
-
-            switch (hazard.getHazardType())
-            {
-            case HazardType::Bomb:
-                if (auto* bomb = dynamic_cast<Bomb*>(&hazard))
-                {
-                    bomb->onContact(*player);
-                    system->m_sounds.play(SoundEffectID::MineExplode);
-                    player->takeDamage();
-                    system->m_onPlayerDeath();
-                    system->createParticle(player->getPosition(), sf::Color::Red, 20);
-                }
-                break;
-
-            case HazardType::Jellyfish:
-                if (auto* jelly = dynamic_cast<Jellyfish*>(&hazard))
-                {
-                    jelly->onContact(*player);
-                    system->m_playerStunned = true;
-                    system->m_stunTimer = jelly->getStunDuration();
-                    player->setVelocity(0.0f, 0.0f);
-                    system->m_sounds.play(SoundEffectID::PlayerStunned);
-                    system->createParticle(player->getPosition(), sf::Color(255,255,0,150), 10);
-                }
-                break;
-            }
-        }
-    };
 
     // --- Helper methods ----------------------------------------------------
     void CollisionSystem::handlePowerUpCollision(Player& player, PowerUp& powerUp)
@@ -276,19 +114,19 @@ namespace FishGame
     {
         EntityUtils::forEachAlive(entities, [this,&player](Entity& e){
             if (EntityUtils::areColliding(player, e)) {
-                FishCollisionHandler{this,&player}(e);
+                e.onCollide(player, *this);
             }
         });
 
-        EntityUtils::forEachAlive(bonusItems, [this,&player](Entity& e){
-            if (EntityUtils::areColliding(player, *static_cast<BonusItem*>(&e))) {
-                BonusItemCollisionHandler{this,&player}(*static_cast<BonusItem*>(&e));
+        EntityUtils::forEachAlive(bonusItems, [this,&player](auto& e){
+            if (EntityUtils::areColliding(player, e)) {
+                e.onCollide(player, *this);
             }
         });
 
-        EntityUtils::forEachAlive(hazards, [this,&player](Entity& h){
-            if (EntityUtils::areColliding(player, *static_cast<Hazard*>(&h))) {
-                HazardCollisionHandler{this,&player}(*static_cast<Hazard*>(&h));
+        EntityUtils::forEachAlive(hazards, [this,&player](auto& h){
+            if (EntityUtils::areColliding(player, h)) {
+                h.onCollide(player, *this);
             }
         });
 

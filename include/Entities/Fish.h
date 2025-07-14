@@ -26,6 +26,7 @@ namespace FishGame
     // Base class for all fish entities
     class Fish : public Entity
     {
+        friend class CollisionSystem;
     public:
         Fish(FishSize size, float speed, int currentLevel);
         virtual ~Fish() = default;
@@ -86,6 +87,9 @@ namespace FishGame
 
         // Get appropriate texture ID for this fish
         virtual TextureID getTextureID() const;
+
+        // Collision interaction
+        void onCollide(Player& player, CollisionSystem& system) override;
 
     protected:
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;

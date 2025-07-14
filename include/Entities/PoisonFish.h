@@ -20,6 +20,8 @@ public:
 
     void update(sf::Time deltaTime) override;
 
+    void onCollide(Player& player, CollisionSystem& system) override;
+
     sf::Time getPoisonDuration() const { return m_poisonDuration; }
 
 protected:

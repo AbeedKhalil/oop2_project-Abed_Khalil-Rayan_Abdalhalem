@@ -1,21 +1,25 @@
 #include "InputHandler.h"
-#include <unordered_map>
+#include "InputStrategy.h"
 
 namespace FishGame
 {
+    InputHandler::InputHandler()
+        : m_strategy(std::make_unique<NormalInputStrategy>())
+    {
+    }
+
+    void InputHandler::setReversed(bool reversed)
+    {
+        if (reversed)
+            m_strategy = std::make_unique<ReversedInputStrategy>();
+        else
+            m_strategy = std::make_unique<NormalInputStrategy>();
+    }
+
     void InputHandler::processEvent(sf::Event event, std::function<void(const sf::Event&)> callback)
     {
-        if (m_reversed && event.type == sf::Event::KeyPressed)
-        {
-            static const std::unordered_map<sf::Keyboard::Key, sf::Keyboard::Key> map = {
-                {sf::Keyboard::W, sf::Keyboard::S}, {sf::Keyboard::S, sf::Keyboard::W},
-                {sf::Keyboard::A, sf::Keyboard::D}, {sf::Keyboard::D, sf::Keyboard::A},
-                {sf::Keyboard::Up, sf::Keyboard::Down}, {sf::Keyboard::Down, sf::Keyboard::Up},
-                {sf::Keyboard::Left, sf::Keyboard::Right}, {sf::Keyboard::Right, sf::Keyboard::Left}
-            };
-            if (auto it = map.find(event.key.code); it != map.end())
-                event.key.code = it->second;
-        }
+        if (m_strategy)
+            m_strategy->process(event);
         callback(event);
     }
 }

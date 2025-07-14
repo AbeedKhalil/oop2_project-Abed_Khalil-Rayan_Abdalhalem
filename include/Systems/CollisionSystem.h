@@ -36,14 +36,12 @@ namespace FishGame
                      std::vector<std::unique_ptr<Hazard>>& hazards,
                      FixedOysterManager* oysters, int currentLevel);
 
-    private:
+    public:
+        // Exposed for entity collision handlers
         void createParticle(const sf::Vector2f& pos, const sf::Color& color, int count = Constants::DEFAULT_PARTICLE_COUNT);
         void handlePowerUpCollision(Player& player, PowerUp& powerUp);
         void handleOysterCollision(Player& player, PermanentOyster* oyster);
 
-        struct FishCollisionHandler;
-        struct BonusItemCollisionHandler;
-        struct HazardCollisionHandler;
 
         ParticleSystem& m_particles;
         ScoreSystem& m_scoreSystem;

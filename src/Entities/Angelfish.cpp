@@ -4,6 +4,7 @@
 #include "Player.h"
 #include "SpriteManager.h"
 #include "Animator.h"
+#include "Systems/CollisionSystem.h"
 #include "Pufferfish.h"
 #include <random>
 #include <algorithm>
@@ -305,6 +306,21 @@ namespace FishGame
             );
 
             m_velocity = newVelocity;
+        }
+    }
+
+    void Angelfish::onCollide(Player& player, CollisionSystem& system)
+    {
+        if (player.isInvulnerable() || system.m_playerStunned)
+            return;
+
+        if (player.canEat(*this) && player.attemptEat(*this))
+        {
+            system.m_levelCounts[getTextureID()]++;
+            system.m_sounds.play(SoundEffectID::Bite1);
+            system.createParticle(getPosition(), Constants::ANGELFISH_PARTICLE_COLOR,
+                                 Constants::ANGELFISH_PARTICLE_COUNT);
+            destroy();
         }
     }
 }
