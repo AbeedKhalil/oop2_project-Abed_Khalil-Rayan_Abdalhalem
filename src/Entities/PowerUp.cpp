@@ -1,6 +1,7 @@
 #include "PowerUp.h"
 #include "GameConstants.h"
 #include "Utils/DrawHelpers.h"
+#include "Systems/CollisionSystem.h"
 #include <cmath>
 #include <algorithm>
 #include <iterator>
@@ -30,6 +31,12 @@ namespace FishGame
         m_aura.setOrigin(35.0f, 35.0f);
         m_aura.setFillColor(sf::Color::Transparent);
         m_aura.setOutlineThickness(3.0f);
+    }
+
+    void PowerUp::onCollide(Player& player, CollisionSystem& system)
+    {
+        onCollect();
+        system.handlePowerUpCollision(player, *this);
     }
 
     // Do NOT implement update() here - let derived classes handle it

@@ -23,6 +23,8 @@ public:
     void updateAI(const std::vector<std::unique_ptr<Entity>>& entities,
                   const Entity* player, sf::Time deltaTime) override;
 
+    void onCollide(Player& player, CollisionSystem& system) override;
+
 protected:
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 

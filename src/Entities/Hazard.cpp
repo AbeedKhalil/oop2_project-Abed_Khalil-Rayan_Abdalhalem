@@ -3,6 +3,7 @@
 #include "GameConstants.h"
 #include "SpriteManager.h"
 #include "Utils/AnimatedSprite.h"
+#include "Systems/CollisionSystem.h"
 #include <cmath>
 #include <numeric>
 #include <algorithm>
@@ -144,6 +145,18 @@ namespace FishGame
     {
         (void)entity;
         trigger();
+    }
+
+    void Bomb::onCollide(Player& player, CollisionSystem& system)
+    {
+        if (player.isInvulnerable())
+            return;
+
+        onContact(player);
+        system.m_sounds.play(SoundEffectID::MineExplode);
+        player.takeDamage();
+        system.m_onPlayerDeath();
+        system.createParticle(player.getPosition(), sf::Color::Red, 20);
     }
 
     void Bomb::draw(sf::RenderTarget& target, sf::RenderStates states) const
@@ -314,6 +327,19 @@ namespace FishGame
         // Push any colliding entity away from the jellyfish
         pushEntity(entity);
         // Actual stun application is handled externally
+    }
+
+    void Jellyfish::onCollide(Player& player, CollisionSystem& system)
+    {
+        if (player.isInvulnerable())
+            return;
+
+        onContact(player);
+        system.m_playerStunned = true;
+        system.m_stunTimer = getStunDuration();
+        player.setVelocity(0.0f, 0.0f);
+        system.m_sounds.play(SoundEffectID::PlayerStunned);
+        system.createParticle(player.getPosition(), sf::Color(255,255,0,150), 10);
     }
 
     void Jellyfish::draw(sf::RenderTarget& target, sf::RenderStates states) const

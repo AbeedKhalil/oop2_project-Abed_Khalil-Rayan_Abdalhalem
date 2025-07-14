@@ -2,6 +2,7 @@
 #include "GameConstants.h"
 #include "DrawHelpers.h"
 #include "SpriteManager.h"
+#include "Systems/CollisionSystem.h"
 #include <cmath>
 #include <algorithm>
 #include <iterator>
@@ -141,5 +142,25 @@ namespace FishGame
             // Draw center
             target.draw(m_shape, states);
         }
+    }
+
+    void BonusItem::onCollide(Player& player, CollisionSystem& system)
+    {
+        onCollect();
+
+        if (getBonusType() == BonusType::Starfish)
+        {
+            system.m_levelCounts[TextureID::Starfish]++;
+            system.m_scoreSystem.recordFish(TextureID::Starfish);
+            system.m_sounds.play(SoundEffectID::StarPickup);
+        }
+
+        int frenzyMultiplier = system.m_frenzySystem.getMultiplier();
+        float powerUpMultiplier = system.m_powerUps.getScoreMultiplier();
+
+        system.m_scoreSystem.addScore(ScoreEventType::BonusCollected, getPoints(),
+                                      getPosition(), frenzyMultiplier, powerUpMultiplier);
+
+        system.createParticle(getPosition(), Constants::BONUS_PARTICLE_COLOR);
     }
 }

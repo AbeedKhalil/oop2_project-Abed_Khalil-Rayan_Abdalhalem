@@ -3,6 +3,7 @@
 #include <SFML/Graphics.hpp>
 #include <cmath>
 #include <memory>
+#include "ICollidable.h"
 
 namespace FishGame
 {
@@ -24,7 +25,7 @@ namespace FishGame
     };
 
     // Base class for all game entities
-    class Entity : public sf::Drawable
+    class Entity : public sf::Drawable, public ICollidable
     {
     public:
         Entity();
@@ -42,6 +43,8 @@ namespace FishGame
         virtual void update(sf::Time deltaTime) = 0;
         virtual sf::FloatRect getBounds() const = 0;
         virtual EntityType getType() const = 0;
+        // Collision callback
+        void onCollide(Player&, CollisionSystem&) override {}
 
         // Position management
         void setPosition(float x, float y) noexcept { m_position = { x, y }; }
