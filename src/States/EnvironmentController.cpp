@@ -1,7 +1,7 @@
 #include "EnvironmentController.h"
 #include "Fish.h"
 #include "GameConstants.h"
-#include "EntityUtils.h"
+#include "Entity.h"
 
 namespace FishGame {
 
