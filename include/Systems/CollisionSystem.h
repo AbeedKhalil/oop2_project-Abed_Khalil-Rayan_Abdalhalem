@@ -41,9 +41,6 @@ namespace FishGame
         void handlePowerUpCollision(Player& player, PowerUp& powerUp);
         void handleOysterCollision(Player& player, PermanentOyster* oyster);
 
-        struct FishCollisionHandler;
-        struct BonusItemCollisionHandler;
-        struct HazardCollisionHandler;
 
         ParticleSystem& m_particles;
         ScoreSystem& m_scoreSystem;

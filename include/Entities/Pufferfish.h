@@ -29,6 +29,8 @@ public:
     void pushEntity(Entity& entity);
     bool canPushEntity(const Entity& entity) const;
 
+    void onCollide(Player& player, CollisionSystem& system) override;
+
 protected:
     void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 

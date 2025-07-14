@@ -4,6 +4,7 @@
 #include "Player.h"
 #include "SpriteManager.h"
 #include "Animator.h"
+#include "Systems/CollisionSystem.h"
 #include <random>
 #include <algorithm>
 #include <cmath>
@@ -276,6 +277,40 @@ namespace FishGame
             std::string anim = m_facingRight ? "swimRight" : "swimLeft";
             m_animator->play(anim);
             m_currentAnimation = anim;
+        }
+    }
+
+    void Pufferfish::onCollide(Player& player, CollisionSystem& system)
+    {
+        if (player.isInvulnerable() || system.m_playerStunned)
+            return;
+
+        if (isInflated())
+        {
+            if (!player.hasRecentlyTakenDamage())
+            {
+                pushEntity(player);
+                system.m_sounds.play(SoundEffectID::PufferBounce);
+                int penalty = Constants::PUFFERFISH_SCORE_PENALTY;
+                system.m_scoreSystem.setCurrentScore(std::max(0, system.m_scoreSystem.getCurrentScore() - penalty));
+                system.createParticle(player.getPosition(), Constants::PUFFERFISH_IMPACT_COLOR);
+            }
+        }
+        else if (player.canEat(*this))
+        {
+            if (player.attemptEat(*this))
+            {
+                system.m_levelCounts[getTextureID()]++;
+                system.m_sounds.play(SoundEffectID::Bite2);
+                destroy();
+                system.createParticle(getPosition(), Constants::EAT_PARTICLE_COLOR);
+            }
+        }
+        else if (canEat(player) && !player.hasRecentlyTakenDamage())
+        {
+            player.takeDamage();
+            system.createParticle(player.getPosition(), Constants::DAMAGE_PARTICLE_COLOR);
+            system.m_onPlayerDeath();
         }
     }
 

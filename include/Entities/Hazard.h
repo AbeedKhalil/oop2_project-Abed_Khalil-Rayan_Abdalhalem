@@ -18,6 +18,7 @@ namespace FishGame
     // Base class for all hazards
     class Hazard : public Entity
     {
+        friend class CollisionSystem;
     public:
         Hazard(HazardType type, float damageAmount);
         virtual ~Hazard() = default;
@@ -27,6 +28,7 @@ namespace FishGame
         float getDamageAmount() const { return m_damageAmount; }
 
         virtual void onContact(Entity& entity) = 0;
+        void onCollide(Player& player, CollisionSystem& system) override = 0;
 
     protected:
         HazardType m_hazardType;
@@ -53,6 +55,8 @@ namespace FishGame
         // Compatibility with old systems
         bool isExploding() const { return m_isExploding; }
         float getExplosionRadius() const { return m_explosionRadius; }
+
+        void onCollide(Player& player, CollisionSystem& system) override;
 
     protected:
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
@@ -103,6 +107,8 @@ namespace FishGame
 
         // Push collided entity slightly forward
         void pushEntity(Entity& entity) const;
+
+        void onCollide(Player& player, CollisionSystem& system) override;
 
     protected:
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;

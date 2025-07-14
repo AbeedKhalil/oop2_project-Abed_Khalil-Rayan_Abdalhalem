@@ -5,6 +5,7 @@
 #include "GameConstants.h"
 #include "Player.h"
 #include "Pufferfish.h"
+#include "Systems/CollisionSystem.h"
 #include <cmath>
 #include <algorithm>
 
@@ -629,6 +630,37 @@ int Fish::getScorePoints() const
         if (m_animator)
         {
             m_animator->setColor(color);
+        }
+    }
+
+    void Fish::onCollide(Player& player, CollisionSystem& system)
+    {
+        if (player.isInvulnerable() || system.m_playerStunned)
+            return;
+
+        bool playerCanEat = player.canEat(*this);
+        bool fishCanEatPlayer = canEat(player);
+
+        if (playerCanEat && player.attemptEat(*this))
+        {
+            system.m_levelCounts[getTextureID()]++;
+            SoundEffectID effect = SoundEffectID::Bite1;
+            switch (getSize())
+            {
+            case FishSize::Small: effect = SoundEffectID::Bite1; break;
+            case FishSize::Medium: effect = SoundEffectID::Bite2; break;
+            case FishSize::Large: effect = SoundEffectID::Bite3; break;
+            }
+            system.m_sounds.play(effect);
+            destroy();
+            system.createParticle(getPosition(), Constants::EAT_PARTICLE_COLOR);
+        }
+        else if (fishCanEatPlayer && !player.hasRecentlyTakenDamage())
+        {
+            playEatAnimation();
+            player.takeDamage();
+            system.createParticle(player.getPosition(), Constants::DAMAGE_PARTICLE_COLOR);
+            system.m_onPlayerDeath();
         }
     }
 }
