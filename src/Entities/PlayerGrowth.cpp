@@ -11,59 +11,58 @@ void PlayerGrowth::grow(int scoreValue)
 {
     float growthPoints = 0.f;
     if (scoreValue <= 3)
-        growthPoints = Player::m_tinyFishGrowth;
+        growthPoints = Player::tinyFishGrowth();
     else if (scoreValue <= 6)
-        growthPoints = Player::m_smallFishGrowth;
+        growthPoints = Player::smallFishGrowth();
     else if (scoreValue <= 9)
-        growthPoints = Player::m_mediumFishGrowth;
+        growthPoints = Player::mediumFishGrowth();
     else
         growthPoints = static_cast<float>(scoreValue);
 
-    m_player.m_growthProgress += growthPoints;
+    m_player.addGrowthProgress(growthPoints);
 
-    if (m_player.m_growthMeter)
+    if (auto meter = m_player.getGrowthMeter())
     {
-        m_player.m_growthMeter->setPoints(m_player.m_points);
+        meter->setPoints(m_player.getPoints());
     }
 
-    if (m_player.m_visual)
-        m_player.m_visual->triggerEatEffect();
+    m_player.triggerEatEffect();
 }
 
 void PlayerGrowth::addPoints(int points)
 {
-    m_player.m_points += points;
-    if (m_player.m_growthMeter)
+    m_player.incrementPoints(points);
+    if (auto meter = m_player.getGrowthMeter())
     {
-        m_player.m_growthMeter->setPoints(m_player.m_points);
+        meter->setPoints(m_player.getPoints());
     }
 }
 
 void PlayerGrowth::checkStageAdvancement()
 {
-    if (m_player.m_currentStage == 1 && m_player.m_points >= Constants::POINTS_FOR_STAGE_2)
+    if (m_player.getCurrentStage() == 1 && m_player.getPoints() >= Constants::POINTS_FOR_STAGE_2)
     {
-        m_player.m_currentStage = 2;
+        m_player.setCurrentStage(2);
         updateStage();
     }
-    else if (m_player.m_currentStage == 2 && m_player.m_points >= Constants::POINTS_FOR_STAGE_3)
+    else if (m_player.getCurrentStage() == 2 && m_player.getPoints() >= Constants::POINTS_FOR_STAGE_3)
     {
-        m_player.m_currentStage = 3;
+        m_player.setCurrentStage(3);
         updateStage();
     }
 }
 
 void PlayerGrowth::resetSize()
 {
-    m_player.m_score = 0;
-    m_player.m_currentStage = 1;
-    m_player.m_growthProgress = 0.f;
-    m_player.m_radius = Player::m_baseRadius;
+    m_player.setScore(0);
+    m_player.setCurrentStage(1);
+    m_player.setGrowthProgress(0.f);
+    m_player.setRadius(Player::baseRadius());
 
-    if (m_player.m_growthMeter)
+    if (auto meter = m_player.getGrowthMeter())
     {
-        m_player.m_growthMeter->reset();
-        m_player.m_growthMeter->setStage(1);
+        meter->reset();
+        meter->setStage(1);
     }
 
     updateStage();
@@ -72,30 +71,30 @@ void PlayerGrowth::resetSize()
 void PlayerGrowth::fullReset()
 {
     resetSize();
-    m_player.m_points = 0;
-    m_player.m_controlsReversed = false;
-    m_player.m_poisonColorTimer = sf::Time::Zero;
+    m_player.setPoints(0);
+    m_player.setControlsReversed(false);
+    m_player.setPoisonColorTimer(sf::Time::Zero);
 }
 
 void PlayerGrowth::updateStage()
 {
-    if (m_player.m_soundPlayer && m_player.m_currentStage == 1)
-        m_player.m_soundPlayer->play(SoundEffectID::StageIntro);
-    else if (m_player.m_soundPlayer)
-        m_player.m_soundPlayer->play(SoundEffectID::PlayerGrow);
+    if (m_player.getSoundPlayer() && m_player.getCurrentStage() == 1)
+        m_player.getSoundPlayer()->play(SoundEffectID::StageIntro);
+    else if (m_player.getSoundPlayer())
+        m_player.getSoundPlayer()->play(SoundEffectID::PlayerGrow);
 
-    m_player.m_radius = static_cast<float>(Player::m_baseRadius *
-        std::pow(Player::m_growthFactor, static_cast<float>(m_player.m_currentStage - 1)));
+    m_player.setRadius(static_cast<float>(Player::baseRadius() *
+        std::pow(Player::growthFactor(), static_cast<float>(m_player.getCurrentStage() - 1))));
 
-    if (m_player.m_growthMeter)
+    if (auto meter = m_player.getGrowthMeter())
     {
-        m_player.m_growthMeter->setStage(m_player.m_currentStage);
+        meter->setStage(m_player.getCurrentStage());
     }
 
-    if (m_player.m_animator && m_player.m_renderMode == Entity::RenderMode::Sprite && m_player.m_spriteManager)
+    if (m_player.getAnimator() && m_player.getRenderMode() == Entity::RenderMode::Sprite && m_player.getSpriteManager())
     {
         float stageScale = 1.f;
-        const auto& cfg = m_player.m_spriteManager->getScaleConfig();
+        const auto& cfg = m_player.getSpriteManager()->getScaleConfig();
         switch (m_player.getCurrentFishSize())
         {
         case FishSize::Small:
@@ -111,10 +110,10 @@ void PlayerGrowth::updateStage()
             stageScale = 1.f;
             break;
         }
-        m_player.m_animator->setScale(sf::Vector2f(stageScale, stageScale));
+        m_player.getAnimator()->setScale(sf::Vector2f(stageScale, stageScale));
     }
 
-    m_player.m_activeEffects.push_back({1.5f, 0.f, sf::Color::Cyan, sf::seconds(0.5f)});
+    m_player.getActiveEffects().push_back({1.5f, 0.f, sf::Color::Cyan, sf::seconds(0.5f)});
 }
 
 } // namespace FishGame
