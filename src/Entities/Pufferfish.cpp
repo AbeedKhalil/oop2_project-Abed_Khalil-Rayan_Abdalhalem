@@ -4,7 +4,7 @@
 #include "Player.h"
 #include "SpriteManager.h"
 #include "Animator.h"
-#include "Systems/CollisionSystem.h"
+#include "CollisionSystem.h"
 #include <random>
 #include <algorithm>
 #include <cmath>
