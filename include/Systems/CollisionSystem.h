@@ -16,6 +16,7 @@
 #include "IPowerUpManager.h"
 #include "OysterManager.h"
 #include "FishCollisionHandler.h"
+#include "IAudioPlayer.h"
 
 namespace FishGame
 {
@@ -25,7 +26,7 @@ namespace FishGame
         CollisionSystem(ParticleSystem& particles, IScoreSystem& score,
                         FrenzySystem& frenzy, IPowerUpManager& powerUps,
                         std::unordered_map<TextureID,int>& levelCounts,
-                        SoundPlayer& sounds,
+                        IAudioPlayer& sounds,
                         bool& playerStunned, sf::Time& stunTimer,
                         sf::Time& controlReverseTimer, int& playerLives,
                         std::function<void()> onPlayerDeath,
@@ -50,7 +51,7 @@ namespace FishGame
         FrenzySystem& m_frenzySystem;
         IPowerUpManager& m_powerUps;
         std::unordered_map<TextureID,int>& m_levelCounts;
-        SoundPlayer& m_sounds;
+        IAudioPlayer& m_sounds;
         bool& m_playerStunned;
         sf::Time& m_stunTimer;
         sf::Time& m_controlReverseTimer;

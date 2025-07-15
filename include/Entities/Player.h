@@ -10,7 +10,7 @@
 #include "FrenzySystem.h"
 #include "IPowerUpManager.h"
 #include "IScoreSystem.h"
-#include "SoundPlayer.h"
+#include "IAudioPlayer.h"
 
 namespace FishGame
 {
@@ -82,7 +82,7 @@ namespace FishGame
         void applyPoisonEffect(sf::Time duration);
         void setControlsReversed(bool reversed) { m_controlsReversed = reversed; }
 
-        void setSoundPlayer(SoundPlayer* player) { m_soundPlayer = player; }
+        void setSoundPlayer(IAudioPlayer* player) { m_soundPlayer = player; }
 
         // Size information
         bool isAtMaxSize() const { return m_currentStage >= Constants::MAX_STAGES; }
@@ -109,7 +109,7 @@ namespace FishGame
         void setPoints(int points) { m_points = points; }
         void incrementPoints(int amount) { m_points += amount; }
 
-        SoundPlayer* getSoundPlayer() const { return m_soundPlayer; }
+        IAudioPlayer* getSoundPlayer() const { return m_soundPlayer; }
         GrowthMeter* getGrowthMeter() const { return m_growthMeter; }
         SpriteManager* getSpriteManager() const { return m_spriteManager; }
         Animator* getAnimator() const { return m_animator.get(); }
@@ -180,7 +180,7 @@ namespace FishGame
         IPowerUpManager* m_powerUpManager;
         IScoreSystem* m_scoreSystem;
         SpriteManager* m_spriteManager;
-        SoundPlayer* m_soundPlayer{ nullptr };
+        IAudioPlayer* m_soundPlayer{ nullptr };
 
         // Invulnerability and damage
         sf::Time m_invulnerabilityTimer;

@@ -1,6 +1,7 @@
 #pragma once
 
-#include "MusicPlayer.h"
+#include "IAudioPlayer.h"
+#include "ISpriteManager.h"
 #include "State.h"
 #include "StateManager.h"
 #include "Player.h"
@@ -10,7 +11,7 @@ namespace FishGame
     class Game
     {
     public:
-        Game();
+        Game(ISpriteManager& spriteManager, IAudioPlayer& audioPlayer);
         ~Game() = default;
 
         // Delete copy and move operations - Game is a singleton-like manager
@@ -25,11 +26,10 @@ namespace FishGame
         sf::RenderWindow& getWindow() { return m_window; }
         const sf::RenderWindow& getWindow() const { return m_window; }
         FontHolder& getFonts() { return m_fonts; }
-        SpriteManager& getSpriteManager() { return *m_spriteManager; }
-        MusicPlayer& getMusicPlayer() { return *m_musicPlayer; }
-        const MusicPlayer& getMusicPlayer() const { return *m_musicPlayer; }
-        SoundPlayer& getSoundPlayer() { return *m_soundPlayer; }
-        const SoundPlayer& getSoundPlayer() const { return *m_soundPlayer; }
+        SpriteManager& getSpriteManager() { return m_spriteManager.getRawManager(); }
+        const SpriteManager& getSpriteManager() const { return m_spriteManager.getRawManager(); }
+        IAudioPlayer& getAudioPlayer() { return m_audioPlayer; }
+        const IAudioPlayer& getAudioPlayer() const { return m_audioPlayer; }
 
         // State management
         void pushState(StateID id);
@@ -75,14 +75,11 @@ namespace FishGame
         // Core systems
         sf::RenderWindow m_window;
         FontHolder m_fonts;
-        std::unique_ptr<ResourceHolder<sf::Texture, TextureID>> m_spriteTextures;
-
         // State manager
         StateManager m_stateManager;
 
-        std::unique_ptr<SpriteManager> m_spriteManager;
-        std::unique_ptr<MusicPlayer> m_musicPlayer;
-        std::unique_ptr<SoundPlayer> m_soundPlayer;
+        ISpriteManager& m_spriteManager;
+        IAudioPlayer& m_audioPlayer;
 
         // Performance tracking
         struct PerformanceMetrics

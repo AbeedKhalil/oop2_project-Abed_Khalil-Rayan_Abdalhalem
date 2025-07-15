@@ -8,7 +8,7 @@ namespace FishGame {
 EnvironmentController::EnvironmentController(EnvironmentSystem& env,
                                              Player& player,
                                              std::vector<std::unique_ptr<Entity>>& entities,
-                                             SoundPlayer& sounds)
+                                             IAudioPlayer& sounds)
     : m_environment(env), m_player(player), m_entities(entities), m_soundPlayer(sounds) {}
 
 void EnvironmentController::update(sf::Time dt)
@@ -50,7 +50,7 @@ void EnvironmentController::applyFreeze()
 {
     m_isPlayerFrozen = true;
     m_freezeTimer = sf::seconds(5.f);
-    m_soundPlayer.play(SoundEffectID::FreezePowerup);
+    m_soundPlayer.playSound(SoundEffectID::FreezePowerup);
     EntityUtils::forEachAlive(m_entities, [](Entity& e) {
         if (auto* f = dynamic_cast<Fish*>(&e))
             f->setFrozen(true);

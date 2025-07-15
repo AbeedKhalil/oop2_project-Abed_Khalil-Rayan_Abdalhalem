@@ -1,6 +1,6 @@
 #include "FrenzySystem.h"
 #include "GameConstants.h"
-#include "SoundPlayer.h"
+#include "IAudioPlayer.h"
 #include <algorithm>
 #include <sstream>
 #include <iomanip>
@@ -192,7 +192,7 @@ namespace FishGame
                 m_currentColor = sf::Color::Yellow;
                 m_textScale = 1.5f;
                 if (m_soundPlayer)
-                    m_soundPlayer->play(SoundEffectID::FeedingFrenzy);
+                    m_soundPlayer->playSound(SoundEffectID::FeedingFrenzy);
                 break;
 
             case FrenzyLevel::SuperFrenzy:
@@ -201,7 +201,7 @@ namespace FishGame
                 m_currentColor = sf::Color::Magenta;
                 m_textScale = 2.0f;
                 if (m_soundPlayer)
-                    m_soundPlayer->play(SoundEffectID::SuperFrenzy);
+                    m_soundPlayer->playSound(SoundEffectID::SuperFrenzy);
                 break;
             }
 

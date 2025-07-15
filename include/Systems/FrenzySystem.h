@@ -2,7 +2,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <deque>
-#include "SoundPlayer.h"
+#include "IAudioPlayer.h"
 
 namespace FishGame
 {
@@ -38,7 +38,7 @@ namespace FishGame
 
         // Setters
         void setPosition(float x, float y);
-        void setSoundPlayer(SoundPlayer* player) { m_soundPlayer = player; }
+        void setSoundPlayer(IAudioPlayer* player) { m_soundPlayer = player; }
 
     protected:
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
@@ -72,7 +72,7 @@ namespace FishGame
         float m_textRotation;
         sf::Color m_currentColor;
         sf::Time m_animationTimer;
-        SoundPlayer* m_soundPlayer{ nullptr };
+        IAudioPlayer* m_soundPlayer{ nullptr };
 
         // Timing constants
         static constexpr float m_frenzyActivationTime = 2.0f;     // 4 fish in 2 seconds

@@ -121,7 +121,7 @@ namespace FishGame
         {
             m_speedBoostTimer -= deltaTime;
             if (m_speedBoostTimer <= sf::Time::Zero && m_soundPlayer)
-                m_soundPlayer->play(SoundEffectID::SpeedEnd);
+                m_soundPlayer->playSound(SoundEffectID::SpeedEnd);
         }
 
         // Handle input
@@ -441,7 +441,7 @@ namespace FishGame
         m_controlsReversed = false;
         m_poisonColorTimer = sf::Time::Zero;
         if (m_soundPlayer)
-            m_soundPlayer->play(SoundEffectID::PlayerSpawn);
+            m_soundPlayer->playSound(SoundEffectID::PlayerSpawn);
     }
 
 void Player::applySpeedBoost(float multiplier, sf::Time duration)
@@ -449,7 +449,7 @@ void Player::applySpeedBoost(float multiplier, sf::Time duration)
     m_speedMultiplier = multiplier;
     m_speedBoostTimer = duration;
     if (m_soundPlayer)
-        m_soundPlayer->play(SoundEffectID::SpeedStart);
+        m_soundPlayer->playSound(SoundEffectID::SpeedStart);
 }
 
 void Player::applyPoisonEffect(sf::Time duration)
@@ -457,7 +457,7 @@ void Player::applyPoisonEffect(sf::Time duration)
     m_poisonColorTimer = duration;
     m_controlsReversed = true;
     if (m_soundPlayer)
-        m_soundPlayer->play(SoundEffectID::PlayerPoison);
+        m_soundPlayer->playSound(SoundEffectID::PlayerPoison);
 }
 
 void Player::triggerEatEffect()

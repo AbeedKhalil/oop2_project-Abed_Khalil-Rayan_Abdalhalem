@@ -56,9 +56,9 @@ namespace FishGame
         , m_logic(nullptr)
     {
         initializeSystems();
-        m_player->setSoundPlayer(&getGame().getSoundPlayer());
+        m_player->setSoundPlayer(&getGame().getAudioPlayer());
         if (m_frenzySystem)
-            m_frenzySystem->setSoundPlayer(&getGame().getSoundPlayer());
+            m_frenzySystem->setSoundPlayer(&getGame().getAudioPlayer());
 
         // Reserve capacity for containers
         m_entities.reserve(Constants::MAX_ENTITIES);
@@ -127,7 +127,7 @@ namespace FishGame
         // Initialize controllers
         m_hudController = std::make_unique<HUDController>(font, window.getSize());
         m_environmentController = std::make_unique<EnvironmentController>(
-            *m_environmentSystem, *m_player, m_entities, getGame().getSoundPlayer());
+            *m_environmentSystem, *m_player, m_entities, getGame().getAudioPlayer());
         m_spawnController = std::make_unique<SpawnController>(
             *m_fishSpawner, *m_spawnSystem, *m_bonusItemManager,
             m_entities, m_bonusItems, m_hazards);
@@ -141,7 +141,7 @@ namespace FishGame
             *m_frenzySystem,
             *m_powerUpManager,
             m_levelCounts,
-            getGame().getSoundPlayer(),
+            getGame().getAudioPlayer(),
             m_environmentController->stunnedRef(),
             m_environmentController->stunTimerRef(),
             m_environmentController->controlReverseTimerRef(),
@@ -205,7 +205,7 @@ void PlayState::updateRespawn(sf::Time deltaTime)
         if (m_musicResumeTimer <= sf::Time::Zero)
         {
             m_musicResumePending = false;
-            getGame().getMusicPlayer().play(musicForLevel(m_gameState.currentLevel), true);
+            getGame().getAudioPlayer().playMusic(musicForLevel(m_gameState.currentLevel), true);
         }
     }
 
@@ -330,7 +330,7 @@ void PlayState::updateGameState(sf::Time deltaTime)
         case PowerUpType::SpeedBoost:
             m_powerUpManager->activatePowerUp(powerUp.getPowerUpType(), powerUp.getDuration());
             m_player->applySpeedBoost(m_powerUpManager->getSpeedMultiplier(), powerUp.getDuration());
-            getGame().getSoundPlayer().play(SoundEffectID::SpeedStart);
+            getGame().getAudioPlayer().playSound(SoundEffectID::SpeedStart);
             createParticleEffect(powerUp.getPosition(), Constants::SPEED_BOOST_COLOR);
             break;
 
@@ -343,7 +343,7 @@ void PlayState::updateGameState(sf::Time deltaTime)
 
         case PowerUpType::ExtraLife:
             m_gameState.playerLives++;
-            getGame().getSoundPlayer().play(SoundEffectID::LifePowerup);
+            getGame().getAudioPlayer().playSound(SoundEffectID::LifePowerup);
             createParticleEffect(powerUp.getPosition(), sf::Color::Green, 15);
             break;
         }
@@ -360,7 +360,7 @@ void PlayState::updateGameState(sf::Time deltaTime)
         else if (oyster->canBeEaten())
         {
             oyster->onCollect();
-            getGame().getSoundPlayer().play(SoundEffectID::OysterPearl);
+            getGame().getAudioPlayer().playSound(SoundEffectID::OysterPearl);
 
             int points = oyster->hasBlackPearl()
                 ? Constants::BLACK_OYSTER_POINTS
@@ -391,7 +391,7 @@ void PlayState::updateGameState(sf::Time deltaTime)
 
     void PlayState::triggerWinSequence()
     {
-        getGame().getMusicPlayer().play(MusicID::StageCleared, false);
+        getGame().getAudioPlayer().playMusic(MusicID::StageCleared, false);
         m_gameState.gameWon = true;
         m_gameState.enemiesFleeing = true;
         m_gameState.winTimer = sf::Time::Zero;
@@ -431,7 +431,7 @@ void PlayState::updateGameState(sf::Time deltaTime)
         m_camera.freeze(m_player->getPosition());
 
         m_gameState.playerLives--;
-        getGame().getMusicPlayer().play(MusicID::PlayerDies, false);
+        getGame().getAudioPlayer().playMusic(MusicID::PlayerDies, false);
         m_musicResumePending = m_gameState.playerLives > 0;
         if (m_musicResumePending)
             m_musicResumeTimer = sf::seconds(2.0f);
@@ -658,7 +658,7 @@ void PlayState::updateGameState(sf::Time deltaTime)
             if (m_hudController)
                 m_hudController->getSystem().clearMessage();
             m_initialized = true;
-            getGame().getMusicPlayer().play(musicForLevel(m_gameState.currentLevel), true);
+            getGame().getAudioPlayer().playMusic(musicForLevel(m_gameState.currentLevel), true);
         }
         else if (!m_initialized)
         {
@@ -671,12 +671,12 @@ void PlayState::updateGameState(sf::Time deltaTime)
             m_savedLevel = 1;
             m_initialized = true;
             updateBackground(m_gameState.currentLevel);
-            getGame().getMusicPlayer().play(musicForLevel(m_gameState.currentLevel), true);
+            getGame().getAudioPlayer().playMusic(musicForLevel(m_gameState.currentLevel), true);
         }
         else
         {
             // Resume in-game music after pause or stage intro
-            getGame().getMusicPlayer().play(musicForLevel(m_gameState.currentLevel), true);
+            getGame().getAudioPlayer().playMusic(musicForLevel(m_gameState.currentLevel), true);
         }
 
         // Ensure camera starts centered on the player

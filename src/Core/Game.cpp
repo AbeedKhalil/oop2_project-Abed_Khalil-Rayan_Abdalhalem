@@ -15,16 +15,14 @@ namespace FishGame
     // Static member initialization using GameConstants
     const sf::Time Game::m_timePerFrame = sf::seconds(1.0f / Constants::FRAMERATE_LIMIT);
 
-    Game::Game()
+    Game::Game(ISpriteManager& spriteManager, IAudioPlayer& audioPlayer)
         : m_window(sf::VideoMode(m_windowWidth, m_windowHeight),
             Constants::GAME_TITLE,
             sf::Style::Close)
         , m_fonts()
-        , m_spriteTextures(nullptr)
         , m_stateManager(*this)
-        , m_spriteManager(nullptr)
-        , m_musicPlayer(std::make_unique<MusicPlayer>())
-        , m_soundPlayer(std::make_unique<SoundPlayer>())
+        , m_spriteManager(spriteManager)
+        , m_audioPlayer(audioPlayer)
         , m_metrics()
     {
         m_window.setFramerateLimit(m_frameRateLimit);
@@ -83,19 +81,15 @@ namespace FishGame
 
     void Game::initializeGraphics()
     {
-        // Create sprite manager with persistent texture holder
-        m_spriteTextures = std::make_unique<ResourceHolder<sf::Texture, TextureID>>();
-        m_spriteManager = std::make_unique<SpriteManager>(*m_spriteTextures);
-
         // Load all sprite textures
-        m_spriteManager->loadTextures("");
+        m_spriteManager.loadTextures("");
 
         // Configure sprite scales
         SpriteScaleConfig scaleConfig;
         scaleConfig.small = 0.5f;
         scaleConfig.medium = 0.8f;
         scaleConfig.large = 1.1f;
-        m_spriteManager->setScaleConfig(scaleConfig);
+        m_spriteManager.setScaleConfig(scaleConfig);
     }
 
     void Game::processInput()

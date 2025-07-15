@@ -79,9 +79,9 @@ void PlayerGrowth::fullReset()
 void PlayerGrowth::updateStage()
 {
     if (m_player.getSoundPlayer() && m_player.getCurrentStage() == 1)
-        m_player.getSoundPlayer()->play(SoundEffectID::StageIntro);
+        m_player.getSoundPlayer()->playSound(SoundEffectID::StageIntro);
     else if (m_player.getSoundPlayer())
-        m_player.getSoundPlayer()->play(SoundEffectID::PlayerGrow);
+        m_player.getSoundPlayer()->playSound(SoundEffectID::PlayerGrow);
 
     m_player.setRadius(static_cast<float>(Player::baseRadius() *
         std::pow(Player::growthFactor(), static_cast<float>(m_player.getCurrentStage() - 1))));

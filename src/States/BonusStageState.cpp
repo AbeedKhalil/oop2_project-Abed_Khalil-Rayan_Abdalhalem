@@ -127,7 +127,7 @@ namespace FishGame
         m_player->setPosition(Constants::BONUS_STAGE_PLAYER_X,
                               Constants::BONUS_STAGE_PLAYER_Y);
         m_player->initializeSprite(getGame().getSpriteManager());
-        m_player->setSoundPlayer(&getGame().getSoundPlayer());
+        m_player->setSoundPlayer(&getGame().getAudioPlayer());
 
         // Reserve containers
         m_entities.reserve(Constants::BONUS_ENTITIES_RESERVE);
@@ -261,7 +261,7 @@ namespace FishGame
             });
 
         ::FishGame::FishCollisionHandler::processFishHazardCollisions(
-            m_entities, m_hazards, &getGame().getSoundPlayer());
+            m_entities, m_hazards, &getGame().getAudioPlayer());
 
         // Process bomb explosions affecting entities
         ::FishGame::processBombExplosions(m_entities, m_hazards);
@@ -381,8 +381,8 @@ namespace FishGame
     void BonusStageState::onActivate()
     {
         // Pause any in-game music and start the bonus stage track
-        getGame().getMusicPlayer().stop();
-        getGame().getMusicPlayer().play(MusicID::BonusStage, true);
+        getGame().getAudioPlayer().stopMusic();
+        getGame().getAudioPlayer().playMusic(MusicID::BonusStage, true);
         // Initial spawn based on stage type
         switch (m_stageType)
         {
@@ -432,7 +432,7 @@ namespace FishGame
     void BonusStageState::onDeactivate()
     {
         // Stop the bonus stage music when leaving the state
-        getGame().getMusicPlayer().stop();
+        getGame().getAudioPlayer().stopMusic();
     }
 
     void BonusStageState::updateTreasureHunt(sf::Time deltaTime)
@@ -516,7 +516,7 @@ namespace FishGame
                             m_objective.currentCount++;
                             m_bonusScore += m_objective.pointsPerItem;
 
-                            getGame().getSoundPlayer().play(SoundEffectID::Bite1);
+                            getGame().getAudioPlayer().playSound(SoundEffectID::Bite1);
 
                             // Update objective text
                             std::ostringstream objStream;

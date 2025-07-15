@@ -47,8 +47,8 @@ void GameOptionsState::onActivate() {
   auto &font = getGame().getFonts().get(Fonts::Main);
   auto &manager = getGame().getSpriteManager();
 
-  m_musicVolume = getGame().getMusicPlayer().getVolume();
-  m_soundVolume = getGame().getSoundPlayer().getVolume();
+  m_musicVolume = getGame().getAudioPlayer().getMusicVolume();
+  m_soundVolume = getGame().getAudioPlayer().getSoundVolume();
 
   m_background.setSize(sf::Vector2f(window.getSize()));
   m_background.setFillColor(Constants::OVERLAY_COLOR);
@@ -200,8 +200,7 @@ void GameOptionsState::updateVolumeTexts() {
 }
 
 void GameOptionsState::handleEvent(const sf::Event &event) {
-  auto &music = getGame().getMusicPlayer();
-  auto &sounds = getGame().getSoundPlayer();
+  auto &audio = getGame().getAudioPlayer();
 
   if (event.type == sf::Event::KeyPressed) {
     switch (event.key.code) {
@@ -210,22 +209,22 @@ void GameOptionsState::handleEvent(const sf::Event &event) {
       break;
     case sf::Keyboard::Up:
       m_musicVolume = std::min(100.f, m_musicVolume + 5.f);
-      music.setVolume(m_musicVolume);
+      audio.setMusicVolume(m_musicVolume);
       updateVolumeTexts();
       break;
     case sf::Keyboard::Down:
       m_musicVolume = std::max(0.f, m_musicVolume - 5.f);
-      music.setVolume(m_musicVolume);
+      audio.setMusicVolume(m_musicVolume);
       updateVolumeTexts();
       break;
     case sf::Keyboard::Right:
       m_soundVolume = std::min(100.f, m_soundVolume + 5.f);
-      sounds.setVolume(m_soundVolume);
+      audio.setSoundVolume(m_soundVolume);
       updateVolumeTexts();
       break;
     case sf::Keyboard::Left:
       m_soundVolume = std::max(0.f, m_soundVolume - 5.f);
-      sounds.setVolume(m_soundVolume);
+      audio.setSoundVolume(m_soundVolume);
       updateVolumeTexts();
       break;
     default:
@@ -239,14 +238,14 @@ void GameOptionsState::handleEvent(const sf::Event &event) {
                                      m_musicBar.getSize().x / 2.f),
                              0.f, m_musicBar.getSize().x);
       m_musicVolume = (rel / m_musicBar.getSize().x) * 100.f;
-      music.setVolume(m_musicVolume);
+      audio.setMusicVolume(m_musicVolume);
       updateVolumeTexts();
     } else if (m_dragSound) {
       float rel = std::clamp(pos.x - (m_soundBar.getPosition().x -
                                      m_soundBar.getSize().x / 2.f),
                              0.f, m_soundBar.getSize().x);
       m_soundVolume = (rel / m_soundBar.getSize().x) * 100.f;
-      sounds.setVolume(m_soundVolume);
+      audio.setSoundVolume(m_soundVolume);
       updateVolumeTexts();
     } else {
       bool hoverBack = m_backButtonSprite.getGlobalBounds().contains(pos);
@@ -274,7 +273,7 @@ void GameOptionsState::handleEvent(const sf::Event &event) {
                                      m_musicBar.getSize().x / 2.f),
                              0.f, m_musicBar.getSize().x);
       m_musicVolume = (rel / m_musicBar.getSize().x) * 100.f;
-      music.setVolume(m_musicVolume);
+      audio.setMusicVolume(m_musicVolume);
       updateVolumeTexts();
     } else if (m_currentIndex == 0 && m_soundBar.getGlobalBounds().contains(pos)) {
       m_dragSound = true;
@@ -282,7 +281,7 @@ void GameOptionsState::handleEvent(const sf::Event &event) {
                                      m_soundBar.getSize().x / 2.f),
                              0.f, m_soundBar.getSize().x);
       m_soundVolume = (rel / m_soundBar.getSize().x) * 100.f;
-      sounds.setVolume(m_soundVolume);
+      audio.setSoundVolume(m_soundVolume);
       updateVolumeTexts();
     } else if (m_backButtonSprite.getGlobalBounds().contains(pos)) {
       deferAction([this]() { requestStackPop(); });

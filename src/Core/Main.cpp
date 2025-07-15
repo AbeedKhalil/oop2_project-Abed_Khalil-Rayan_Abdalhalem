@@ -1,4 +1,6 @@
 #include "Game.h"
+#include "DefaultSpriteManager.h"
+#include "DefaultAudioPlayer.h"
 #include <iostream>
 #include <exception>
 
@@ -6,7 +8,9 @@ int main()
 {
     try
     {
-        FishGame::Game game;
+        FishGame::DefaultSpriteManager spriteManager;
+        FishGame::DefaultAudioPlayer audioPlayer;
+        FishGame::Game game(spriteManager, audioPlayer);
         game.run();
     }
     catch (const std::exception& e)

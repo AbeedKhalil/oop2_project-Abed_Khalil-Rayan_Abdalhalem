@@ -3,7 +3,7 @@
 #include "EnvironmentSystem.h"
 #include "Player.h"
 #include "Entity.h"
-#include "SoundPlayer.h"
+#include "IAudioPlayer.h"
 #include <vector>
 #include <memory>
 
@@ -13,7 +13,7 @@ class EnvironmentController {
 public:
     EnvironmentController(EnvironmentSystem& env, Player& player,
                           std::vector<std::unique_ptr<Entity>>& entities,
-                          SoundPlayer& sounds);
+                          IAudioPlayer& sounds);
 
     void update(sf::Time dt);
 
@@ -41,7 +41,7 @@ private:
     EnvironmentSystem& m_environment;
     Player& m_player;
     std::vector<std::unique_ptr<Entity>>& m_entities;
-    SoundPlayer& m_soundPlayer;
+    IAudioPlayer& m_soundPlayer;
 
     bool m_isPlayerFrozen{false};
     bool m_hasControlsReversed{false};

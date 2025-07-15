@@ -11,7 +11,7 @@ namespace FishGame
     CollisionSystem::CollisionSystem(ParticleSystem& particles, IScoreSystem& score,
                                      FrenzySystem& frenzy, IPowerUpManager& powerUps,
                                      std::unordered_map<TextureID,int>& levelCounts,
-                                     SoundPlayer& sounds,
+                                     IAudioPlayer& sounds,
                                      bool& playerStunned, sf::Time& stunTimer,
                                      sf::Time& controlReverseTimer, int& playerLives,
                                      std::function<void()> onPlayerDeath,
@@ -56,7 +56,7 @@ namespace FishGame
         case PowerUpType::SpeedBoost:
             m_powerUps.activatePowerUp(powerUp.getPowerUpType(), powerUp.getDuration());
             player.applySpeedBoost(m_powerUps.getSpeedMultiplier(), powerUp.getDuration());
-            m_sounds.play(SoundEffectID::SpeedStart);
+            m_sounds.playSound(SoundEffectID::SpeedStart);
             createParticle(powerUp.getPosition(), Constants::SPEED_BOOST_COLOR);
             break;
         case PowerUpType::Freeze:
@@ -66,7 +66,7 @@ namespace FishGame
             break;
         case PowerUpType::ExtraLife:
             m_playerLives++;
-            m_sounds.play(SoundEffectID::LifePowerup);
+            m_sounds.playSound(SoundEffectID::LifePowerup);
             createParticle(powerUp.getPosition(), sf::Color::Green, 15);
             break;
         case PowerUpType::AddTime:
@@ -85,7 +85,7 @@ namespace FishGame
         else if (oyster->canBeEaten())
         {
             oyster->onCollect();
-            m_sounds.play(SoundEffectID::OysterPearl);
+            m_sounds.playSound(SoundEffectID::OysterPearl);
 
             int points = oyster->hasBlackPearl() ? Constants::BLACK_OYSTER_POINTS
                                                  : Constants::WHITE_OYSTER_POINTS;

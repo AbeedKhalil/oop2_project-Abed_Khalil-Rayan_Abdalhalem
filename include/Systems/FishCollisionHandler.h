@@ -4,7 +4,7 @@
 #include "Pufferfish.h"
 #include "PoisonFish.h"
 #include "Hazard.h"
-#include "SoundPlayer.h"
+#include "IAudioPlayer.h"
 #include "CollisionDetector.h"
 #include <type_traits>
 #include <functional>
@@ -48,7 +48,7 @@ namespace FishGame
         // Template method for fish-to-hazard collisions
         template<typename EntityContainer, typename HazardContainer>
         static void processFishHazardCollisions(EntityContainer& entities,
-            HazardContainer& hazards, SoundPlayer* soundPlayer = nullptr)
+            HazardContainer& hazards, IAudioPlayer* soundPlayer = nullptr)
         {
             std::for_each(entities.begin(), entities.end(),
                 [&hazards, soundPlayer](auto& entity)
@@ -115,7 +115,7 @@ namespace FishGame
             }
         }
 
-        static void handleFishToHazardCollision(Fish& fish, Hazard& hazard, SoundPlayer* soundPlayer)
+        static void handleFishToHazardCollision(Fish& fish, Hazard& hazard, IAudioPlayer* soundPlayer)
         {
             switch (hazard.getHazardType())
             {
@@ -126,7 +126,7 @@ namespace FishGame
                     bomb->onContact(fish);
                     if (!wasExploding && bomb->isExploding() && soundPlayer)
                     {
-                        soundPlayer->play(SoundEffectID::MineExplode);
+                        soundPlayer->playSound(SoundEffectID::MineExplode);
                     }
                 }
                 break;

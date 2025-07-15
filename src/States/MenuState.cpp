@@ -210,7 +210,7 @@ namespace FishGame
         {
             auto newOption = static_cast<MenuOption>(hoveredOption.value());
             if (!m_hoveredOption.has_value() || newOption != *m_hoveredOption)
-                getGame().getSoundPlayer().play(SoundEffectID::MouseOver);
+                getGame().getAudioPlayer().playSound(SoundEffectID::MouseOver);
             m_hoveredOption = newOption;
             m_selectedOption = newOption;
         }
@@ -232,7 +232,7 @@ namespace FishGame
             [](const auto& item) { return item.sprite.getGlobalBounds(); });
         if (clickedOption.has_value())
         {
-            getGame().getSoundPlayer().play(SoundEffectID::MouseDown);
+            getGame().getAudioPlayer().playSound(SoundEffectID::MouseDown);
             m_selectedOption = static_cast<MenuOption>(clickedOption.value());
             selectOption();
         }
@@ -347,7 +347,7 @@ namespace FishGame
     void MenuState::onActivate()
     {
         // Reset state when menu becomes active
-        getGame().getMusicPlayer().play(MusicID::MenuTheme, true);
+        getGame().getAudioPlayer().playMusic(MusicID::MenuTheme, true);
         m_isTransitioning = false;
         m_transitionAlpha = 255.0f;
         m_animationTime = 0.0f;
