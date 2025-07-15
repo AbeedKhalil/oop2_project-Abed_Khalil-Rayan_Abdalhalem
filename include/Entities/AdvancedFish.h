@@ -2,7 +2,6 @@
 
 #include "Fish.h"
 #include "Animator.h"
-#include "GameConstants.h"
 
 namespace FishGame {
 
