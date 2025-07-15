@@ -89,10 +89,16 @@ namespace FishGame
         m_aura.setOutlineColor(auraColor);
     }
 
-    void ScoreDoublerPowerUp::onCollect()
-    {
-        destroy();
-    }
+void ScoreDoublerPowerUp::onCollect()
+{
+    destroy();
+}
+
+void ScoreDoublerPowerUp::applyEffect(Player& player, CollisionSystem& system)
+{
+    system.m_powerUps.activatePowerUp(getPowerUpType(), getDuration());
+    system.createParticle(getPosition(), Constants::SCORE_DOUBLER_COLOR);
+}
 
     void ScoreDoublerPowerUp::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
@@ -163,10 +169,16 @@ namespace FishGame
         m_aura.setOutlineColor(auraColor);
     }
 
-    void FrenzyStarterPowerUp::onCollect()
-    {
-        destroy();
-    }
+void FrenzyStarterPowerUp::onCollect()
+{
+    destroy();
+}
+
+void FrenzyStarterPowerUp::applyEffect(Player& player, CollisionSystem& system)
+{
+    system.m_frenzySystem.forceFrenzy();
+    system.createParticle(getPosition(), Constants::FRENZY_STARTER_COLOR);
+}
 
     void FrenzyStarterPowerUp::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {

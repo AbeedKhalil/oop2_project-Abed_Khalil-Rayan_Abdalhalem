@@ -43,35 +43,7 @@ namespace FishGame
     // --- Helper methods ----------------------------------------------------
     void CollisionSystem::handlePowerUpCollision(Player& player, PowerUp& powerUp)
     {
-        switch (powerUp.getPowerUpType())
-        {
-        case PowerUpType::ScoreDoubler:
-            m_powerUps.activatePowerUp(powerUp.getPowerUpType(), powerUp.getDuration());
-            createParticle(powerUp.getPosition(), Constants::SCORE_DOUBLER_COLOR);
-            break;
-        case PowerUpType::FrenzyStarter:
-            m_frenzySystem.forceFrenzy();
-            createParticle(powerUp.getPosition(), Constants::FRENZY_STARTER_COLOR);
-            break;
-        case PowerUpType::SpeedBoost:
-            m_powerUps.activatePowerUp(powerUp.getPowerUpType(), powerUp.getDuration());
-            player.applySpeedBoost(m_powerUps.getSpeedMultiplier(), powerUp.getDuration());
-            m_sounds.play(SoundEffectID::SpeedStart);
-            createParticle(powerUp.getPosition(), Constants::SPEED_BOOST_COLOR);
-            break;
-        case PowerUpType::Freeze:
-            m_powerUps.activatePowerUp(powerUp.getPowerUpType(), powerUp.getDuration());
-            m_applyFreeze();
-            createParticle(powerUp.getPosition(), sf::Color::Cyan, 20);
-            break;
-        case PowerUpType::ExtraLife:
-            m_playerLives++;
-            m_sounds.play(SoundEffectID::LifePowerup);
-            createParticle(powerUp.getPosition(), sf::Color::Green, 15);
-            break;
-        case PowerUpType::AddTime:
-            break;
-        }
+        powerUp.applyEffect(player, *this);
     }
 
     void CollisionSystem::handleOysterCollision(Player& player, PermanentOyster* oyster)

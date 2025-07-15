@@ -32,6 +32,9 @@ namespace FishGame
         // Visual indicator
         virtual sf::Color getAuraColor() const = 0;
 
+        // Apply the specific effect to the player and collision system
+        virtual void applyEffect(Player& player, CollisionSystem& system) = 0;
+
         void onCollide(Player& player, CollisionSystem& system) override;
 
     protected:
@@ -54,6 +57,7 @@ namespace FishGame
         void update(sf::Time deltaTime) override;
         void onCollect() override;
         sf::Color getAuraColor() const override { return sf::Color::Yellow; }
+        void applyEffect(Player& player, CollisionSystem& system) override;
 
         void setFont(const sf::Font& font) { m_icon.setFont(font); }
 
@@ -74,6 +78,7 @@ namespace FishGame
         void update(sf::Time deltaTime) override;
         void onCollect() override;
         sf::Color getAuraColor() const override { return sf::Color::Magenta; }
+        void applyEffect(Player& player, CollisionSystem& system) override;
 
     protected:
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
