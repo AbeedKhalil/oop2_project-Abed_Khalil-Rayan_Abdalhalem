@@ -79,30 +79,18 @@ void SpriteManager::loadTextures(const std::string& assetPath)
 {
         m_textureHolder.reserve(s_textureFiles.size());
 
-        // Load textures in parallel using std::async
-        std::vector<std::future<std::pair<TextureID, std::unique_ptr<sf::Texture>>>> futures;
-        futures.reserve(s_textureFiles.size());
-
+        // Load textures sequentially to avoid OpenGL context conflicts
         for (const auto& [id, filename] : s_textureFiles)
         {
-            futures.emplace_back(std::async(std::launch::async,
-                [&, id, filename]() {
-                    sf::Context context;
-                    std::string fullPath = assetPath.empty() ? filename
-                        : assetPath + "/" + filename;
-                    auto tex = std::make_unique<sf::Texture>();
-                    if (!tex->loadFromFile(fullPath))
-                    {
-                        throw ResourceLoadException("Failed to load texture: " + fullPath);
-                    }
-                    return std::make_pair(id, std::move(tex));
-                }));
-        }
-
-        for (auto& fut : futures)
-        {
-            auto result = fut.get();
-            m_textureHolder.insert(result.first, std::move(result.second));
+            sf::Context context;
+            std::string fullPath = assetPath.empty() ? filename
+                : assetPath + "/" + filename;
+            auto tex = std::make_unique<sf::Texture>();
+            if (!tex->loadFromFile(fullPath))
+            {
+                throw ResourceLoadException("Failed to load texture: " + fullPath);
+            }
+            m_textureHolder.insert(id, std::move(tex));
         }
 }
 
