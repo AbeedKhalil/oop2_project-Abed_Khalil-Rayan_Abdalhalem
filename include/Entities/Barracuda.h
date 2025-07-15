@@ -2,6 +2,7 @@
 
 #include "AdvancedFish.h"
 #include "SpriteManager.h"
+#include "Animator.h"
 
 namespace FishGame {
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Fish.h"
+#include "Animator.h"
 
 namespace FishGame {
 

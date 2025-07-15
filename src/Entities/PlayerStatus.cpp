@@ -1,8 +1,13 @@
 #include "PlayerStatus.h"
 #include "Player.h"
+#include "Fish.h"
 #include "CollisionDetector.h"
+#include "FrenzySystem.h"
+#include "IPowerUpManager.h"
+#include "IScoreSystem.h"
 #include "ScoreSystem.h"
-
+#include "Animator.h"
+#include <cmath>
 
 namespace FishGame {
 

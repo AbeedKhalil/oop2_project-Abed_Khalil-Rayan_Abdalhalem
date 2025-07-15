@@ -3,8 +3,18 @@
 #include "PlayerGrowth.h"
 #include "PlayerVisual.h"
 #include "PlayerStatus.h"
+#include "BonusItem.h"
+#include "IPowerUpManager.h"
+#include "IScoreSystem.h"
+#include "ScoreSystem.h"
+#include "Animator.h"
+#include "CollisionDetector.h"
+#include "GenericFish.h"
 #include "Hazard.h"
-
+#include "Fish.h"
+#include <SFML/Window.hpp>
+#include <cmath>
+#include <algorithm>
 
 namespace FishGame
 {

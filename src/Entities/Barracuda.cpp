@@ -1,5 +1,15 @@
 #include "Barracuda.h"
+#include "CollisionDetector.h"
+#include "GameConstants.h"
 #include "Player.h"
+#include "SpriteManager.h"
+#include "Animator.h"
+#include <random>
+#include <algorithm>
+#include <cmath>
+#include <iterator>
+#include <ranges>
+#include <execution>
 
 namespace FishGame
 {

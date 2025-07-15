@@ -50,7 +50,7 @@ namespace FishGame
         float m_bobFrequency;
 
     public:
-        // Made public for spawner access...
+        // Made public for spawner access
         float m_baseY;
         void onCollide(Player& player, CollisionSystem& system) override;
     };

@@ -1,5 +1,7 @@
 #include "PlayerInput.h"
 #include "Player.h"
+#include <SFML/Window/Keyboard.hpp>
+#include <cmath>
 
 namespace FishGame {
 
