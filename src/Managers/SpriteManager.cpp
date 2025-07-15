@@ -87,6 +87,7 @@ void SpriteManager::loadTextures(const std::string& assetPath)
         {
             futures.emplace_back(std::async(std::launch::async,
                 [&, id, filename]() {
+                    sf::Context context;
                     std::string fullPath = assetPath.empty() ? filename
                         : assetPath + "/" + filename;
                     auto tex = std::make_unique<sf::Texture>();
