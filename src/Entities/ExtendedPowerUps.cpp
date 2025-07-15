@@ -6,6 +6,7 @@
 #include <execution>
 #include "Utils/DrawHelpers.h"
 #include "SpriteManager.h"
+#include "Systems/CollisionSystem.h"
 
 namespace FishGame
 {
@@ -76,10 +77,17 @@ namespace FishGame
         m_aura.setOutlineColor(auraColor);
     }
 
-    void FreezePowerUp::onCollect()
-    {
-        destroy();
-    }
+void FreezePowerUp::onCollect()
+{
+    destroy();
+}
+
+void FreezePowerUp::applyEffect(Player& player, CollisionSystem& system)
+{
+    system.m_powerUps.activatePowerUp(getPowerUpType(), getDuration());
+    system.m_applyFreeze();
+    system.createParticle(getPosition(), sf::Color::Cyan, 20);
+}
 
     void FreezePowerUp::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
@@ -134,10 +142,17 @@ namespace FishGame
         m_aura.setOutlineColor(auraColor);
     }
 
-    void ExtraLifePowerUp::onCollect()
-    {
-        destroy();
-    }
+void ExtraLifePowerUp::onCollect()
+{
+    destroy();
+}
+
+void ExtraLifePowerUp::applyEffect(Player& player, CollisionSystem& system)
+{
+    system.m_playerLives++;
+    system.m_sounds.play(SoundEffectID::LifePowerup);
+    system.createParticle(getPosition(), sf::Color::Green, 15);
+}
 
     void ExtraLifePowerUp::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
@@ -224,10 +239,18 @@ namespace FishGame
         m_aura.setOutlineColor(auraColor);
     }
 
-    void SpeedBoostPowerUp::onCollect()
-    {
-        destroy();
-    }
+void SpeedBoostPowerUp::onCollect()
+{
+    destroy();
+}
+
+void SpeedBoostPowerUp::applyEffect(Player& player, CollisionSystem& system)
+{
+    system.m_powerUps.activatePowerUp(getPowerUpType(), getDuration());
+    player.applySpeedBoost(system.m_powerUps.getSpeedMultiplier(), getDuration());
+    system.m_sounds.play(SoundEffectID::SpeedStart);
+    system.createParticle(getPosition(), Constants::SPEED_BOOST_COLOR);
+}
 
     void SpeedBoostPowerUp::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
@@ -268,10 +291,15 @@ namespace FishGame
             getSpriteComponent()->syncWithOwner();
     }
 
-    void AddTimePowerUp::onCollect()
-    {
-        destroy();
-    }
+void AddTimePowerUp::onCollect()
+{
+    destroy();
+}
+
+void AddTimePowerUp::applyEffect(Player& player, CollisionSystem& system)
+{
+    // No effect defined yet
+}
 
     void AddTimePowerUp::draw(sf::RenderTarget& target, sf::RenderStates states) const
     {
