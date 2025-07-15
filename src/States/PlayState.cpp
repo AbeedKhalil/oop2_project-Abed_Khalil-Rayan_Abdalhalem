@@ -79,7 +79,6 @@ namespace FishGame
         m_logic = std::make_unique<PlayLogic>(*this);
     }
 
-
     void PlayState::initializeSystems()
     {
         auto& window = getGame().getWindow();
@@ -383,7 +382,6 @@ void PlayState::updateGameState(sf::Time deltaTime)
         }
     }
 
-
     void PlayState::checkWinCondition()
     {
         if (m_player->getPoints() >= Constants::POINTS_TO_WIN)
@@ -578,10 +576,6 @@ void PlayState::updateGameState(sf::Time deltaTime)
     {
         m_particleSystem->createEffect(position, color, count);
     }
-
-
-
-
 
     void PlayState::updateCamera()
     {
