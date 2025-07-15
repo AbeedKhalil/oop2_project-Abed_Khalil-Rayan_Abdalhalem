@@ -40,6 +40,7 @@ namespace FishGame
         , m_scoreSystem(nullptr)
         , m_spriteManager(nullptr)
         , m_soundPlayer(nullptr)
+        , m_status(std::make_unique<PlayerStatus>(*this))
         , m_speedMultiplier(1.0f)
         , m_speedBoostTimer(sf::Time::Zero)
         , m_windowBounds(Constants::WINDOW_WIDTH, Constants::WINDOW_HEIGHT)
@@ -51,11 +52,10 @@ namespace FishGame
         , m_damageFlashIntensity(0.0f)
         , m_animator(nullptr)
         , m_currentAnimation()
-        , m_facingRight(false)
         , m_input(std::make_unique<PlayerInput>(*this))
         , m_growth(std::make_unique<PlayerGrowth>(*this))
         , m_visual(std::make_unique<PlayerVisual>(*this))
-        , m_status(std::make_unique<PlayerStatus>(*this))
+        , m_facingRight(false)
     {
         m_radius = m_baseRadius;
 

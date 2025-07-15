@@ -94,7 +94,7 @@ void ScoreDoublerPowerUp::onCollect()
     destroy();
 }
 
-void ScoreDoublerPowerUp::applyEffect(Player& player, CollisionSystem& system)
+void ScoreDoublerPowerUp::applyEffect(Player& /*player*/, CollisionSystem& system)
 {
     system.m_powerUps.activatePowerUp(getPowerUpType(), getDuration());
     system.createParticle(getPosition(), Constants::SCORE_DOUBLER_COLOR);
@@ -174,7 +174,7 @@ void FrenzyStarterPowerUp::onCollect()
     destroy();
 }
 
-void FrenzyStarterPowerUp::applyEffect(Player& player, CollisionSystem& system)
+void FrenzyStarterPowerUp::applyEffect(Player& /*player*/, CollisionSystem& system)
 {
     system.m_frenzySystem.forceFrenzy();
     system.createParticle(getPosition(), Constants::FRENZY_STARTER_COLOR);

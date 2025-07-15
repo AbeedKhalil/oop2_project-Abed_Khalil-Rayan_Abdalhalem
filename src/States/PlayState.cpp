@@ -346,6 +346,9 @@ void PlayState::updateGameState(sf::Time deltaTime)
             getGame().getSoundPlayer().play(SoundEffectID::LifePowerup);
             createParticleEffect(powerUp.getPosition(), sf::Color::Green, 15);
             break;
+        case PowerUpType::AddTime:
+            // No immediate effect handled here
+            break;
         }
     }
 

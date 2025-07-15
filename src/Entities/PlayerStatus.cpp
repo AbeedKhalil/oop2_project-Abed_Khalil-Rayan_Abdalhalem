@@ -5,6 +5,7 @@
 #include "FrenzySystem.h"
 #include "IPowerUpManager.h"
 #include "IScoreSystem.h"
+#include "ScoreSystem.h"
 #include "Animator.h"
 #include <cmath>
 
