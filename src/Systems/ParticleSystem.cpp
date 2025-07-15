@@ -16,16 +16,15 @@ namespace FishGame
 
     void ParticleSystem::update(sf::Time dt)
     {
-        std::for_each(std::execution::par_unseq,
-            m_particles.begin(), m_particles.end(),
-            [dt](Particle& p) {
-                p.lifetime -= dt;
-                p.shape.move(p.velocity * dt.asSeconds());
-                p.alpha = std::max(0.f, p.alpha - Constants::PARTICLE_FADE_RATE * dt.asSeconds());
-                sf::Color c = p.shape.getFillColor();
-                c.a = static_cast<sf::Uint8>(p.alpha);
-                p.shape.setFillColor(c);
-            });
+        for (auto& p : m_particles)
+        {
+            p.lifetime -= dt;
+            p.shape.move(p.velocity * dt.asSeconds());
+            p.alpha = std::max(0.f, p.alpha - Constants::PARTICLE_FADE_RATE * dt.asSeconds());
+            sf::Color c = p.shape.getFillColor();
+            c.a = static_cast<sf::Uint8>(p.alpha);
+            p.shape.setFillColor(c);
+        }
         m_particles.erase(std::remove_if(m_particles.begin(), m_particles.end(),
             [](const Particle& p){ return p.lifetime <= sf::Time::Zero; }), m_particles.end());
     }
