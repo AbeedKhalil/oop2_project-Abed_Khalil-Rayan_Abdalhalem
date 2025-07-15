@@ -46,7 +46,6 @@ namespace FishGame
     private:
         void insertResource(Identifier id, std::unique_ptr<Resource> resource);
 
-    private:
         std::unordered_map<Identifier, std::unique_ptr<Resource>> m_resourceMap;
     };
 

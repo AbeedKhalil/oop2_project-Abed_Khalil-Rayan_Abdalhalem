@@ -65,7 +65,7 @@ namespace FishGame
             std::for_each(std::execution::unseq, spikeIdx.begin(), spikeIdx.end(),
                 [this](size_t i)
                 {
-                    float angle = (360.0f / m_spikeCount) * i * Constants::DEG_TO_RAD;
+                    float angle = (360.0f / m_spikeCount) * static_cast<float>(i) * Constants::DEG_TO_RAD;
                     float spikeRadius = m_radius + (m_inflationLevel * 10.0f);
 
                     sf::Vector2f spikePos(
@@ -112,7 +112,7 @@ namespace FishGame
         std::for_each(std::execution::unseq, spikeIdx2.begin(), spikeIdx2.end(),
             [this](size_t i)
             {
-                float angle = (360.0f / m_spikeCount) * i * Constants::DEG_TO_RAD;
+                float angle = (360.0f / m_spikeCount) * static_cast<float>(i) * Constants::DEG_TO_RAD;
                 float spikeRadius = m_radius + (m_inflationLevel * 10.0f);
 
                 sf::Vector2f spikePos(

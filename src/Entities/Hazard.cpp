@@ -3,6 +3,7 @@
 #include "GameConstants.h"
 #include "SpriteManager.h"
 #include "Utils/AnimatedSprite.h"
+#include "Fish.h"
 #include "Systems/CollisionSystem.h"
 #include <cmath>
 #include <numeric>
@@ -296,8 +297,8 @@ namespace FishGame
         std::for_each(std::execution::unseq, tentIdx.begin(), tentIdx.end(),
             [this](size_t i)
             {
-                float angle = (360.0f / m_tentacleCount) * i * Constants::DEG_TO_RAD;
-                float wave = std::sin(m_tentacleWave + i * 0.5f) * 10.0f;
+                float angle = (360.0f / m_tentacleCount) * static_cast<float>(i) * Constants::DEG_TO_RAD;
+                float wave = std::sin(m_tentacleWave + static_cast<float>(i) * 0.5f) * 10.0f;
 
                 sf::Vector2f tentaclePos(
                     m_position.x + std::cos(angle) * 15.0f,
@@ -359,8 +360,8 @@ namespace FishGame
         }
     }
 
-    void Jellyfish::pushEntity(Entity& entity) const
-    {
+void Jellyfish::pushEntity(Entity& entity) const
+{
         sf::Vector2f dir = entity.getPosition() - m_position;
         float length = std::sqrt(dir.x * dir.x + dir.y * dir.y);
         if (length == 0.0f)
@@ -373,5 +374,35 @@ namespace FishGame
 
         entity.setVelocity(dir * m_pushForce);
         entity.setPosition(entity.getPosition() + dir * m_pushDistance);
+    }
+
+    void Hazard::onCollideWith(Entity& other, CollisionSystem& system)
+    {
+        other.onCollideWith(*this, system);
+    }
+
+    void Hazard::onCollideWith(Fish& fish, CollisionSystem& system)
+    {
+        switch (getHazardType())
+        {
+        case HazardType::Bomb:
+            if (auto* bomb = dynamic_cast<Bomb*>(this))
+            {
+                bool wasExploding = bomb->isExploding();
+                bomb->onContact(fish);
+                if (!wasExploding && bomb->isExploding())
+                {
+                    system.m_sounds.play(SoundEffectID::MineExplode);
+                }
+            }
+            break;
+        case HazardType::Jellyfish:
+            if (auto* jellyfish = dynamic_cast<Jellyfish*>(this))
+            {
+                jellyfish->onContact(fish);
+                fish.setStunned(jellyfish->getStunDuration());
+            }
+            break;
+        }
     }
 }

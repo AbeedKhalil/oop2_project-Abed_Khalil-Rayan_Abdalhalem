@@ -2,6 +2,7 @@
 #include "PlayerInput.h"
 #include "PlayerGrowth.h"
 #include "PlayerVisual.h"
+#include "PlayerStatus.h"
 #include "BonusItem.h"
 #include "IPowerUpManager.h"
 #include "IScoreSystem.h"
@@ -9,6 +10,8 @@
 #include "Animator.h"
 #include "CollisionDetector.h"
 #include "GenericFish.h"
+#include "Hazard.h"
+#include "Fish.h"
 #include <SFML/Window.hpp>
 #include <cmath>
 #include <algorithm>
@@ -16,8 +19,6 @@
 namespace FishGame
 {
     // Static member initialization
-    const sf::Time Player::m_invulnerabilityDuration = sf::seconds(2.0f);
-    const sf::Time Player::m_damageCooldownDuration = sf::seconds(0.5f);
     const sf::Time Player::m_eatAnimationDuration = sf::seconds(0.3f);
     const sf::Time Player::m_turnAnimationDuration = sf::seconds(0.45f);
 
@@ -39,8 +40,7 @@ namespace FishGame
         , m_scoreSystem(nullptr)
         , m_spriteManager(nullptr)
         , m_soundPlayer(nullptr)
-        , m_invulnerabilityTimer(sf::Time::Zero)
-        , m_damageCooldown(sf::Time::Zero)
+        , m_status(std::make_unique<PlayerStatus>(*this))
         , m_speedMultiplier(1.0f)
         , m_speedBoostTimer(sf::Time::Zero)
         , m_windowBounds(Constants::WINDOW_WIDTH, Constants::WINDOW_HEIGHT)
@@ -52,10 +52,10 @@ namespace FishGame
         , m_damageFlashIntensity(0.0f)
         , m_animator(nullptr)
         , m_currentAnimation()
-        , m_facingRight(false)
         , m_input(std::make_unique<PlayerInput>(*this))
         , m_growth(std::make_unique<PlayerGrowth>(*this))
         , m_visual(std::make_unique<PlayerVisual>(*this))
+        , m_facingRight(false)
     {
         m_radius = m_baseRadius;
 
@@ -114,9 +114,8 @@ namespace FishGame
             return;
 
         // Update timers
-        updateInvulnerability(deltaTime);
-        if (m_damageCooldown > sf::Time::Zero)
-            m_damageCooldown -= deltaTime;
+        if (m_status)
+            m_status->update(deltaTime);
         if (m_speedBoostTimer > sf::Time::Zero)
         {
             m_speedBoostTimer -= deltaTime;
@@ -249,130 +248,25 @@ namespace FishGame
     }
 
 
-    bool Player::canEat(const Entity& other) const
-    {
-        if (m_invulnerabilityTimer > sf::Time::Zero)
-            return false;
+bool Player::canEat(const Entity& other) const
+{
+    return m_status ? m_status->canEat(other) : false;
+}
 
-        EntityType otherType = other.getType();
-        if (otherType == EntityType::SmallFish ||
-            otherType == EntityType::MediumFish ||
-            otherType == EntityType::LargeFish)
-        {
-            const Fish* fish = dynamic_cast<const Fish*>(&other);
-            if (!fish)
-                return false;
+bool Player::attemptEat(Entity& other)
+{
+    return m_status ? m_status->attemptEat(other) : false;
+}
 
-            FishSize playerSize = getCurrentFishSize();
-            FishSize fishSize = fish->getSize();
+bool Player::canTailBite(const Entity& other) const
+{
+    return m_status ? m_status->canTailBite(other) : false;
+}
 
-            return static_cast<int>(playerSize) >= static_cast<int>(fishSize);
-        }
-
-        return false;
-    }
-
-    bool Player::attemptEat(Entity& other)
-    {
-        if (!canEat(other))
-            return false;
-
-        // Only eat if the target intersects with the player's mouth area
-        sf::Vector2f mouthOffset(m_radius, 0.0f);
-        mouthOffset.x = m_facingRight ? mouthOffset.x : -mouthOffset.x;
-
-        sf::Vector2f mouthPos = m_position + mouthOffset * 0.8f;
-        float mouthRadius = m_radius * 0.5f;
-
-        float distance = CollisionDetector::getDistance(mouthPos, other.getPosition());
-        if (distance > mouthRadius + other.getRadius())
-            return false;
-
-        const Fish* fish = dynamic_cast<const Fish*>(&other);
-        if (fish)
-        {
-            // Use polymorphic score value
-            addPoints(fish->getScorePoints());
-
-            // Visual growth
-            grow(fish->getPointValue());
-
-            // Register hit for chain bonus
-            if (m_scoreSystem)
-            {
-                m_scoreSystem->registerHit();
-
-                int frenzyMultiplier = m_frenzySystem ? m_frenzySystem->getMultiplier() : 1;
-                float powerUpMultiplier = m_powerUpManager ? m_powerUpManager->getScoreMultiplier() : 1.0f;
-
-                m_scoreSystem->addScore(ScoreEventType::FishEaten, fish->getPointValue(),
-                    other.getPosition(), frenzyMultiplier, powerUpMultiplier);
-                m_scoreSystem->recordFish(fish->getTextureID());
-            }
-
-            if (m_frenzySystem)
-            {
-                m_frenzySystem->registerFishEaten();
-            }
-
-            if (m_animator)
-            {
-                std::string eatAnim = m_facingRight ? "eatRight" : "eatLeft";
-                m_animator->play(eatAnim);
-                m_currentAnimation = eatAnim;
-            }
-
-            return true;
-        }
-
-        return false;
-    }
-
-    bool Player::canTailBite(const Entity& other) const
-    {
-        const Fish* fish = dynamic_cast<const Fish*>(&other);
-        if (!fish)
-            return false;
-
-        int sizeDifference = static_cast<int>(fish->getSize()) - static_cast<int>(getCurrentFishSize());
-        return sizeDifference >= 2;
-    }
-
-    bool Player::attemptTailBite(Entity& other)
-    {
-        if (canTailBite(other) && !hasRecentlyTakenDamage())
-        {
-            sf::Vector2f fishPos = other.getPosition();
-            sf::Vector2f fishVelocity = other.getVelocity();
-
-            sf::Vector2f tailOffset = -fishVelocity;
-            float length = std::sqrt(tailOffset.x * tailOffset.x + tailOffset.y * tailOffset.y);
-            if (length > 0)
-            {
-                tailOffset = (tailOffset / length) * other.getRadius() * 0.8f;
-                sf::Vector2f tailPos = fishPos + tailOffset;
-
-                float dx = m_position.x - tailPos.x;
-                float dy = m_position.y - tailPos.y;
-                float distance = std::sqrt(dx * dx + dy * dy);
-
-                if (distance < m_radius + 10.0f)
-                {
-                    if (m_scoreSystem)
-                    {
-                        int frenzyMultiplier = m_frenzySystem ? m_frenzySystem->getMultiplier() : 1;
-                        float powerUpMultiplier = m_powerUpManager ? m_powerUpManager->getScoreMultiplier() : 1.0f;
-
-                        m_scoreSystem->registerTailBite(m_position, frenzyMultiplier, powerUpMultiplier);
-                    }
-
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
+bool Player::attemptTailBite(Entity& other)
+{
+    return m_status ? m_status->attemptTailBite(other) : false;
+}
 
     FishSize Player::getCurrentFishSize() const
     {
@@ -389,60 +283,38 @@ namespace FishGame
         }
     }
 
-    void Player::takeDamage()
-    {
-        if (m_invulnerabilityTimer > sf::Time::Zero)
-            return;
+void Player::takeDamage()
+{
+    if (m_status)
+        m_status->takeDamage();
+}
 
-        m_damageCooldown = m_damageCooldownDuration;
+void Player::die()
+{
+    if (m_status)
+        m_status->die();
+}
 
-        if (m_scoreSystem)
-        {
-            m_scoreSystem->registerMiss();
-        }
+void Player::respawn()
+{
+    if (m_status)
+        m_status->respawn();
+}
 
-        triggerDamageEffect();
-    }
+bool Player::isInvulnerable() const
+{
+    return m_status ? m_status->isInvulnerable() : false;
+}
 
-    void Player::die()
-    {
-        // Mark the player as dead so update() ignores further actions
-        m_isAlive = false;
-        m_position = sf::Vector2f(
-            static_cast<float>(m_windowBounds.x) / 2.0f,
-            static_cast<float>(m_windowBounds.y) / 2.0f);
-        m_velocity = sf::Vector2f(0.0f, 0.0f);
-        m_targetPosition = m_position;
+bool Player::hasRecentlyTakenDamage() const
+{
+    return m_status ? m_status->hasRecentlyTakenDamage() : false;
+}
 
-        m_invulnerabilityTimer = m_invulnerabilityDuration;
-
-        m_growthProgress = std::max(0.0f, m_growthProgress - 20.0f);
-
-        if (m_growthMeter)
-        {
-            m_growthMeter->setPoints(m_points);
-        }
-
-        m_eatAnimationScale = 1.0f;
-        m_damageFlashIntensity = 0.0f;
-        m_controlsReversed = false;
-        m_poisonColorTimer = sf::Time::Zero;
-    }
-
-    void Player::respawn()
-    {
-        m_isAlive = true;
-        m_position = sf::Vector2f(
-            static_cast<float>(m_windowBounds.x) / 2.0f,
-            static_cast<float>(m_windowBounds.y) / 2.0f);
-        m_velocity = sf::Vector2f(0.0f, 0.0f);
-        m_targetPosition = m_position;
-        m_invulnerabilityTimer = m_invulnerabilityDuration;
-        m_controlsReversed = false;
-        m_poisonColorTimer = sf::Time::Zero;
-        if (m_soundPlayer)
-            m_soundPlayer->play(SoundEffectID::PlayerSpawn);
-    }
+sf::Time Player::getInvulnerabilityTimer() const
+{
+    return m_status ? m_status->getInvulnerabilityTimer() : sf::Time::Zero;
+}
 
 void Player::applySpeedBoost(float multiplier, sf::Time duration)
 {
@@ -490,23 +362,26 @@ void Player::draw(sf::RenderTarget& target, sf::RenderStates states) const
             static_cast<float>(m_windowBounds.y) - m_radius);
     }
 
-    void Player::updateInvulnerability(sf::Time deltaTime)
-    {
-        if (m_invulnerabilityTimer > sf::Time::Zero)
-        {
-            m_invulnerabilityTimer -= deltaTime;
-            if (m_invulnerabilityTimer < sf::Time::Zero)
-            {
-                m_invulnerabilityTimer = sf::Time::Zero;
-            }
-        }
-    }
-
 
 void Player::updateVisualEffects(sf::Time deltaTime)
 {
     if (m_visual)
         m_visual->update(deltaTime);
 }
+
+    void Player::onCollideWith(Entity& other, CollisionSystem& system)
+    {
+        other.onCollide(*this, system);
+    }
+
+    void Player::onCollideWith(Fish& fish, CollisionSystem& system)
+    {
+        fish.onCollide(*this, system);
+    }
+
+    void Player::onCollideWith(Hazard& hazard, CollisionSystem& system)
+    {
+        hazard.onCollide(*this, system);
+    }
 }
 

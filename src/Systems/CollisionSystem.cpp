@@ -43,35 +43,7 @@ namespace FishGame
     // --- Helper methods ----------------------------------------------------
     void CollisionSystem::handlePowerUpCollision(Player& player, PowerUp& powerUp)
     {
-        switch (powerUp.getPowerUpType())
-        {
-        case PowerUpType::ScoreDoubler:
-            m_powerUps.activatePowerUp(powerUp.getPowerUpType(), powerUp.getDuration());
-            createParticle(powerUp.getPosition(), Constants::SCORE_DOUBLER_COLOR);
-            break;
-        case PowerUpType::FrenzyStarter:
-            m_frenzySystem.forceFrenzy();
-            createParticle(powerUp.getPosition(), Constants::FRENZY_STARTER_COLOR);
-            break;
-        case PowerUpType::SpeedBoost:
-            m_powerUps.activatePowerUp(powerUp.getPowerUpType(), powerUp.getDuration());
-            player.applySpeedBoost(m_powerUps.getSpeedMultiplier(), powerUp.getDuration());
-            m_sounds.play(SoundEffectID::SpeedStart);
-            createParticle(powerUp.getPosition(), Constants::SPEED_BOOST_COLOR);
-            break;
-        case PowerUpType::Freeze:
-            m_powerUps.activatePowerUp(powerUp.getPowerUpType(), powerUp.getDuration());
-            m_applyFreeze();
-            createParticle(powerUp.getPosition(), sf::Color::Cyan, 20);
-            break;
-        case PowerUpType::ExtraLife:
-            m_playerLives++;
-            m_sounds.play(SoundEffectID::LifePowerup);
-            createParticle(powerUp.getPosition(), sf::Color::Green, 15);
-            break;
-        case PowerUpType::AddTime:
-            break;
-        }
+        powerUp.applyEffect(player, *this);
     }
 
     void CollisionSystem::handleOysterCollision(Player& player, PermanentOyster* oyster)
@@ -136,35 +108,10 @@ namespace FishGame
         }
 
         StateUtils::processCollisionsBetween(entities, entities,
-            [this](Entity& a, Entity& b){
-                auto* f1 = dynamic_cast<Fish*>(&a);
-                auto* f2 = dynamic_cast<Fish*>(&b);
-                if (!f1 || !f2) return;
-                if (f1->canEat(*f2))
-                {
-                    if (auto* poison = dynamic_cast<PoisonFish*>(f2))
-                    {
-                        f1->setPoisoned(poison->getPoisonDuration());
-                        createParticle(f1->getPosition(), sf::Color::Magenta, 10);
-                    }
-                    f1->playEatAnimation();
-                    f2->destroy();
-                    createParticle(f2->getPosition(), Constants::DEATH_PARTICLE_COLOR);
-                }
-                else if (f2->canEat(*f1))
-                {
-                    if (auto* poison = dynamic_cast<PoisonFish*>(f1))
-                    {
-                        f2->setPoisoned(poison->getPoisonDuration());
-                        createParticle(f2->getPosition(), sf::Color::Magenta, 10);
-                    }
-                    f2->playEatAnimation();
-                    f1->destroy();
-                    createParticle(f1->getPosition(), Constants::DEATH_PARTICLE_COLOR);
-                }
-            });
+            [this](Entity& a, Entity& b){ a.onCollideWith(b, *this); });
 
-        ::FishGame::FishCollisionHandler::processFishHazardCollisions(entities, hazards, &m_sounds);
+        StateUtils::processCollisionsBetween(entities, hazards,
+            [this](Entity& e, Hazard& h){ e.onCollideWith(h, *this); });
         processBombExplosions(entities, hazards);
 
         StateUtils::applyToEntities(entities, [this,&player](Entity& e){
@@ -177,17 +124,9 @@ namespace FishGame
         if (currentLevel >= 2 && oysters)
         {
             StateUtils::applyToEntities(entities, [this,oysters](Entity& e){
-                if (auto* fish = dynamic_cast<Fish*>(&e))
-                {
-                    oysters->checkCollisions(*fish, [this,fish](PermanentOyster* o){
-                        if (o->canDamagePlayer())
-                        {
-                            fish->destroy();
-                            createParticle(fish->getPosition(), Constants::DEATH_PARTICLE_COLOR);
-                            createParticle(o->getPosition(), Constants::OYSTER_IMPACT_COLOR);
-                        }
-                    });
-                }
+                oysters->checkCollisions(e, [this,&e](PermanentOyster* o){
+                    e.onCollideWith(*o, *this);
+                });
             });
         }
     }

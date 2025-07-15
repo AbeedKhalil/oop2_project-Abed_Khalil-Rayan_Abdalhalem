@@ -69,8 +69,8 @@ namespace FishGame
         std::for_each(std::execution::unseq, bubbleIdx.begin(), bubbleIdx.end(),
             [this](size_t i)
             {
-                float angle = (60.0f * i + m_wobbleAnimation * 30.0f) * Constants::DEG_TO_RAD;
-                float radius = 18.0f + 3.0f * std::sin(m_wobbleAnimation + i);
+                float angle = (60.0f * static_cast<float>(i) + m_wobbleAnimation * 30.0f) * Constants::DEG_TO_RAD;
+                float radius = 18.0f + 3.0f * std::sin(m_wobbleAnimation + static_cast<float>(i));
 
                 sf::Vector2f bubblePos(
                     m_position.x + std::cos(angle) * radius,
@@ -79,7 +79,7 @@ namespace FishGame
                 m_poisonBubbles[i].setPosition(bubblePos);
 
                 // Pulsing effect for bubbles
-                float scale = 1.0f + 0.2f * std::sin(m_wobbleAnimation * 2.0f + i);
+                float scale = 1.0f + 0.2f * std::sin(m_wobbleAnimation * 2.0f + static_cast<float>(i));
                 m_poisonBubbles[i].setScale(scale, scale);
             });
     }

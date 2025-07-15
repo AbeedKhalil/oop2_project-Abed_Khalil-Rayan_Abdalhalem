@@ -1,7 +1,6 @@
 #pragma once
 
 #include "MusicPlayer.h"
-#include "State.h"
 #include "StateManager.h"
 #include "Player.h"
 
@@ -65,7 +64,6 @@ namespace FishGame
             m_stateManager.registerState<T>(id);
         }
 
-    private:
         // Window and timing constants from GameConstants.h
         static constexpr unsigned int m_windowWidth = Constants::WINDOW_WIDTH;
         static constexpr unsigned int m_windowHeight = Constants::WINDOW_HEIGHT;

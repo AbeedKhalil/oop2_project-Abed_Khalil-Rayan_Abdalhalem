@@ -17,8 +17,6 @@ namespace FishGame
             sf::Vector2f(Constants::HUD_MARGIN, Constants::HUD_MARGIN + Constants::HUD_LINE_SPACING * 3));
         initText(m_powerUpText, Constants::HUD_SMALL_FONT_SIZE,
             sf::Vector2f(windowSize.x - Constants::POWERUP_TEXT_X_OFFSET, Constants::HUD_MARGIN + Constants::HUD_LINE_SPACING));
-        initText(m_fpsText, Constants::HUD_FONT_SIZE,
-            sf::Vector2f(windowSize.x - Constants::FPS_TEXT_X_OFFSET, Constants::HUD_MARGIN));
         initText(m_effectsText, 18,
             sf::Vector2f(Constants::HUD_EFFECTS_TEXT_X,
                 windowSize.y - Constants::HUD_EFFECTS_TEXT_Y_OFFSET), sf::Color::Yellow);
@@ -35,7 +33,7 @@ namespace FishGame
         bool frozen, sf::Time freezeTime,
         bool reversed, sf::Time reverseTime,
         bool stunned, sf::Time stunTime,
-        float fps)
+        float /*fps*/)
     {
         std::ostringstream stream;
         stream << "Score: " << score;
@@ -82,10 +80,6 @@ namespace FishGame
         }
 
         stream.str(""); stream.clear();
-        stream << std::fixed << std::setprecision(1) << "FPS: " << fps;
-        m_fpsText.setString(stream.str());
-
-        stream.str(""); stream.clear();
         if (frozen)
             stream << "FREEZE ACTIVE: " << std::fixed << std::setprecision(1)
                 << freezeTime.asSeconds() << "s\n";
@@ -126,7 +120,6 @@ namespace FishGame
         target.draw(m_levelText, states);
         target.draw(m_chainText, states);
         target.draw(m_powerUpText, states);
-        target.draw(m_fpsText, states);
         target.draw(m_effectsText, states);
         if (!m_messageText.getString().isEmpty())
             target.draw(m_messageText, states);

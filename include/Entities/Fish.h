@@ -28,6 +28,7 @@ namespace FishGame
     {
         friend class CollisionSystem;
     public:
+        using ICollidable::onCollideWith;
         Fish(FishSize size, float speed, int currentLevel);
         virtual ~Fish() = default;
 
@@ -90,6 +91,10 @@ namespace FishGame
 
         // Collision interaction
         void onCollide(Player& player, CollisionSystem& system) override;
+        void onCollideWith(Entity& other, CollisionSystem& system) override;
+        void onCollideWith(Fish& fish, CollisionSystem& system) override;
+        void onCollideWith(Hazard& hazard, CollisionSystem& system) override;
+        void onCollideWith(BonusItem& item, CollisionSystem& system) override;
 
     protected:
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;

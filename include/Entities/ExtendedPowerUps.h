@@ -16,6 +16,7 @@ namespace FishGame
         void update(sf::Time deltaTime) override;
         void onCollect() override;
         sf::Color getAuraColor() const override { return sf::Color::Cyan; }
+        void applyEffect(Player& player, CollisionSystem& system) override;
 
         void setFont(const sf::Font& font) { m_icon.setFont(font); }
 
@@ -38,6 +39,7 @@ namespace FishGame
         void update(sf::Time deltaTime) override;
         void onCollect() override;
         sf::Color getAuraColor() const override { return sf::Color::Green; }
+        void applyEffect(Player& player, CollisionSystem& system) override;
 
         void initializeSprite(SpriteManager& spriteManager);
 
@@ -60,6 +62,7 @@ namespace FishGame
         void update(sf::Time deltaTime) override;
         void onCollect() override;
         sf::Color getAuraColor() const override { return sf::Color(0, 255, 255); }
+        void applyEffect(Player& player, CollisionSystem& system) override;
 
         void initializeSprite(SpriteManager& spriteManager);
 
@@ -83,6 +86,7 @@ namespace FishGame
         void update(sf::Time deltaTime) override;
         void onCollect() override;
         sf::Color getAuraColor() const override { return sf::Color::White; }
+        void applyEffect(Player& player, CollisionSystem& system) override;
 
         void initializeSprite(SpriteManager& spriteManager);
 
