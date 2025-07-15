@@ -1,7 +1,9 @@
 #include "Angelfish.h"
-#include "CollisionSystem.h"
-#include "Pufferfish.h"
-#include <execution>
+#include "CollisionDetector.h"
+#include "GameConstants.h"
+#include "Player.h"
+#include "SpriteManager.h"
+#include "Animator.h"
 
 namespace FishGame
 {
