@@ -8,7 +8,6 @@
 #include "GameOptionsState.h"
 #include "StageIntroState.h"
 #include "StageSummaryState.h"
-#include "BonusStageState.h"
 
 namespace FishGame
 {
@@ -28,8 +27,6 @@ namespace FishGame
         , m_metrics()
     {
         m_window.setFramerateLimit(m_frameRateLimit);
-
-        // Reserve capacity for better performance
 
         // Load resources
         m_fonts.load(Fonts::Main, "Regular.ttf");
