@@ -72,7 +72,7 @@ namespace FishGame
         std::for_each(std::execution::unseq, finIdx.begin(), finIdx.end(),
             [this](size_t i)
             {
-                float finAngle = (m_colorShift + i * 120.0f) * 3.14159f / 180.0f;
+                float finAngle = (m_colorShift + static_cast<float>(i) * 120.0f) * 3.14159f / 180.0f;
                 float finRadius = 20.0f + (m_isEvading ? 10.0f * std::sin(m_colorShift * 5.0f) : 0.0f);
 
                 sf::Vector2f finPos(

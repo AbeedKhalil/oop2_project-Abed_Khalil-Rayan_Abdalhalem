@@ -82,7 +82,7 @@ void FreezePowerUp::onCollect()
     destroy();
 }
 
-void FreezePowerUp::applyEffect(Player& player, CollisionSystem& system)
+void FreezePowerUp::applyEffect(Player& /*player*/, CollisionSystem& system)
 {
     system.m_powerUps.activatePowerUp(getPowerUpType(), getDuration());
     system.m_applyFreeze();
@@ -147,7 +147,7 @@ void ExtraLifePowerUp::onCollect()
     destroy();
 }
 
-void ExtraLifePowerUp::applyEffect(Player& player, CollisionSystem& system)
+void ExtraLifePowerUp::applyEffect(Player& /*player*/, CollisionSystem& system)
 {
     system.m_playerLives++;
     system.m_sounds.play(SoundEffectID::LifePowerup);
@@ -296,7 +296,7 @@ void AddTimePowerUp::onCollect()
     destroy();
 }
 
-void AddTimePowerUp::applyEffect(Player& player, CollisionSystem& system)
+void AddTimePowerUp::applyEffect(Player& /*player*/, CollisionSystem& /*system*/)
 {
     // No effect defined yet
 }
