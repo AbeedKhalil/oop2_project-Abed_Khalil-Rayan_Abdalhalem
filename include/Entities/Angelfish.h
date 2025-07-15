@@ -2,6 +2,7 @@
 
 #include "AdvancedFish.h"
 #include "SpriteManager.h"
+#include <SFML/Graphics/CircleShape.hpp>
 
 namespace FishGame {
 
@@ -50,4 +51,4 @@ private:
     static constexpr int m_baseBonus = 50;
 };
 
-} // namespace FishGame 
+} // namespace FishGame

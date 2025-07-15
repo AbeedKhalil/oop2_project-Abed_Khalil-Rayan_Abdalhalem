@@ -1,6 +1,11 @@
 #include "PowerUp.h"
+#include "GameConstants.h"
 #include "Utils/DrawHelpers.h"
 #include "Systems/CollisionSystem.h"
+#include <cmath>
+#include <algorithm>
+#include <iterator>
+#include <ranges>
 #include <execution>
 
 namespace FishGame

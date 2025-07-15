@@ -1,6 +1,7 @@
 #include "PlayerGrowth.h"
 #include "Player.h"
-
+#include "PlayerVisual.h"
+#include <cmath>
 
 namespace FishGame {
 

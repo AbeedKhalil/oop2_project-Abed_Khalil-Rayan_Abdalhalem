@@ -1,4 +1,5 @@
 #include "Entity.h"
+#include "SpriteComponent.h"
 #include "SpriteManager.h"
 
 namespace FishGame

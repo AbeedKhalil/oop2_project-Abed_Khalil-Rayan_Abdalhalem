@@ -1,7 +1,12 @@
 #include "ExtendedPowerUps.h"
+#include <algorithm>
+#include <cmath>
+#include <iterator>
+#include <ranges>
 #include <execution>
-#include "DrawHelpers.h"
-#include "CollisionSystem.h"
+#include "Utils/DrawHelpers.h"
+#include "SpriteManager.h"
+#include "Systems/CollisionSystem.h"
 
 namespace FishGame
 {
