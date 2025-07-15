@@ -2,7 +2,6 @@
 
 #include "State.h"
 #include "GameExceptions.h"
-#include <functional>
 #include <unordered_map>
 #include <vector>
 
