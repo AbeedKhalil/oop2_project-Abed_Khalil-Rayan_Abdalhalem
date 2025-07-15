@@ -2,7 +2,6 @@
 
 #include "AdvancedFish.h"
 #include "SpriteManager.h"
-#include <SFML/Graphics/CircleShape.hpp>
 
 namespace FishGame {
 
