@@ -10,6 +10,8 @@
 #include "Animator.h"
 #include "CollisionDetector.h"
 #include "GenericFish.h"
+#include "Hazard.h"
+#include "Fish.h"
 #include <SFML/Window.hpp>
 #include <cmath>
 #include <algorithm>
@@ -366,5 +368,20 @@ void Player::updateVisualEffects(sf::Time deltaTime)
     if (m_visual)
         m_visual->update(deltaTime);
 }
+
+    void Player::onCollideWith(Entity& other, CollisionSystem& system)
+    {
+        other.onCollide(*this, system);
+    }
+
+    void Player::onCollideWith(Fish& fish, CollisionSystem& system)
+    {
+        fish.onCollide(*this, system);
+    }
+
+    void Player::onCollideWith(Hazard& hazard, CollisionSystem& system)
+    {
+        hazard.onCollide(*this, system);
+    }
 }
 

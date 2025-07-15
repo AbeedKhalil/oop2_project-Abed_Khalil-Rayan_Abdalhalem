@@ -29,6 +29,8 @@ namespace FishGame
 
         virtual void onContact(Entity& entity) = 0;
         void onCollide(Player& player, CollisionSystem& system) override = 0;
+        void onCollideWith(Entity& other, CollisionSystem& system) override;
+        void onCollideWith(Fish& fish, CollisionSystem& system) override;
 
     protected:
         HazardType m_hazardType;

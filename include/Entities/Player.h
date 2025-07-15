@@ -149,6 +149,11 @@ namespace FishGame
         void triggerEatEffect();
         void triggerDamageEffect();
 
+        // Double dispatch handlers
+        void onCollideWith(Entity& other, CollisionSystem& system) override;
+        void onCollideWith(Fish& fish, CollisionSystem& system) override;
+        void onCollideWith(Hazard& hazard, CollisionSystem& system) override;
+
     private:
         void updateVisualEffects(sf::Time deltaTime);
 
