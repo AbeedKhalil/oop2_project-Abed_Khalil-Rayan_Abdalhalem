@@ -1,11 +1,7 @@
 #include "BonusItem.h"
 #include "GameConstants.h"
 #include "DrawHelpers.h"
-#include "SpriteManager.h"
-#include "Systems/CollisionSystem.h"
-#include <cmath>
-#include <algorithm>
-#include <iterator>
+#include "CollisionSystem.h"
 
 namespace FishGame
 {

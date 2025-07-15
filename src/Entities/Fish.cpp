@@ -1,16 +1,6 @@
 #include "Fish.h"
-#include "SpriteManager.h"
-#include "SpriteComponent.h"
-#include "CollisionDetector.h"
-#include "GameConstants.h"
-#include "Player.h"
-#include "Pufferfish.h"
-#include "PoisonFish.h"
-#include "Hazard.h"
-#include "Managers/OysterManager.h"
-#include "Systems/CollisionSystem.h"
-#include <cmath>
-#include <algorithm>
+#include "CollisionSystem.h"
+
 
 namespace FishGame
 {
