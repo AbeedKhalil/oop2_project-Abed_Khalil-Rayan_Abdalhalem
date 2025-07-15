@@ -17,9 +17,11 @@ namespace FishGame
     class PlayerInput;
     class PlayerGrowth;
     class PlayerVisual;
+    class PlayerStatus;
 
     class Player : public Entity
     {
+        friend class PlayerStatus;
     public:
         struct VisualEffect
         {
@@ -72,8 +74,8 @@ namespace FishGame
         void takeDamage();
         void die();
         void respawn();
-        bool isInvulnerable() const { return m_invulnerabilityTimer > sf::Time::Zero; }
-        bool hasRecentlyTakenDamage() const { return m_damageCooldown > sf::Time::Zero; }
+        bool isInvulnerable() const;
+        bool hasRecentlyTakenDamage() const;
 
         // Power-up effects
         void applySpeedBoost(float multiplier, sf::Time duration);
@@ -129,7 +131,7 @@ namespace FishGame
         const std::string& getCurrentAnimation() const { return m_currentAnimation; }
         void setCurrentAnimation(const std::string& anim) { m_currentAnimation = anim; }
         bool isFacingRight() const { return m_facingRight; }
-        sf::Time getInvulnerabilityTimer() const { return m_invulnerabilityTimer; }
+        sf::Time getInvulnerabilityTimer() const;
 
         static constexpr float baseSpeed() { return m_baseSpeed; }
         static constexpr float baseRadius() { return m_baseRadius; }
@@ -155,7 +157,6 @@ namespace FishGame
 
     private:
         void constrainToWindow();
-        void updateInvulnerability(sf::Time deltaTime);
 
     private:
         int m_score;
@@ -182,11 +183,8 @@ namespace FishGame
         SpriteManager* m_spriteManager;
         SoundPlayer* m_soundPlayer{ nullptr };
 
-        // Invulnerability and damage
-        sf::Time m_invulnerabilityTimer;
-        sf::Time m_damageCooldown;
-        static const sf::Time m_invulnerabilityDuration;
-        static const sf::Time m_damageCooldownDuration;
+        // Status handling
+        std::unique_ptr<PlayerStatus> m_status;
 
         // Power-up effects
         float m_speedMultiplier;
