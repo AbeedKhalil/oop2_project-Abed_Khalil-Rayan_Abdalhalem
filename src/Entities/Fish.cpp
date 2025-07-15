@@ -5,6 +5,9 @@
 #include "GameConstants.h"
 #include "Player.h"
 #include "Pufferfish.h"
+#include "PoisonFish.h"
+#include "Hazard.h"
+#include "Managers/OysterManager.h"
 #include "Systems/CollisionSystem.h"
 #include <cmath>
 #include <algorithm>
@@ -633,8 +636,8 @@ int Fish::getScorePoints() const
         }
     }
 
-    void Fish::onCollide(Player& player, CollisionSystem& system)
-    {
+void Fish::onCollide(Player& player, CollisionSystem& system)
+{
         if (player.isInvulnerable() || system.m_playerStunned)
             return;
 
@@ -661,6 +664,75 @@ int Fish::getScorePoints() const
             player.takeDamage();
             system.createParticle(player.getPosition(), Constants::DAMAGE_PARTICLE_COLOR);
             system.m_onPlayerDeath();
+        }
+    }
+
+    void Fish::onCollideWith(Entity& other, CollisionSystem& system)
+    {
+        other.onCollideWith(*this, system);
+    }
+
+    void Fish::onCollideWith(Fish& other, CollisionSystem& system)
+    {
+        if (canEat(other))
+        {
+            if (auto* poison = dynamic_cast<PoisonFish*>(&other))
+            {
+                setPoisoned(poison->getPoisonDuration());
+                system.createParticle(getPosition(), sf::Color::Magenta, 10);
+            }
+            playEatAnimation();
+            other.destroy();
+            system.createParticle(other.getPosition(), Constants::DEATH_PARTICLE_COLOR);
+        }
+        else if (other.canEat(*this))
+        {
+            if (auto* poison = dynamic_cast<PoisonFish*>(this))
+            {
+                other.setPoisoned(poison->getPoisonDuration());
+                system.createParticle(other.getPosition(), sf::Color::Magenta, 10);
+            }
+            other.playEatAnimation();
+            destroy();
+            system.createParticle(getPosition(), Constants::DEATH_PARTICLE_COLOR);
+        }
+    }
+
+    void Fish::onCollideWith(Hazard& hazard, CollisionSystem& system)
+    {
+        switch (hazard.getHazardType())
+        {
+        case HazardType::Bomb:
+            if (auto* bomb = dynamic_cast<Bomb*>(&hazard))
+            {
+                bool wasExploding = bomb->isExploding();
+                bomb->onContact(*this);
+                if (!wasExploding && bomb->isExploding())
+                {
+                    system.m_sounds.play(SoundEffectID::MineExplode);
+                }
+            }
+            break;
+        case HazardType::Jellyfish:
+            if (auto* jellyfish = dynamic_cast<Jellyfish*>(&hazard))
+            {
+                jellyfish->onContact(*this);
+                setStunned(jellyfish->getStunDuration());
+            }
+            break;
+        }
+    }
+
+    void Fish::onCollideWith(BonusItem& item, CollisionSystem& system)
+    {
+        if (auto* oyster = dynamic_cast<PermanentOyster*>(&item))
+        {
+            if (oyster->canDamagePlayer())
+            {
+                destroy();
+                system.createParticle(getPosition(), Constants::DEATH_PARTICLE_COLOR);
+                system.createParticle(oyster->getPosition(), Constants::OYSTER_IMPACT_COLOR);
+            }
         }
     }
 }

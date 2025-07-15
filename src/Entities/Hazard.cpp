@@ -3,6 +3,7 @@
 #include "GameConstants.h"
 #include "SpriteManager.h"
 #include "Utils/AnimatedSprite.h"
+#include "Fish.h"
 #include "Systems/CollisionSystem.h"
 #include <cmath>
 #include <numeric>
@@ -359,8 +360,8 @@ namespace FishGame
         }
     }
 
-    void Jellyfish::pushEntity(Entity& entity) const
-    {
+void Jellyfish::pushEntity(Entity& entity) const
+{
         sf::Vector2f dir = entity.getPosition() - m_position;
         float length = std::sqrt(dir.x * dir.x + dir.y * dir.y);
         if (length == 0.0f)
@@ -373,5 +374,35 @@ namespace FishGame
 
         entity.setVelocity(dir * m_pushForce);
         entity.setPosition(entity.getPosition() + dir * m_pushDistance);
+    }
+
+    void Hazard::onCollideWith(Entity& other, CollisionSystem& system)
+    {
+        other.onCollideWith(*this, system);
+    }
+
+    void Hazard::onCollideWith(Fish& fish, CollisionSystem& system)
+    {
+        switch (getHazardType())
+        {
+        case HazardType::Bomb:
+            if (auto* bomb = dynamic_cast<Bomb*>(this))
+            {
+                bool wasExploding = bomb->isExploding();
+                bomb->onContact(fish);
+                if (!wasExploding && bomb->isExploding())
+                {
+                    system.m_sounds.play(SoundEffectID::MineExplode);
+                }
+            }
+            break;
+        case HazardType::Jellyfish:
+            if (auto* jellyfish = dynamic_cast<Jellyfish*>(this))
+            {
+                jellyfish->onContact(fish);
+                fish.setStunned(jellyfish->getStunDuration());
+            }
+            break;
+        }
     }
 }
