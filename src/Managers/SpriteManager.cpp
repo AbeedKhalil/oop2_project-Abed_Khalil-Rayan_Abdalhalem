@@ -79,10 +79,9 @@ void SpriteManager::loadTextures(const std::string& assetPath)
 {
         m_textureHolder.reserve(s_textureFiles.size());
 
-        // Load textures sequentially to avoid OpenGL context conflicts
+        // Load textures sequentially using the existing window context
         for (const auto& [id, filename] : s_textureFiles)
         {
-            sf::Context context;
             std::string fullPath = assetPath.empty() ? filename
                 : assetPath + "/" + filename;
             auto tex = std::make_unique<sf::Texture>();

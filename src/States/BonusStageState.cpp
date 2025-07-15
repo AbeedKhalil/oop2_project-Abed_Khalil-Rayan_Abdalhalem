@@ -206,30 +206,30 @@ namespace FishGame
             }
         }
 
-        // Update entities
-        std::for_each(std::execution::par_unseq, m_entities.begin(), m_entities.end(),
-            [deltaTime, this](auto& entity) {
-                entity->update(deltaTime);
+        // Update entities sequentially to keep rendering thread-safe
+        for (auto& entity : m_entities)
+        {
+            entity->update(deltaTime);
 
-                // Apply ocean currents to fish
-                if (Fish* fish = dynamic_cast<Fish*>(entity.get()))
-                {
-                    sf::Vector2f force = m_environment->getOceanCurrentForce(entity->getPosition());
-                    entity->setVelocity(entity->getVelocity() + force * deltaTime.asSeconds() * 0.5f);
-                }
-            });
+            // Apply ocean currents to fish
+            if (Fish* fish = dynamic_cast<Fish*>(entity.get()))
+            {
+                sf::Vector2f force = m_environment->getOceanCurrentForce(entity->getPosition());
+                entity->setVelocity(entity->getVelocity() + force * deltaTime.asSeconds() * 0.5f);
+            }
+        }
 
-        // Update bonus items
-        std::for_each(std::execution::par_unseq, m_bonusItems.begin(), m_bonusItems.end(),
-            [deltaTime](auto& item) {
-                item->update(deltaTime);
-            });
+        // Update bonus items sequentially
+        for (auto& item : m_bonusItems)
+        {
+            item->update(deltaTime);
+        }
 
-        // Update hazards
-        std::for_each(std::execution::par_unseq, m_hazards.begin(), m_hazards.end(),
-            [deltaTime](auto& hazard) {
-                hazard->update(deltaTime);
-            });
+        // Update hazards sequentially
+        for (auto& hazard : m_hazards)
+        {
+            hazard->update(deltaTime);
+        }
 
         // Handle collisions with bonus items
         std::for_each(m_bonusItems.begin(), m_bonusItems.end(),
