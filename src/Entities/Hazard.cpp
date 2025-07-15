@@ -1,15 +1,5 @@
 #include "Hazard.h"
-#include "Player.h"
-#include "GameConstants.h"
-#include "SpriteManager.h"
-#include "Utils/AnimatedSprite.h"
-#include "Fish.h"
-#include "Systems/CollisionSystem.h"
-#include <cmath>
-#include <numeric>
-#include <algorithm>
-#include <iterator>
-#include <ranges>
+#include "CollisionSystem.h"
 #include <execution>
 
 namespace FishGame
