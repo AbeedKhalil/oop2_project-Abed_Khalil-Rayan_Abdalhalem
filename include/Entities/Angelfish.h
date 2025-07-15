@@ -51,4 +51,4 @@ private:
     static constexpr int m_baseBonus = 50;
 };
 
-} // namespace FishGame
+} // namespace FishGame 
