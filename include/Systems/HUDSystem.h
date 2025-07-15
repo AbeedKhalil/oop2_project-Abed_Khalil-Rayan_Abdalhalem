@@ -35,7 +35,6 @@ namespace FishGame
         sf::Text m_levelText;
         sf::Text m_chainText;
         sf::Text m_powerUpText;
-        sf::Text m_fpsText;
         sf::Text m_effectsText;
         sf::Text m_messageText;
 
