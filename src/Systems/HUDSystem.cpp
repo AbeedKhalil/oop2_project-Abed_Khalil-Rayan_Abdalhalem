@@ -33,7 +33,7 @@ namespace FishGame
         bool frozen, sf::Time freezeTime,
         bool reversed, sf::Time reverseTime,
         bool stunned, sf::Time stunTime,
-        float fps)
+        float /*fps*/)
     {
         std::ostringstream stream;
         stream << "Score: " << score;

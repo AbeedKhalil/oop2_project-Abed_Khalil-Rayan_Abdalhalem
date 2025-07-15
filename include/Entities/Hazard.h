@@ -20,6 +20,7 @@ namespace FishGame
     {
         friend class CollisionSystem;
     public:
+        using ICollidable::onCollideWith;
         Hazard(HazardType type, float damageAmount);
         virtual ~Hazard() = default;
 

@@ -144,7 +144,7 @@ namespace FishGame
         }
     }
 
-    void BonusItem::onCollide(Player& player, CollisionSystem& system)
+    void BonusItem::onCollide(Player& /*player*/, CollisionSystem& system)
     {
         onCollect();
 

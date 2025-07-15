@@ -23,6 +23,7 @@ namespace FishGame
     {
         friend class PlayerStatus;
     public:
+        using ICollidable::onCollideWith;
         struct VisualEffect
         {
             float scale = 1.f;

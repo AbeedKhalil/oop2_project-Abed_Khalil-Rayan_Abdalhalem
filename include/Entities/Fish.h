@@ -28,6 +28,7 @@ namespace FishGame
     {
         friend class CollisionSystem;
     public:
+        using ICollidable::onCollideWith;
         Fish(FishSize size, float speed, int currentLevel);
         virtual ~Fish() = default;
 

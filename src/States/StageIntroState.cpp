@@ -202,7 +202,7 @@ void StageIntroState::handleEvent(const sf::Event &event) {
     }
 }
 
-bool StageIntroState::update(sf::Time deltaTime) {
+bool StageIntroState::update(sf::Time /*deltaTime*/) {
   processDeferredActions();
   return false;
 }
