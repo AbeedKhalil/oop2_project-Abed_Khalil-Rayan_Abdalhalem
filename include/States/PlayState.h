@@ -73,14 +73,6 @@ namespace FishGame
             sf::Time winTimer = sf::Time::Zero;
         };
 
-        // HUD elements collection
-
-        // ==================== Collision Handling ====================
-
-        // ==================== Helper Functions ====================
-
-        // Spawning is handled by SpawnSystem
-
         // Effect helpers
         void createParticleEffect(const sf::Vector2f& position, const sf::Color& color,
             int count = Constants::DEFAULT_PARTICLE_COUNT);
